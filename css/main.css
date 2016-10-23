@@ -1,0 +1,65 @@
+body {
+    padding-bottom: 15px;
+}
+.loading {
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+}
+
+@-webkit-keyframes spin {
+    100% {
+        -webkit-transform: rotate(359deg);
+    }
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+a img:hover {
+    -webkit-transform: scale(1.05);
+    transform: scale(1.05);
+}
+
+a img:active {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+@media (max-width: 767px) {
+    .affix {
+        position: static;
+        width: auto;
+        top: 0;
+    }
+}
+
+@media (min-width: 992px) {
+    .affix-top {
+        position: fixed;
+        top: 0px;
+    }
+}
+
+.table-status {
+    margin-top: 20px;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: "";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    zoom: 1; /* ie 6/7 */
+}
+.progress-data {
+    width: 100%;
+}
