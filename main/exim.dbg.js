@@ -227,21 +227,58 @@ var ImpExView = Backbone.View.extend({
 });
 
 var ImportReport = Backbone.View.extend({
-	tagName: 'div',
-	template: _.template($("#import-report").html()),
-	events: {
+	template:      _.template($("#import-report").html()),
+	events:        {
 		"click .spoiler-trigger": "toggleSpoiler"
 	},
-	render: function () {
-		this.delegateEvents();
+	render:        function () {
 		this.$el.html(this.template({
 			models: this.model
 		}));
+		this.delegateEvents();
 		return this;
 	},
 	toggleSpoiler: function (e) {
-		console.dir(this);
-		$(this).parent().next().collapse('toggle');
+		$(e.target).parent().next().collapse('toggle');
+	}
+});
+
+var ImportProgress = Backbone.View.extend({
+	template:          _.template($("#progress-bar-block").html()),
+	modal:             {},
+	initialize:        function (options) {
+		this.listenTo(events, ImportModel.errorLabel, this.stop);
+		this.listenTo(this.model, 'change', this.render);
+		this.modal = options.modal;
+	},
+	render:            function () {
+		this.$el.html(this.template({
+			model: this.model
+		}));
+		this.delegateEvents();
+		this.modal.set({
+			body: this.$el
+		});
+		return this;
+	},
+	stop:              function (e, isFinish) {
+		ImportModel.isRunning = false;
+		this.buildImportReport();
+		var progressBar       = this.$el.find('.progress-bar');
+		var progressBarClass  = 'progress-bar-' + (isFinish ? 'success' : 'danger');
+
+		$(progressBar).removeClass('active').addClass(progressBarClass);
+	},
+	finish:            function () {
+		this.stop(true, true);
+	},
+	/**
+	 * Build import report
+	 */
+	buildImportReport: function () {
+		var importReport   = new ImportReport();
+		importReport.model = ImportModel.history;
+		this.$el.find('.import-report').empty().append(importReport.render().$el);
 	}
 });
 
@@ -253,11 +290,12 @@ var ImportDisplay = Backbone.View.extend({
 	},
 	errTmpl:      _.template($('#impex-err').html(), 0, {variable: 'd'}),
 	addError:     function (err) {
-		noty({
-			text: err,
-			type: 'error'
-		});
-
+		if (!ImportReport.isRunning) {
+			noty({
+				text: err,
+				type: 'error'
+			});
+		}
 		this.$el.append(this.errTmpl(err));
 	},
 	fatalButtons: function () {
@@ -305,30 +343,55 @@ var ExportModel = function () {
 		modal: false,
 
 		/**
+		 * Model for the progress bar
+		 */
+		modelPercentage: {},
+
+		/**
+		 * Progress bar view
+		 */
+		viewProgressBar: false,
+
+		/**
+		 * Reset percentage
+		 */
+		resetPercentage: function () {
+			this.modelPercentage.set('id', this.getId());
+			this.modelPercentage.set('name', t("Fetching data..."));
+			this.modelPercentage.set('percentage', 0);
+		},
+
+		/**
 		 * Start the export
 		 * @param models
 		 * @returns {*}
 		 */
-		run:              function (models) {
-			this.isRunning = true;
-			var self       = this;
-			var deferred   = new jQuery.Deferred();
+		run:             function (models) {
+			this.isRunning       = true;
+			var self             = this;
+			var deferred         = new jQuery.Deferred();
 			/**
 			 * Write the fetching of the all models to the promises
 			 * @type {Array|*}
 			 */
-			var promises   = _.map(models, function (model) {
+			var promises         = _.map(models, function (model) {
 				return schema.tableFetch(model.get('id'));
 			});
-			this.modal     = new Modal();
-			var compiled   = _.template($("#progress-bar-block").html());
+			this.modal           = new Modal();
+			if (_.isEmpty(this.modelPercentage)) {
+				this.modelPercentage = new PercentageModel();
+			}
+			delete this.viewProgressBar;
+			this.resetPercentage();
 			this.counter++;
 			this.modal.set({
 				header: t("Export"),
-				body:   compiled({
-					id: self.getId()
-				})
 			});
+			self.viewProgressBar = new ImportProgress({
+				model: self.modelPercentage,
+				modal: self.modal
+			});
+			self.viewProgressBar.render();
 			this.modal.show();
 			/**
 			 * Wait until the promises will be finished
@@ -342,10 +405,9 @@ var ExportModel = function () {
 					 */
 					if (self.isRunning) {
 						self.setProgressData(0);
-						var progressBlock = self.getProgressBlock();
-						$(progressBlock).find("#model-name").text(model.get('name'));
-						var data          = [];
-						var modelData     = schema.table(model.get('id'));
+						self.modelPercentage.set("name", model.get('name'));
+						var data      = [];
+						var modelData = schema.table(model.get('id'));
 						if (modelData.models) {
 							var length = modelData.models.length;
 							modelData.models.forEach(function (item, index) {
@@ -363,7 +425,7 @@ var ExportModel = function () {
 						}
 
 						self.setProgressData(100);
-						var csv           = Papa.unparse(data);
+						var csv       = Papa.unparse(data);
 						zip.file(model.get('id') + ".csv", csv);
 					}
 				});
@@ -384,7 +446,7 @@ var ExportModel = function () {
 		/**
 		 * Stop export mechanism
 		 */
-		stop:             function () {
+		stop:            function () {
 			ExportModel.isRunning = false;
 			ExportModel.modal.hide();
 		},
@@ -393,7 +455,7 @@ var ExportModel = function () {
 		 * @param blob
 		 * @param fileName
 		 */
-		saveAs:           function (blob, fileName) {
+		saveAs:          function (blob, fileName) {
 			var a      = document.createElement("a");
 			document.body.appendChild(a);
 			a.style    = "display: none";
@@ -407,27 +469,15 @@ var ExportModel = function () {
 		 * Get the ID of the export item
 		 * @returns {string}
 		 */
-		getId:            function () {
+		getId:           function () {
 			return "export-" + this.counter.toString();
-		},
-		/**
-		 * Get the progress bar block
-		 * @returns {*|jQuery|HTMLElement}
-		 */
-		getProgressBlock: function () {
-			var id = ExportModel.getId();
-			return $("#" + id.toString());
 		},
 		/**
 		 * Set the progress data
 		 * @param data
 		 */
-		setProgressData:  function (data) {
-			var block      = this.getProgressBlock;
-			var percentage = data + '%';
-			$(block).find('.progress-bar').css({
-				width: percentage
-			}).text(percentage);
+		setProgressData: function (data) {
+			this.modelPercentage.set("percentage", data);
 		}
 	};
 }();
@@ -471,26 +521,51 @@ var ImportModel = (function () {
 		history: [],
 
 		/**
+		 * Model for the progress bar
+		 */
+		modelPercentage: {},
+
+		/**
+		 * Progress bar view
+		 */
+		viewProgressBar: false,
+
+		/**
+		 * Reset percentage
+		 */
+		resetPercentage:     function () {
+			this.modelPercentage.set('id', this.getId());
+			this.modelPercentage.set('name', t("Fetching data..."));
+			this.modelPercentage.set('percentage', 0);
+		},
+		/**
 		 * Parse the input file
 		 * @param fileList
 		 */
 		parseFile:           function (fileList) {
-			if (!this.view)
-				this.view = new ImportDisplay();
 			var self     = this;
+			if (!this.view) {
+				this.view = new ImportDisplay();
+			}
+			if (_.isEmpty(this.modelPercentage)) {
+				this.modelPercentage = new PercentageModel();
+			}
+			delete this.viewProgressBar;
+			this.resetPercentage();
 			this.history = [];
 			self.loadFile(fileList).done(function (zipFileLoaded) {
-				self.modal     = new Modal();
-				var compiled   = _.template($("#progress-bar-block").html());
+				self.modal           = new Modal();
 				self.counter++;
 				self.modal.set({
-					header: t("Import"),
-					body:   compiled({
-						id: self.getId()
-					})
+					header: t("Import")
 				});
+				self.viewProgressBar = new ImportProgress({
+					model: self.modelPercentage,
+					modal: self.modal
+				});
+				self.viewProgressBar.render();
 				self.modal.show();
-				self.isRunning = true;
+				self.isRunning       = true;
 				/**
 				 * Loop through the files in zip
 				 */
@@ -519,190 +594,158 @@ var ImportModel = (function () {
 									 * Reset the progress bar and set the current import model
 									 */
 									self.setProgressData(0);
-									var progressBlock = self.getProgressBlock();
-									$(progressBlock).find("#model-name").text(tableName);
-									var options       = {
+									self.modelPercentage.set("name", tableName);
+									var options   = {
 										schema: modelData,
 										urlAdd: schema.url + '/' + tableName
 									};
-									options.model     = TableModel.extend(options);
-									var tableData     = schema.table(tableName);
-									/**
-									 * If the model data - table data
-									 */
-									if (modelData && modelData.attributes.tbl) {
-										var idAttribute  = modelData.attributes.key ? modelData.attributes.key : 'id';
-										/**
-										 * Split the data to chunks
-										 * @type {number}
-										 */
-										var n            = 2;
-										var lists        = _.groupBy(parsedData, function (element, index) {
-											return Math.floor(index / n);
-										});
-										lists            = _.toArray(lists);
-										_.each(lists, function (list, index) {
-											var collection = new TableCollection(false, options);
-											_.each(list, function (item) {
-												if (self.isRunning) {
-													/**
-													 * Check if the item is in the current collection
-													 */
-													collection.url = options.urlAdd;
-													var model      = new Backbone.Model(item);
-													var row        = self.findRowInCollection(model, tableData.models, idAttribute);
-													model.isNew    = function () {
-														return true; //(typeof row == 'undefined');
-													};
-													if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
-														model.hasChanged        = function () {
-															return true;
-														};
-														model.changedAttributes = function () {
-															return model.attributes;
-														};
-													}
-													collection.push(model);
-												}
-
-											});
-											/**
-											 * Update progress bar with current percentage
-											 * @type {number}
-											 */
-											var percentage = Math.round(100 * (index + 1) / lists.length);
-											self.setProgressData(percentage);
-											collection.syncSave(function (response) {
-												if (!_.isEmpty(response.msg) && self.isRunning) {
-													events.trigger(self.errorLabel, response.msg);
-													modelData.result = response.msg;
-													self.history.push(modelData);
-													self.stop();
-												}
-											});
-										});
-										modelData.result = t("Finished");
-										self.history.push(modelData);
-									}
-									else {
-										if (modelData && modelData.attributes.key) {
-											options.idAttribute = modelData.attributes.key;
-										}
-									}
+									options.model = TableModel.extend(options);
+									var tableData = schema.table(tableName);
+									self.processData(parsedData, modelData, tableData, options);
+									///**
+									// * If the model data - table data
+									// */
+									//if (modelData && modelData.attributes.tbl) {
+									//	var idAttribute = modelData.attributes.key ? modelData.attributes.key : 'id';
+									//	/**
+									//	 * Split the data to chunks
+									//	 * @type {number}
+									//	 */
+									//	var n           = 2;
+									//	var lists       = _.groupBy(parsedData, function (element, index) {
+									//		return Math.floor(index / n);
+									//	});
+									//	lists           = _.toArray(lists);
+									//	_.each(lists, function (list, index) {
+									//		var collection = new TableCollection(false, options);
+									//		_.each(list, function (item) {
+									//			if (self.isRunning) {
+									//				/**
+									//				 * Check if the item is in the current collection
+									//				 */
+									//				collection.url = options.urlAdd;
+									//				var model      = new Backbone.Model(item);
+									//				var row        = self.findRowInCollection(model, tableData.models, idAttribute);
+									//				model.isNew    = function () {
+									//					return (typeof row == 'undefined');
+									//				};
+									//				if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
+									//					model.hasChanged        = function () {
+									//						return true;
+									//					};
+									//					model.changedAttributes = function () {
+									//						return model.attributes;
+									//					};
+									//				}
+									//				collection.push(model);
+									//			}
+									//
+									//		});
+									//		/**
+									//		 * Update progress bar with current percentage
+									//		 * @type {number}
+									//		 */
+									//		var percentage = Math.round(100 * (index + 1) / lists.length);
+									//		self.setProgressData(percentage);
+									//		collection.syncSave(function (response) {
+									//			console.dir(response);
+									//			if (!_.isEmpty(response.msg) && self.isRunning) {
+									//				events.trigger(self.errorLabel, response.msg);
+									//				modelData.result = response.msg;
+									//				modelData.error  = true;
+									//				self.history.push(modelData);
+									//			}
+									//		}).done(function () {
+									//			console.log('success');
+									//		});
+									//	});
+									//	if (!modelData.error) {
+									//		modelData.result = t("Finished");
+									//		self.history.push(modelData);
+									//	}
+									//}
+									//else {
+									//	if (modelData && modelData.attributes.key) {
+									//		options.idAttribute = modelData.attributes.key;
+									//	}
+									//}
 								});
 							});
 						});
 					}
 				});
 			});
+		},
+		processData:         function (parsedData, modelData, tableData, options) {
+			var self     = this;
+			/**
+			 * If the model data - table data
+			 */
+			if (modelData && modelData.attributes.tbl) {
+				var idAttribute = modelData.attributes.key ? modelData.attributes.key : 'id';
+				/**
+				 * Split the data to chunks
+				 * @type {number}
+				 */
+				var n           = 2;
+				var lists       = _.groupBy(parsedData, function (element, index) {
+					return Math.floor(index / n);
+				});
+				lists           = _.toArray(lists);
+				var promises    = [];
+				_.each(lists, function (list, index) {
+					var collection = new TableCollection(false, options);
+					_.each(list, function (item) {
+						if (self.isRunning) {
+							/**
+							 * Check if the item is in the current collection
+							 */
+							collection.url = options.urlAdd;
+							var model      = new Backbone.Model(item);
+							var row        = self.findRowInCollection(model, tableData.models, idAttribute);
+							model.isNew    = function () {
+								return (typeof row == 'undefined');
+							};
+							if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
+								model.hasChanged        = function () {
+									return true;
+								};
+								model.changedAttributes = function () {
+									return model.attributes;
+								};
+							}
+							collection.push(model);
+						}
 
-			//file              = fileList[0];
-			//var fileReader    = new FileReader();
-			//fileReader.onload = function (fileLoadedEvent) {
-			//	var zipFileLoaded = new JSZip();
-			//
-			//	/**
-			//	 * Read the zip file
-			//	 */
-			//	zipFileLoaded.loadAsync(fileLoadedEvent.target.result).then(function (zip) {
-			//		self.modal     = new Modal();
-			//		var compiled   = _.template($("#progress-bar-block").html());
-			//		self.counter++;
-			//		self.modal.set({
-			//			header: t("Import"),
-			//			body:   compiled({
-			//				id: self.getId()
-			//			})
-			//		});
-			//		self.modal.show();
-			//		self.isRunning = true;
-			//		/**
-			//		 * Loop through the files in zip
-			//		 */
-			//		_.each(zipFileLoaded.files, function (backupFile) {
-			//			if (self.isRunning) {
-			//				backupFile.async("string").then(function (csvText) {
-			//					var parsedData = Papa.parse(csvText, {
-			//						header: true
-			//					});
-			//					var tableName  = backupFile.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
-			//					var promises   = [
-			//						schema.tableFetch(tableName)
-			//					];
-			//					$.when.apply($, promises).done(function () {
-			//						self.setProgressData(0);
-			//						var progressBlock = self.getProgressBlock();
-			//						$(progressBlock).find("#model-name").text(tableName);
-			//						//console.log(progressBlock);
-			//						/**
-			//						 * Init schema data
-			//						 */
-			//						var modelData = schema.get(tableName);
-			//						var options   = {
-			//							schema: modelData,
-			//							urlAdd: schema.url + '/' + tableName
-			//						};
-			//						options.model = TableModel.extend(options);
-			//						var tableData = schema.table(tableName);
-			//						/**
-			//						 * If the model data - table data
-			//						 */
-			//						if (modelData && modelData.attributes.tbl) {
-			//							var idAttribute = modelData.attributes.key ? modelData.attributes.key : 'id';
-			//							/**
-			//							 * Split the data to chunks
-			//							 * @type {number}
-			//							 */
-			//							var n           = 2;
-			//							var lists       = _.groupBy(parsedData.data, function (element, index) {
-			//								return Math.floor(index / n);
-			//							});
-			//							lists           = _.toArray(lists);
-			//							_.each(lists, function (list, index) {
-			//								var collection = new TableCollection(false, options);
-			//								_.each(list, function (item) {
-			//									if (self.isRunning) {
-			//										/**
-			//										 * Check if the item is in the current collection
-			//										 */
-			//										collection.url = options.urlAdd;
-			//										var model      = new Backbone.Model(item);
-			//										var row        = self.findRowInCollection(model, tableData.models, idAttribute);
-			//										model.isNew    = function () {
-			//											return (typeof row == 'undefined');
-			//										};
-			//										if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
-			//											model.hasChanged        = function () {
-			//												return true;
-			//											};
-			//											model.changedAttributes = function () {
-			//												return model.attributes;
-			//											};
-			//										}
-			//										collection.push(model);
-			//									}
-			//
-			//								});
-			//								var percentage = Math.round(100 * (index + 1) / lists.length);
-			//								self.setProgressData(percentage);
-			//								collection.syncSave(function (response) {
-			//									console.dir(response);
-			//								});
-			//							});
-			//						}
-			//						else {
-			//							if (modelData && modelData.attributes.key) {
-			//								options.idAttribute = modelData.attributes.key;
-			//							}
-			//						}
-			//					});
-			//				});
-			//			}
-			//		});
-			//	});
-			//};
-			//
-			//fileReader.readAsArrayBuffer(file);
+					});
+					/**
+					 * Update progress bar with current percentage
+					 * @type {number}
+					 */
+					var percentage = Math.round(100 * (index + 1) / lists.length);
+					self.setProgressData(percentage);
+					promises.push(collection.syncSave(function (response) {
+						if (!_.isEmpty(response.msg) && self.isRunning) {
+							modelData.result = response.msg;
+							modelData.error  = true;
+							self.history.push(modelData);
+							events.trigger(self.errorLabel, response.msg);
+						}
+					}));
+				});
+				$.when.apply($, promises).then(function () {
+					console.dir(modelData);
+					if (!modelData.error) {
+						modelData.result = t("Finished");
+						self.history.push(modelData);
+					}
+				});
+			}
+			else {
+				if (modelData && modelData.attributes.key) {
+					options.idAttribute = modelData.attributes.key;
+				}
+			}
 		},
 		/**
 		 * Load zip file and get its content
@@ -711,7 +754,7 @@ var ImportModel = (function () {
 		 */
 		loadFile:            function (fileList) {
 			var deferred   = $.Deferred();
-			file           = fileList[0];
+			var file       = fileList[0];
 			var fileReader = new FileReader();
 			var extension  = file.name.substring(file.name.lastIndexOf('.') + 1);
 			if (_.indexOf(this.allowedExtensions, extension) >= 0) {
@@ -764,11 +807,11 @@ var ImportModel = (function () {
 				var errorMessage    = errorCollection.join("<br />");
 				var modelData       = {
 					id:     fileName,
-					result: errorMessage
+					result: errorMessage,
+					error:  true
 				};
 				this.history.push(modelData);
 				events.trigger(this.errorLabel, errorMessage);
-				this.stop();
 			}
 			else {
 				return deferred.resolve(parsedData.data);
@@ -796,11 +839,7 @@ var ImportModel = (function () {
 		 * @param data
 		 */
 		setProgressData:     function (data) {
-			var block      = this.getProgressBlock();
-			var percentage = data + '%';
-			$(block).find('.progress-bar').css({
-				width: percentage
-			}).text(percentage);
+			this.modelPercentage.set("percentage", data);
 		},
 		/**
 		 * Find the row on the collection
@@ -821,20 +860,15 @@ var ImportModel = (function () {
 		 */
 		stop:                function () {
 			ImportModel.isRunning = false;
-
-		},
-		/**
-		 * Build import report
-		 */
-		buildImportReport:   function () {
-			var self        = this;
-			var progressBar = this.getProgressBlock();
-			console.dir(self.history);
-			var importReport = new ImportReport({
-				model: self.history
-			});
-			progressBar.find('.import-report').html(importReport.render().$el.html());
-		},
+		}
 	};
 
 })();
+
+var PercentageModel = Backbone.Model.extend({
+	defaults: {
+		id:         ImportModel.getId(),
+		name:       "",
+		percentage: 0
+	}
+});

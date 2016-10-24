@@ -284,9 +284,9 @@ var FiscDo = PageView.extend({
 		this.$el.append(this.eet.render().$el);
 		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([
-				['hd', 'default', t('Wait...'), 'Save Headers'],
-				['tx', 'default', t('Wait...'), 'Save Taxes'],
-				['fsc', 'primary', t('Wait...'), 'Fiscalize']],
+				['hd', 'default', t('Wait...'), t('Save Headers')],
+				['tx', 'default', t('Wait...'), t('Save Taxes')],
+				['fsc', 'primary', t('Wait...'), t('Fiscalize')]],
 			function (memo, el) {
 				el[2] = t(el[2]);
 				return memo + vsprintf(tmpl, el);
