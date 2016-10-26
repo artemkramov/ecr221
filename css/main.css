@@ -63,3 +63,51 @@ a img:active {
 .progress-data {
     width: 100%;
 }
+#btn-certificate-upload, #file-certificate {
+    display: inline-block;
+}
+.cert-upload {
+    margin-bottom: 15px;
+}
+.cert-upload > label {
+    display: block;
+}
+.cert-upload .message {
+    margin-top: 10px;
+}
+.cert-upload .refresh, .cert-upload.active .upload {
+    display: none;
+}
+.cert-upload.active .refresh {
+    display: inline-block;
+}
+.spin {
+    -webkit-animation: spin 2s infinite linear;
+    -moz-animation: spin 2s infinite linear;
+    -o-animation: spin 2s infinite linear;
+    animation: spin 2s infinite linear;
+}
+@-moz-keyframes spin {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(360deg);
+    }
+}
+@-webkit-keyframes spin {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -17,6 +17,10 @@ Name=firmware-test.html
 File=permanent_data/firmware.html
 Content-Type=text/html;charset=utf-8
 
+Name=dwl-test.html
+File=permanent_data/dwl-test.html
+Content-Type=text/html;charset=utf-8
+
 Name=tmpl.html
 File=templates/tmpl.ejs;templates/tmpl.uk.ejs;templates/tmpl.gprs.ejs
 Content-Type=text/html;charset=utf-8
@@ -124,8 +128,16 @@ Name=js/sprintf.js
 File=js/sprintf.js
 Content-Type=application/javascript
 
+Name=js/forge.min.js
+File=js/forge.min.js
+Content-Type=application/javascript
+
 Name=Firmware.js
-File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js
+File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
+Content-Type=application/javascript
+
+Name=underscore.min.js
+File=permanent_data/js/underscore-min.js;
 Content-Type=application/javascript
 
 #image files

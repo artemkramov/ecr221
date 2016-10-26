@@ -380,3 +380,23 @@
         <div class="import-report"></div>
     </div>
 </script>
+
+<script type="text/template" id="cert-upload-block">
+    <div class="cert-upload">
+        <label><%= t("Certificate uploading") %></label>
+        <input type="file" name="file" id="file-certificate" accept=".p12" />
+        <button type="button" class="btn btn-primary" id="btn-certificate-upload" disabled="true">
+            <span class="glyphicon glyphicon-upload upload"></span>
+            <span class="glyphicon glyphicon-refresh spin refresh"></span>
+            <%= t("Upload") %>
+        </button>
+        <div class="message"></div>
+    </div>
+</script>
+
+<script type="text/template" id="alert-block">
+    <div class="alert alert-<%= type %> fade in">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <%= message %>
+    </div>
+</script>

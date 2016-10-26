@@ -263,7 +263,7 @@ var FiscDo = PageView.extend({
 			tblMode: true,
 			show:    true
 		});
-		this.eet    = new TableContainer({
+		this.eet    = new EETContainer({
 			model:   schema.get('EET'),
 			tblMode: false,
 			show:    true
@@ -345,6 +345,272 @@ var FiscDo = PageView.extend({
 	doFisc:     function (e) {
 		callProc({addr: '/cgi/proc/fiscalization', btn: e.target/*'#fsc'*/});
 		//console.log('Fiscalize');
+	}
+});
+
+/**
+ * Container for the EET settings
+ * Extended to add extra data (certificate uploading)
+ */
+var EETContainer = TableContainer.extend({
+	toggleData: function () {
+		this.showContent = !this.showContent;
+		if ($('.navbar', this.$el).siblings().length) {
+			this.content.$el.toggle();
+			this.showContent = false;
+		} else {
+			var $this = this;
+			$.when(schema.tableFetch(this.model.get('id'))).done(function () {
+				$this.$el.append($this.content.render().$el);
+				/**
+				 * Append the view for the certificate upload
+				 */
+				var certificateView = new CertificateBlock();
+				$this.$el.find("form").parent().append(certificateView.render().$el);
+			});
+		}
+	},
+	initView:   function (view) {
+		var requiredFields = ["ID_POKL", "ID_PROVOZ", "DIC_POPL"];
+		if (view == "form") view = new this.form({model: this.model});
+		if (view == "table") view = new this.table({model: this.model});
+		if (this.content) {
+			this.content.remove();
+			delete this.content;
+		}
+		if (this.toolbar) {
+			this.toolbar.remove();
+			delete this.toolbar;
+		}
+		this.content = view;
+		this.toolbar = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
+	},
+});
+
+/**
+ * Certificate block
+ */
+var CertificateBlock = Backbone.View.extend({
+	/**
+	 * Url for the pushing of the private key
+	 */
+	urlPrivateKey: "/cgi/putcert/priv_key",
+
+	/**
+	 * Url for the pushing of the certificate
+	 */
+	urlCertificate: "/cgi/putcert/own_cert",
+
+	/**
+	 * Password for extracting data from p12
+	 */
+	password: "kaprun",
+
+	/**
+	 * Object for the p12 decoding
+	 */
+	p12: {},
+
+	btnUpload:            "#btn-certificate-upload",
+	template:             _.template($("#cert-upload-block").html()),
+	events:               {
+		"change #file-certificate":      "onFileChange",
+		"click #btn-certificate-upload": "onUploadClick"
+	},
+	/**
+	 * Render html for the block
+	 * @returns {CertificateBlock}
+	 */
+	render:               function () {
+		this.delegateEvents();
+		this.$el.html(this.template());
+		return this;
+	},
+	/**
+	 * Event on the file change
+	 * @param e
+	 */
+	onFileChange:         function (e) {
+		var self = this;
+		var file = e.target.files[0];
+		self.disableUpload();
+		if (!file) {
+			return;
+		}
+		var reader    = new FileReader();
+		reader.onload = function (e) {
+			var contents = e.target.result;
+			/**
+			 * Try to parse the p12 file
+			 */
+			try {
+				var p12Asn1 = forge.asn1.fromDer(contents);
+				self.p12    = forge.pkcs12.pkcs12FromAsn1(p12Asn1, self.password);
+				self.enableUpload();
+			}
+			catch (exception) {
+				self.pushMessage(t("Incorrect file format"), "danger");
+			}
+		};
+		reader.readAsBinaryString(file);
+	},
+	/**
+	 * Event on the upload click
+	 * @param e
+	 */
+	onUploadClick:        function (e) {
+		/**
+		 * Get the pair - key and certificate - from the p12
+		 * @type {CertificateBlock}
+		 */
+		var self         = this;
+		var privateKey   = this.getPrivateKey();
+		var certificate  = this.getCertificate();
+		var wrapperBlock = this.$el.find('.cert-upload');
+		$(wrapperBlock).addClass("active");
+		/**
+		 * Form the promises (queue of the data send to the server)
+		 * and wait until the finish
+		 * @type {*[]}
+		 */
+		var promises     = [this.uploadFileToServer(forge.pki.privateKeyToPem(privateKey), this.urlPrivateKey),
+			this.uploadFileToServer(forge.pki.certificateToPem(certificate), this.urlCertificate)];
+		$.when.apply($, promises).then(function (responseKey, responseCert) {
+			$(wrapperBlock).removeClass("active");
+			var responses = [responseKey, responseCert];
+			if (self.isResponseSuccess(responses)) {
+				self.pushMessage(t("Certificate was imported successfully"), "success");
+			}
+			else {
+				self.pushMessage(t("Certificate wasn't imported"), "danger");
+			}
+		});
+	},
+	/**
+	 * Check if the server response was success
+	 * @param responseArray
+	 * @returns {boolean}
+	 */
+	isResponseSuccess:    function (responseArray) {
+		var isSuccess = true;
+		responseArray.forEach(function (response) {
+			var flag = false;
+			if (_.isArray(response) && response[1] == "success" && parseInt(response[0].verify)) {
+				flag = true;
+			}
+			if (!flag) {
+				isSuccess = false;
+			}
+		});
+		return isSuccess;
+	},
+	/**
+	 * Enable the file upload
+	 */
+	enableUpload:         function () {
+		this.$el.find(this.btnUpload).prop('disabled', false);
+		this.clearMessage();
+	},
+	/**
+	 * Disable the file upload
+	 */
+	disableUpload:        function () {
+		this.$el.find(this.btnUpload).prop('disabled', true);
+	},
+	/**
+	 * Extract the private key from p12
+	 * @returns {*}
+	 */
+	getPrivateKey:        function () {
+		var keyBags = this.p12.getBags({bagType: forge.pki.oids.pkcs8ShroudedKeyBag});
+		var bag     = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag][0];
+		return bag.key;
+	},
+	/**
+	 * Extract the certificate from p12
+	 * @returns {r|*|null}
+	 */
+	getCertificate:       function () {
+		var bags = this.p12.getBags({bagType: forge.pki.oids.certBag});
+		var cert = bags[forge.pki.oids.certBag][0];
+		return cert.cert;
+	},
+	/**
+	 * Ecnode the string to byte array
+	 * @param str
+	 * @returns {Uint8Array}
+	 */
+	encodeStringToBinary: function (str) {
+		var escstr = encodeURIComponent(str);
+		var binstr = escstr.replace(/%([0-9A-F]{2})/g, function (match, p1) {
+			return String.fromCharCode('0x' + p1);
+		});
+		var ua     = new Uint8Array(binstr.length);
+		Array.prototype.forEach.call(binstr, function (ch, i) {
+			ua[i] = ch.charCodeAt(0);
+		});
+		return ua;
+	},
+	/**
+	 * Upload binary data to the server
+	 * @param pemString
+	 * @param url
+	 * @returns {*}
+	 */
+	uploadFileToServer:   function (pemString, url) {
+		var binaryData = this.encodeStringToBinary(pemString);
+		return $.ajax({
+			url:         url,
+			data:        binaryData,
+			type:        'post',
+			processData: false,
+			contentType: 'application/octet-stream',
+			timeout:     3000
+		});
+	},
+	/**
+	 * Push message to user
+	 * @param message
+	 * @param type
+	 */
+	pushMessage:          function (message, type) {
+		var alert        = new Alert({
+			model: {
+				type:    type,
+				message: message
+			}
+		});
+		var messageBlock = this.getMessageBlock();
+		$(messageBlock).empty();
+		$(messageBlock).append(alert.render().$el);
+	},
+	/**
+	 * Get the block with message
+	 * @returns {*}
+	 */
+	getMessageBlock:      function () {
+		return this.$el.find(".message");
+	},
+	/**
+	 * Clear the message
+	 */
+	clearMessage:         function () {
+		this.getMessageBlock().empty();
+	}
+});
+
+/**
+ * Alert for the pushing of messages
+ * Uses bootstrap alerts
+ */
+var Alert = Backbone.View.extend({
+	template: _.template($("#alert-block").html()),
+	render:   function () {
+		this.$el.html(this.template({
+			type:    this.model.type,
+			message: this.model.message
+		}));
+		return this;
 	}
 });
 

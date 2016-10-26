@@ -236,6 +236,21 @@ var Schema = Backbone.Collection.extend({
 						$this.tr = l;
 					}
 					$this.langs = _.without($this.descr.keys(), 'id', 'def', 'regex');
+					$this.each(function (model) {
+						specialTableSchema.forEach(function (requiredFields) {
+							if (model.get("id") == requiredFields.id) {
+								var elements = model.get("elems");
+								var newFields = [];
+								elements.forEach(function (field) {
+									if (requiredFields.fields.indexOf(field.name) > -1) {
+										newFields.push(field);
+									};
+								});
+								model.set("elems", newFields);
+							}
+						});
+						//console.log(model.get("id"));
+					});
 					$this.each($this.fixupTable, $this);
 					if (callback) callback();
 				});
@@ -486,3 +501,10 @@ _.extend(CheckFormatter.prototype, {
 		}, 0) : (_.isNull(d) ? 0 : d);
 	}
 });
+
+var specialTableSchema = [{
+	id:     "EET",
+	fields: [
+		"DIC_POPL", "ID_POKL", "ID_PROVOZ"
+	]
+}];

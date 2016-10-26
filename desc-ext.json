@@ -94,7 +94,12 @@
       "Fetching data...": "Сбор данных...",
       "Not correct file format.": "Неверный формат файла.",
       "row": "строка",
-      "Finished": "Завершен"
+      "Finished": "Завершен",
+      "Upload": "Загрузить",
+      "Certificate uploading": "Загрузка сертификата",
+      "Certificate wasn't imported": "Ошибка импорта сертификата",
+      "Certificate was imported successfully": "Сертификат успешно импортированный в систему",
+      "Incorrect file format": "Некорректный формат файла"
     }
   }
 }
