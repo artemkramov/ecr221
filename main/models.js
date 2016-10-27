@@ -13,9 +13,11 @@ var ECRStatus = Backbone.Model.extend({
 	defaults:   {'online': false, 'name': 'Device', dev_fn: '-', dev_nn: '-', dev_dat: '-', dev_ver: '-', dev_id: '-'},
 	refresh:    function () {
 		var $this = this;
-		this.fetch({remove: false}).always(function (x, txt) {
-			$this.syncDate.call($this, txt == 'success')
-		});
+		if (!ImportModel.isRunning) {
+			this.fetch({remove: false}).always(function (x, txt) {
+				$this.syncDate.call($this, txt == 'success')
+			});
+		}
 	},
 	initialize: function () {
 		this.nextTime = new Date();

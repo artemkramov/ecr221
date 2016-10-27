@@ -90,7 +90,6 @@
       "Adjust white point of image": "Nastavení hranice bílé",
       "Logo": "Logo",
       "Set": "Set",
-      "Export": "Экспорт",
       "Fetching data...": "Сбор данных...",
       "Not correct file format.": "Неверный формат файла.",
       "row": "строка",
@@ -98,8 +97,9 @@
       "Upload": "Загрузить",
       "Certificate uploading": "Загрузка сертификата",
       "Certificate wasn't imported": "Ошибка импорта сертификата",
-      "Certificate was imported successfully": "Сертификат успешно импортированный в систему",
-      "Incorrect file format": "Некорректный формат файла"
+      "Certificate was imported successfully": "Сертификат успешно импортирован в систему",
+      "Incorrect file format": "Некорректный формат файла",
+      "Enter your password": "Введите пароль"
     }
   }
 }

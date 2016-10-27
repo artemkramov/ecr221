@@ -261,13 +261,9 @@ var ImportProgress = Backbone.View.extend({
 		});
 		return this;
 	},
-	stop:              function (e, isFinish) {
+	stop:              function (e) {
 		ImportModel.isRunning = false;
-		this.buildImportReport();
-		var progressBar       = this.$el.find('.progress-bar');
-		var progressBarClass  = 'progress-bar-' + (isFinish ? 'success' : 'danger');
-
-		$(progressBar).removeClass('active').addClass(progressBarClass);
+		ImportModel.isError   = true;
 	},
 	finish:            function () {
 		this.stop(true, true);
@@ -290,12 +286,6 @@ var ImportDisplay = Backbone.View.extend({
 	},
 	errTmpl:      _.template($('#impex-err').html(), 0, {variable: 'd'}),
 	addError:     function (err) {
-		if (!ImportReport.isRunning) {
-			noty({
-				text: err,
-				type: 'error'
-			});
-		}
 		this.$el.append(this.errTmpl(err));
 	},
 	fatalButtons: function () {
@@ -531,6 +521,12 @@ var ImportModel = (function () {
 		viewProgressBar: false,
 
 		/**
+		 * Check if error was during the import
+		 */
+		isError: false,
+
+
+		/**
 		 * Reset percentage
 		 */
 		resetPercentage:     function () {
@@ -553,6 +549,7 @@ var ImportModel = (function () {
 			delete this.viewProgressBar;
 			this.resetPercentage();
 			this.history = [];
+			this.isError = false;
 			self.loadFile(fileList).done(function (zipFileLoaded) {
 				self.modal           = new Modal();
 				self.counter++;
@@ -566,117 +563,89 @@ var ImportModel = (function () {
 				self.viewProgressBar.render();
 				self.modal.show();
 				self.isRunning       = true;
+				var promises         = [];
+				var fileCounter = 0;
 				/**
 				 * Loop through the files in zip
 				 */
 				_.each(zipFileLoaded.files, function (backupFile) {
-					var tableName = backupFile.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
-					/**
-					 * Init schema data
-					 */
-					var modelData = schema.get(tableName);
-					if (self.isRunning && modelData) {
-						backupFile.async("string").then(function (csvText) {
-
-							/**
-							 * Parse CSV data
-							 */
-							self.parseCSV(csvText, backupFile.name).done(function (parsedData) {
-								/**
-								 * Wait until we fetch all records from the table
-								 * @type {*[]}
-								 */
-								var promises = [
-									schema.tableFetch(tableName)
-								];
-								$.when.apply($, promises).done(function () {
-									/**
-									 * Reset the progress bar and set the current import model
-									 */
-									self.setProgressData(0);
-									self.modelPercentage.set("name", tableName);
-									var options   = {
-										schema: modelData,
-										urlAdd: schema.url + '/' + tableName
-									};
-									options.model = TableModel.extend(options);
-									var tableData = schema.table(tableName);
-									self.processData(parsedData, modelData, tableData, options);
-									///**
-									// * If the model data - table data
-									// */
-									//if (modelData && modelData.attributes.tbl) {
-									//	var idAttribute = modelData.attributes.key ? modelData.attributes.key : 'id';
-									//	/**
-									//	 * Split the data to chunks
-									//	 * @type {number}
-									//	 */
-									//	var n           = 2;
-									//	var lists       = _.groupBy(parsedData, function (element, index) {
-									//		return Math.floor(index / n);
-									//	});
-									//	lists           = _.toArray(lists);
-									//	_.each(lists, function (list, index) {
-									//		var collection = new TableCollection(false, options);
-									//		_.each(list, function (item) {
-									//			if (self.isRunning) {
-									//				/**
-									//				 * Check if the item is in the current collection
-									//				 */
-									//				collection.url = options.urlAdd;
-									//				var model      = new Backbone.Model(item);
-									//				var row        = self.findRowInCollection(model, tableData.models, idAttribute);
-									//				model.isNew    = function () {
-									//					return (typeof row == 'undefined');
-									//				};
-									//				if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
-									//					model.hasChanged        = function () {
-									//						return true;
-									//					};
-									//					model.changedAttributes = function () {
-									//						return model.attributes;
-									//					};
-									//				}
-									//				collection.push(model);
-									//			}
-									//
-									//		});
-									//		/**
-									//		 * Update progress bar with current percentage
-									//		 * @type {number}
-									//		 */
-									//		var percentage = Math.round(100 * (index + 1) / lists.length);
-									//		self.setProgressData(percentage);
-									//		collection.syncSave(function (response) {
-									//			console.dir(response);
-									//			if (!_.isEmpty(response.msg) && self.isRunning) {
-									//				events.trigger(self.errorLabel, response.msg);
-									//				modelData.result = response.msg;
-									//				modelData.error  = true;
-									//				self.history.push(modelData);
-									//			}
-									//		}).done(function () {
-									//			console.log('success');
-									//		});
-									//	});
-									//	if (!modelData.error) {
-									//		modelData.result = t("Finished");
-									//		self.history.push(modelData);
-									//	}
-									//}
-									//else {
-									//	if (modelData && modelData.attributes.key) {
-									//		options.idAttribute = modelData.attributes.key;
-									//	}
-									//}
-								});
-							});
-						});
-					}
+					promises.push(self.processTable(backupFile));
 				});
+				/**
+				 * Wait until all promises are done
+				 * then build the report of the import
+				 */
+				$.when.apply($, promises).then(function () {
+					self.viewProgressBar.buildImportReport();
+					var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
+					var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
+					$(progressBar).removeClass('active').addClass(progressBarClass);
+				})
 			});
 		},
+		/**
+		 * Process the data of the file in archive
+		 * @param backupFile
+		 * @returns {*}
+		 */
+		processTable:        function (backupFile) {
+			var tableName = backupFile.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
+			var self      = this;
+			var deferred  = $.Deferred();
+			/**
+			 * Init schema data
+			 */
+			var modelData = schema.get(tableName);
+			if (self.isRunning && modelData) {
+				backupFile.async("string").then(function (csvText) {
+
+					/**
+					 * Parse CSV data
+					 */
+					self.parseCSV(csvText, backupFile.name).done(function (parsedData) {
+						/**
+						 * Wait until we fetch all records from the table
+						 * @type {*[]}
+						 */
+						var promises = [
+							schema.tableFetch(tableName)
+						];
+						$.when.apply($, promises).done(function () {
+							/**
+							 * Reset the progress bar and set the current import model
+							 */
+							self.setProgressData(0);
+							self.modelPercentage.set("name", tableName);
+							var options   = {
+								schema: modelData,
+								urlAdd: schema.url + '/' + tableName
+							};
+							options.model = TableModel.extend(options);
+							var tableData = schema.table(tableName);
+							self.processData(parsedData, modelData, tableData, options).done(function () {
+								return deferred.resolve();
+							});
+						});
+					}).fail(function () {
+						return deferred.resolve();
+					});
+				});
+			}
+			else {
+				return deferred.resolve();
+			}
+			return deferred.promise();
+		},
+		/**
+		 * Import the data of the given model
+		 * @param parsedData
+		 * @param modelData
+		 * @param tableData
+		 * @param options
+		 * @returns {*}
+		 */
 		processData:         function (parsedData, modelData, tableData, options) {
+			var deferred = $.Deferred();
 			var self     = this;
 			/**
 			 * If the model data - table data
@@ -687,7 +656,7 @@ var ImportModel = (function () {
 				 * Split the data to chunks
 				 * @type {number}
 				 */
-				var n           = 2;
+				var n           = 30;
 				var lists       = _.groupBy(parsedData, function (element, index) {
 					return Math.floor(index / n);
 				});
@@ -734,18 +703,23 @@ var ImportModel = (function () {
 					}));
 				});
 				$.when.apply($, promises).then(function () {
-					console.dir(modelData);
 					if (!modelData.error) {
 						modelData.result = t("Finished");
 						self.history.push(modelData);
 					}
+					return deferred.resolve();
 				});
 			}
+			/**
+			 * If the model - form
+			 */
 			else {
 				if (modelData && modelData.attributes.key) {
 					options.idAttribute = modelData.attributes.key;
 				}
+				return deferred.resolve();
 			}
+			return deferred.promise();
 		},
 		/**
 		 * Load zip file and get its content
@@ -770,6 +744,10 @@ var ImportModel = (function () {
 				fileReader.readAsArrayBuffer(file);
 			}
 			else {
+				noty({
+					text: t("Not correct file format."),
+					type: 'error'
+				});
 				events.trigger(this.errorLabel, t("Not correct file format."));
 				return deferred.reject();
 			}
@@ -798,7 +776,7 @@ var ImportModel = (function () {
 				_.each(parsedData.errors, function (item) {
 					if (maxErrorLength > errorCollection.length) {
 						var message = t(item.message);
-						if (item.row) {
+						if (typeof item.row != 'undefined') {
 							message += " - " + t("row") + " " + item.row;
 						}
 						errorCollection.push(message);
@@ -812,11 +790,11 @@ var ImportModel = (function () {
 				};
 				this.history.push(modelData);
 				events.trigger(this.errorLabel, errorMessage);
+				return deferred.reject();
 			}
 			else {
 				return deferred.resolve(parsedData.data);
 			}
-
 			return deferred.promise();
 		},
 		/**
