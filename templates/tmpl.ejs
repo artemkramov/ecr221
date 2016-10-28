@@ -382,10 +382,20 @@
 </script>
 
 <script type="text/template" id="cert-upload-block">
-    <div class="cert-upload">
+    <div class="cert-upload private">
         <label><%= t("Certificate uploading") %></label>
         <input type="file" name="file" id="file-certificate" accept=".p12" />
         <button type="button" class="btn btn-primary" id="btn-certificate-upload">
+            <span class="glyphicon glyphicon-upload upload"></span>
+            <span class="glyphicon glyphicon-refresh spin refresh"></span>
+            <%= t("Upload") %>
+        </button>
+        <div class="message"></div>
+    </div>
+    <div class="cert-upload public">
+        <label><%= t("SSL certificate upload") %></label>
+        <input type="file" name="file" id="ssl-file-certificate" accept=".crt" />
+        <button type="button" class="btn btn-primary" id="btn-ssl-certificate-upload">
             <span class="glyphicon glyphicon-upload upload"></span>
             <span class="glyphicon glyphicon-refresh spin refresh"></span>
             <%= t("Upload") %>

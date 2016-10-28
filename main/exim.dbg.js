@@ -248,6 +248,7 @@ var ImportProgress = Backbone.View.extend({
 	modal:             {},
 	initialize:        function (options) {
 		this.listenTo(events, ImportModel.errorLabel, this.stop);
+		this.listenTo(events, 'clickDlg', this.stop);
 		this.listenTo(this.model, 'change', this.render);
 		this.modal = options.modal;
 	},
@@ -529,7 +530,7 @@ var ImportModel = (function () {
 		/**
 		 * Reset percentage
 		 */
-		resetPercentage:     function () {
+		resetPercentage:            function () {
 			this.modelPercentage.set('id', this.getId());
 			this.modelPercentage.set('name', t("Fetching data..."));
 			this.modelPercentage.set('percentage', 0);
@@ -538,7 +539,7 @@ var ImportModel = (function () {
 		 * Parse the input file
 		 * @param fileList
 		 */
-		parseFile:           function (fileList) {
+		parseFile:                  function (fileList) {
 			var self     = this;
 			if (!this.view) {
 				this.view = new ImportDisplay();
@@ -564,23 +565,81 @@ var ImportModel = (function () {
 				self.modal.show();
 				self.isRunning       = true;
 				var promises         = [];
-				var fileCounter = 0;
+				self.processZipRecursive(zipFileLoaded.files, 0, Object.keys(zipFileLoaded.files));
+				///**
+				// * Loop through the files in zip
+				// */
+				//_.each(zipFileLoaded.files, function (backupFile) {
+				//	promises.push(self.processTable(backupFile));
+				//});
+				///**
+				// * Wait until all promises are done
+				// * then build the report of the import
+				// */
+				//$.when.apply($, promises).then(function () {
+				//	self.viewProgressBar.buildImportReport();
+				//	var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
+				//	var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
+				//	$(progressBar).removeClass('active').addClass(progressBarClass);
+				//})
+			});
+		},
+		/**
+		 * Send the collection data to the server continuously
+		 * @param collections
+		 * @param modelData
+		 * @param index
+		 * @param deferred
+		 */
+		processCollectionRecursive: function (collections, modelData, index, deferred) {
+			var self       = this;
+			var collection = collections[index];
+			collection.syncSave(function (response) {
+				if (!_.isEmpty(response.msg) && self.isRunning) {
+					modelData.result = response.msg;
+					modelData.error  = true;
+					self.history.push(modelData);
+					events.trigger(self.errorLabel, response.msg);
+				}
+			}).done(function () {
 				/**
-				 * Loop through the files in zip
+				 * Update progress bar with current percentage
+				 * @type {number}
 				 */
-				_.each(zipFileLoaded.files, function (backupFile) {
-					promises.push(self.processTable(backupFile));
-				});
-				/**
-				 * Wait until all promises are done
-				 * then build the report of the import
-				 */
-				$.when.apply($, promises).then(function () {
+				var percentage = Math.round(100 * (index + 1) / collections.length);
+				self.setProgressData(percentage);
+				if (collections.length > index + 1) {
+					return self.processCollectionRecursive(collections, modelData, ++index, deferred);
+				}
+				else {
+					if (!modelData.error) {
+						modelData.result = t("Finished");
+						self.history.push(modelData);
+					}
+					return deferred.resolve();
+				}
+			});
+		},
+		/**
+		 * Process the all files continuously
+		 * @param files
+		 * @param fileCounter
+		 * @param fileKeys
+		 */
+		processZipRecursive:        function (files, fileCounter, fileKeys) {
+			var self = this;
+			self.processTable(files[fileKeys[fileCounter]]).then(function () {
+				fileCounter++;
+				if (self.isRunning && fileCounter < fileKeys.length) {
+					self.processZipRecursive(files, fileCounter, fileKeys);
+				}
+				else {
 					self.viewProgressBar.buildImportReport();
 					var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
 					var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
 					$(progressBar).removeClass('active').addClass(progressBarClass);
-				})
+					console.log("finish");
+				}
 			});
 		},
 		/**
@@ -588,7 +647,7 @@ var ImportModel = (function () {
 		 * @param backupFile
 		 * @returns {*}
 		 */
-		processTable:        function (backupFile) {
+		processTable:               function (backupFile) {
 			var tableName = backupFile.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
 			var self      = this;
 			var deferred  = $.Deferred();
@@ -644,7 +703,7 @@ var ImportModel = (function () {
 		 * @param options
 		 * @returns {*}
 		 */
-		processData:         function (parsedData, modelData, tableData, options) {
+		processData:                function (parsedData, modelData, tableData, options) {
 			var deferred = $.Deferred();
 			var self     = this;
 			/**
@@ -662,6 +721,7 @@ var ImportModel = (function () {
 				});
 				lists           = _.toArray(lists);
 				var promises    = [];
+				var collections = [];
 				_.each(lists, function (list, index) {
 					var collection = new TableCollection(false, options);
 					_.each(list, function (item) {
@@ -687,37 +747,68 @@ var ImportModel = (function () {
 						}
 
 					});
-					/**
-					 * Update progress bar with current percentage
-					 * @type {number}
-					 */
-					var percentage = Math.round(100 * (index + 1) / lists.length);
-					self.setProgressData(percentage);
-					promises.push(collection.syncSave(function (response) {
-						if (!_.isEmpty(response.msg) && self.isRunning) {
-							modelData.result = response.msg;
-							modelData.error  = true;
-							self.history.push(modelData);
-							events.trigger(self.errorLabel, response.msg);
-						}
-					}));
+					collections.push(collection);
+					//promises.push(collection.syncSave(function (response) {
+					//	/**
+					//	 * Update progress bar with current percentage
+					//	 * @type {number}
+					//	 */
+					//	var percentage = Math.round(100 * (index + 1) / lists.length);
+					//	self.setProgressData(percentage);
+					//	console.log(percentage);
+					//	if (!_.isEmpty(response.msg) && self.isRunning) {
+					//		modelData.result = response.msg;
+					//		modelData.error  = true;
+					//		self.history.push(modelData);
+					//		events.trigger(self.errorLabel, response.msg);
+					//	}
+					//}));
 				});
-				$.when.apply($, promises).then(function () {
-					if (!modelData.error) {
-						modelData.result = t("Finished");
-						self.history.push(modelData);
-					}
-					return deferred.resolve();
-				});
+				self.processCollectionRecursive(collections, modelData, 0, deferred);
+				//$.when.apply($, promises).then(function () {
+				//	if (!modelData.error) {
+				//		modelData.result = t("Finished");
+				//		self.history.push(modelData);
+				//	}
+				//	return deferred.resolve();
+				//});
 			}
 			/**
 			 * If the model - form
 			 */
 			else {
+				options.urlRoot = '/cgi/tbl';
 				if (modelData && modelData.attributes.key) {
 					options.idAttribute = modelData.attributes.key;
 				}
-				return deferred.resolve();
+				var model = new TableModel({id: modelData.get('id')}, options);
+				var data  = !_.isEmpty(parsedData) ? parsedData[0] : false;
+				if (_.isObject(data)) {
+					delete data['id'];
+					var promise = model.save(data, {patch: true, silent: true, wait: true, parse: false,
+						error: function (model, response) {
+							modelData.error  = true;
+							events.trigger(self.errorLabel, t("Uncaught error"));
+							return deferred.resolve();
+						}
+					});
+					$.when(promise).then(function () {
+						self.setProgressData(100);
+						var response = $.parseJSON(promise.responseText);
+						if (_.isObject(response) && response.err) {
+							var errorMessage = schema.error(response.err.e);
+							modelData.result = errorMessage;
+							modelData.error  = true;
+							self.history.push(modelData);
+							events.trigger(self.errorLabel, errorMessage);
+						}
+						else {
+							modelData.result = t("Finished");
+							self.history.push(modelData);
+						}
+						return deferred.resolve();
+					});
+				}
 			}
 			return deferred.promise();
 		},
@@ -726,7 +817,7 @@ var ImportModel = (function () {
 		 * @param fileList
 		 * @returns {*}
 		 */
-		loadFile:            function (fileList) {
+		loadFile:                   function (fileList) {
 			var deferred   = $.Deferred();
 			var file       = fileList[0];
 			var fileReader = new FileReader();
@@ -759,7 +850,7 @@ var ImportModel = (function () {
 		 * @param fileName
 		 * @returns {*}
 		 */
-		parseCSV:            function (csvText, fileName) {
+		parseCSV:                   function (csvText, fileName) {
 			var deferred   = $.Deferred();
 			var parsedData = Papa.parse(csvText, {
 				header: true
@@ -801,14 +892,14 @@ var ImportModel = (function () {
 		 * Get the ID of the popup
 		 * @returns {string}
 		 */
-		getId:               function () {
+		getId:                      function () {
 			return "import-" + this.counter.toString();
 		},
 		/**
 		 * Get the progress block
 		 * @returns {*|jQuery|HTMLElement}
 		 */
-		getProgressBlock:    function () {
+		getProgressBlock:           function () {
 			var id = ImportModel.getId();
 			return $("#" + id.toString());
 		},
@@ -816,7 +907,7 @@ var ImportModel = (function () {
 		 * Set the progress data
 		 * @param data
 		 */
-		setProgressData:     function (data) {
+		setProgressData:            function (data) {
 			this.modelPercentage.set("percentage", data);
 		},
 		/**
@@ -826,7 +917,7 @@ var ImportModel = (function () {
 		 * @param idAttribute
 		 * @returns {*|{}}
 		 */
-		findRowInCollection: function (row, models, idAttribute) {
+		findRowInCollection:        function (row, models, idAttribute) {
 			var condition          = {};
 			condition[idAttribute] = row[idAttribute];
 			return _.find(models, function (model) {
@@ -836,7 +927,7 @@ var ImportModel = (function () {
 		/**
 		 * Stop import mechanism
 		 */
-		stop:                function () {
+		stop:                       function () {
 			ImportModel.isRunning = false;
 		}
 	};

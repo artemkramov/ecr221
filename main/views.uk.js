@@ -353,7 +353,7 @@ var FiscDo = PageView.extend({
  * Extended to add extra data (certificate uploading)
  */
 var EETContainer = TableContainer.extend({
-	toggleData: function () {
+	toggleData:     function () {
 		this.showContent = !this.showContent;
 		this.listenTo(events, "buttonBlock:" + this.model.id);
 		if ($('.navbar', this.$el).siblings().length) {
@@ -391,6 +391,11 @@ var CertificateBlock = Backbone.View.extend({
 	urlCertificate: "/cgi/putcert/own_cert",
 
 	/**
+	 * Url for the pushing of the ssl certificate
+	 */
+	urlSslCertificate: "/cgi/putcert/ssl_server_cert",
+
+	/**
 	 * Object for the p12 decoding
 	 */
 	p12: {},
@@ -398,8 +403,11 @@ var CertificateBlock = Backbone.View.extend({
 	btnUpload:            "#btn-certificate-upload",
 	template:             _.template($("#cert-upload-block").html()),
 	events:               {
-		"change #file-certificate":      "onFileChange",
-		"click #btn-certificate-upload": "onUploadClick"
+		"change #file-certificate":          "onFileChange",
+		"click #file-certificate":           "onFileClick",
+		"click #ssl-file-certificate":       "onFileClick",
+		"click #btn-certificate-upload":     "onUploadClick",
+		"click #btn-ssl-certificate-upload": "onUploadSslClick",
 	},
 	/**
 	 * Render html for the block
@@ -409,6 +417,13 @@ var CertificateBlock = Backbone.View.extend({
 		this.delegateEvents();
 		this.$el.html(this.template());
 		return this;
+	},
+	/**
+	 * Clear the current input value on the click
+	 * @param e
+	 */
+	onFileClick:          function (e) {
+		e.target.value = "";
 	},
 	/**
 	 * Event on the file change
@@ -435,10 +450,40 @@ var CertificateBlock = Backbone.View.extend({
 				self.enableUpload();
 			}
 			catch (exception) {
-				self.pushMessage(t("Incorrect file format"), "danger");
+				self.pushMessage(t("Incorrect file format"), "danger", "private");
 			}
 		};
 		reader.readAsBinaryString(file);
+	},
+	onUploadSslClick:     function (e) {
+		var messageKey = "public";
+		var self = this;
+		var file = document.getElementById("ssl-file-certificate").files[0];
+
+		if (!file) {
+			self.pushMessage(t("The file is not chosen"), "danger", messageKey)
+			return;
+		}
+		var reader    = new FileReader();
+		reader.onload = function (e) {
+			var contents = e.target.result;
+			var bytes    = new Uint8Array(contents);
+			var wrapperBlock = self.$el.find('.cert-upload.public');
+			$(wrapperBlock).addClass("active");
+			self.uploadFileToServer("", self.urlSslCertificate, bytes).done(function (response) {
+				$(wrapperBlock).removeClass("active");
+				if (parseInt(response.verify)) {
+					self.pushMessage(t("Certificate was imported successfully"), "success", messageKey);
+				}
+				else {
+					self.pushMessage(t("Certificate wasn't imported"), "danger", messageKey);
+				}
+			}).fail(function () {
+				self.pushMessage(t("Uncaught error"), "danger", messageKey);
+				$(wrapperBlock).removeClass("active");
+			});
+		};
+		reader.readAsArrayBuffer(file);
 	},
 	/**
 	 * Event on the upload click
@@ -446,24 +491,24 @@ var CertificateBlock = Backbone.View.extend({
 	 */
 	onUploadClick:        function (e) {
 		if (_.isEmpty(this.p12)) {
-			this.pushMessage(t("Incorrect file format"), "danger");
+			this.pushMessage(t("Incorrect file format"), "danger", "private");
 			return;
 		}
 		/**
 		 * Get the pair - key and certificate - from the p12
 		 * @type {CertificateBlock}
 		 */
-		var self         = this;
-		var privateKey   = this.getPrivateKey();
-		var certificate  = this.getCertificate();
+		var self        = this;
+		var privateKey  = this.getPrivateKey();
+		var certificate = this.getCertificate();
 
-		window.privateKey = privateKey;
+		window.privateKey  = privateKey;
 		window.certificate = certificate;
 
-		window.privateKeyBin = this.encodeStringToBinary(forge.pki.pemToDer(forge.pki.privateKeyToPem(privateKey)).data);
+		window.privateKeyBin  = this.encodeStringToBinary(forge.pki.pemToDer(forge.pki.privateKeyToPem(privateKey)).data);
 		window.certificateBin = this.encodeStringToBinary(forge.pki.pemToDer(forge.pki.certificateToPem(certificate)).data);
 
-		var wrapperBlock = this.$el.find('.cert-upload');
+		var wrapperBlock = this.$el.find('.cert-upload.private');
 		$(wrapperBlock).addClass("active");
 		/**
 		 * Form the promises (queue of the data send to the server)
@@ -476,10 +521,10 @@ var CertificateBlock = Backbone.View.extend({
 			$(wrapperBlock).removeClass("active");
 			var responses = [responseKey, responseCert];
 			if (self.isResponseSuccess(responses)) {
-				self.pushMessage(t("Certificate was imported successfully"), "success");
+				self.pushMessage(t("Certificate was imported successfully"), "success", "private");
 			}
 			else {
-				self.pushMessage(t("Certificate wasn't imported"), "danger");
+				self.pushMessage(t("Certificate wasn't imported"), "danger", "private");
 			}
 		});
 	},
@@ -528,8 +573,8 @@ var CertificateBlock = Backbone.View.extend({
 	 * @returns {r|*|null}
 	 */
 	getCertificate:       function () {
-		var bags = this.p12.getBags({bagType: forge.pki.oids.certBag});
-		var cert = bags[forge.pki.oids.certBag][0];
+		var bags    = this.p12.getBags({bagType: forge.pki.oids.certBag});
+		var cert    = bags[forge.pki.oids.certBag][0];
 		console.dir(bags[forge.pki.oids.certBag]);
 		window.cert = cert;
 		return cert.cert;
@@ -541,7 +586,7 @@ var CertificateBlock = Backbone.View.extend({
 	 */
 	encodeStringToBinary: function (str) {
 		var bytes = new Uint8Array(str.length);
-		for (var i=0; i<str.length; i++)
+		for (var i = 0; i < str.length; i++)
 			bytes[i] = str.charCodeAt(i);
 		return bytes;
 	},
@@ -549,11 +594,13 @@ var CertificateBlock = Backbone.View.extend({
 	 * Upload binary data to the server
 	 * @param pemString
 	 * @param url
+	 * @param binaryData
 	 * @returns {*}
 	 */
-	uploadFileToServer:   function (pemString, url) {
-		var binaryData = this.encodeStringToBinary(forge.pki.pemToDer(pemString).data);
-		console.dir(binaryData);
+	uploadFileToServer:   function (pemString, url, binaryData) {
+		if (_.isUndefined(binaryData)) {
+			binaryData = this.encodeStringToBinary(forge.pki.pemToDer(pemString).data);
+		}
 		return $.ajax({
 			url:         url,
 			data:        binaryData,
@@ -568,14 +615,14 @@ var CertificateBlock = Backbone.View.extend({
 	 * @param message
 	 * @param type
 	 */
-	pushMessage:          function (message, type) {
+	pushMessage:          function (message, type, fileType) {
 		var alert        = new Alert({
 			model: {
 				type:    type,
 				message: message
 			}
 		});
-		var messageBlock = this.getMessageBlock();
+		var messageBlock = this.getMessageBlock(fileType);
 		$(messageBlock).empty();
 		$(messageBlock).append(alert.render().$el);
 	},
@@ -583,8 +630,8 @@ var CertificateBlock = Backbone.View.extend({
 	 * Get the block with message
 	 * @returns {*}
 	 */
-	getMessageBlock:      function () {
-		return this.$el.find(".message");
+	getMessageBlock:      function (fileType) {
+		return this.$el.find('.cert-upload.' + fileType).find(".message");
 	},
 	/**
 	 * Clear the message

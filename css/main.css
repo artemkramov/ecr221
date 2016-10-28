@@ -63,7 +63,7 @@ a img:active {
 .progress-data {
     width: 100%;
 }
-#btn-certificate-upload, #file-certificate {
+#btn-certificate-upload, #file-certificate, #ssl-file-certificate, #btn-ssl-certificate-upload {
     display: inline-block;
 }
 .cert-upload {

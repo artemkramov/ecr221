@@ -6,7 +6,7 @@
       "ECR time": "Čas pokladny",
       "PLU": "PLU",
       "Fiscal": "Servis",
-      "Settings": "Programování",
+      "Settings": "Nastavení",
       "Network": "Připojení na internet",
       "Time": "Čas zařízení",
       "yes": "Ano",
@@ -90,16 +90,19 @@
       "Adjust white point of image": "Nastavení hranice bílé",
       "Logo": "Logo",
       "Set": "Set",
-      "Fetching data...": "Сбор данных...",
-      "Not correct file format.": "Неверный формат файла.",
-      "row": "строка",
-      "Finished": "Завершен",
-      "Upload": "Загрузить",
-      "Certificate uploading": "Загрузка сертификата",
-      "Certificate wasn't imported": "Ошибка импорта сертификата",
-      "Certificate was imported successfully": "Сертификат успешно импортирован в систему",
-      "Incorrect file format": "Некорректный формат файла",
-      "Enter your password": "Введите пароль"
+      "Fetching data...": "Fetching data...",
+      "Not correct file format.": "Not correct file format.",
+      "row": "row",
+      "Finished": "Finished",
+      "Upload": "Upload",
+      "Certificate uploading": "Certificate uploading",
+      "Certificate wasn't imported": "Certificate wasn't imported",
+      "Certificate was imported successfully": "Certificate was imported successfully",
+      "Incorrect file format": "Incorrect file format",
+      "Enter your password": "Enter your password",
+      "Uncaught error": "Uncaught error",
+      "SSL certificate upload": "SSL certificate upload",
+      "The file is not chosen": "The file is not chosen"
     }
   }
 }
