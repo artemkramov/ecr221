@@ -508,3 +508,7 @@ var specialTableSchema = [{
 		"DIC_POPL", "ID_POKL", "ID_PROVOZ"
 	]
 }];
+
+var specialTableCollection = [
+	"PLUTableCollection"
+];

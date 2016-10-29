@@ -139,7 +139,13 @@ var TableModel = Backbone.Model.extend({
 	}
 });
 
-var TableCollection = Backbone.Collection.extend({
+var TableCollection = Backbone.PageableCollection.extend({
+	state: {
+		pageSize: 15,
+		sortKey:  "updated",
+		order:    1
+	},
+	mode:  "client",
 	initialize: function (models, options) {
 		if (options && options.url) this.url = options.url;
 	},

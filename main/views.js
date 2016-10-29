@@ -823,7 +823,16 @@ var TableDisplay = Backgrid.Grid.extend({
 					break;
 			}
 		}
-	}
+	},
+	render: function () {
+		var self = this;
+		var view = Backgrid.Grid.prototype.render.apply(this);
+		var paginator = new Backgrid.Extension.Paginator({
+			collection: self.collection
+		});
+		view.$el.append(paginator.render().el);
+		return view;
+	},
 });
 
 var PLUTableDisplay = TableDisplay.extend({
@@ -835,6 +844,15 @@ var PLUTableDisplay = TableDisplay.extend({
 			this.addToolbar = new ImpExView({model: {models: [args.model]}});
 		}
 	},
+	//render: function () {
+	//	var self = this;
+	//	var view = TableDisplay.prototype.render.apply(this);
+	//	var paginator = new Backgrid.Extension.Paginator({
+	//		collection: self.collection
+	//	});
+	//	view.$el.append(paginator.render().el);
+	//	return view;
+	//},
 	event:      function (ev) {
 		if (!_.isUndefined(ev)) {
 			var $this = this;

@@ -74,6 +74,10 @@ Name=css/bootstrap-theme.css
 File=css/bootstrap-theme.min.css
 Content-Type=text/css
 
+Name=css/backgrid-paginator.min.css
+File=css/backgrid-paginator.min.css
+Content-Type=text/css
+
 Name=css/main.css
 File=css/main.css
 Content-Type=text/css
@@ -136,8 +140,16 @@ Name=Firmware.js
 File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
 Content-Type=application/javascript
 
+Name=js/backgrid-paginator.min.js
+File=js/backgrid-paginator.min.js
+Content-Type=application/javascript
+
+Name=js/backbone-pageable.min.js
+File=js/backbone-pageable.min.js
+Content-Type=application/javascript
+
 Name=underscore.min.js
-File=permanent_data/js/underscore-min.js;
+File=js/underscore-min.js;
 Content-Type=application/javascript
 
 #image files

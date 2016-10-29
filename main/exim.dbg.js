@@ -681,6 +681,7 @@ var ImportModel = (function () {
 							};
 							options.model = TableModel.extend(options);
 							var tableData = schema.table(tableName);
+
 							self.processData(parsedData, modelData, tableData, options).done(function () {
 								return deferred.resolve();
 							});
@@ -720,7 +721,6 @@ var ImportModel = (function () {
 					return Math.floor(index / n);
 				});
 				lists           = _.toArray(lists);
-				var promises    = [];
 				var collections = [];
 				_.each(lists, function (list, index) {
 					var collection = new TableCollection(false, options);
@@ -920,6 +920,9 @@ var ImportModel = (function () {
 		findRowInCollection:        function (row, models, idAttribute) {
 			var condition          = {};
 			condition[idAttribute] = row[idAttribute];
+			console.dir(models);
+			console.log(idAttribute);
+			console.log(row.attributes[idAttribute]);
 			return _.find(models, function (model) {
 				return model.attributes[idAttribute] == row.attributes[idAttribute];
 			});

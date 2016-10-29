@@ -79,6 +79,21 @@ function decHexStr(val) {
 
 function t(m) { return schema.str(m); }
 
+var stringToFunction = function(str) {
+    var arr = str.split(".");
+
+    var fn = (window || this);
+    for (var i = 0, len = arr.length; i < len; i++) {
+        fn = fn[arr[i]];
+    }
+
+    if (typeof fn !== "function") {
+        throw new Error("function not found");
+    }
+
+    return  fn;
+};
+
 function pad(n) {
     var s = n.toString();
     if (s.length > 1) return s;
