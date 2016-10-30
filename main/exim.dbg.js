@@ -366,7 +366,7 @@ var ExportModel = function () {
 			 * @type {Array|*}
 			 */
 			var promises         = _.map(models, function (model) {
-				return schema.tableFetch(model.get('id'));
+				return schema.tableFetchIgnoreCache(model.get('id'));
 			});
 			this.modal           = new Modal();
 			if (_.isEmpty(this.modelPercentage)) {
@@ -398,7 +398,7 @@ var ExportModel = function () {
 						self.setProgressData(0);
 						self.modelPercentage.set("name", model.get('name'));
 						var data      = [];
-						var modelData = schema.table(model.get('id'));
+						var modelData = schema.tableIgnoreCache(model.get('id'));
 						if (modelData.models) {
 							var length = modelData.models.length;
 							modelData.models.forEach(function (item, index) {
@@ -600,6 +600,7 @@ var ImportModel = (function () {
 					modelData.error  = true;
 					self.history.push(modelData);
 					events.trigger(self.errorLabel, response.msg);
+					return deferred.resolve();
 				}
 			}).done(function () {
 				/**
@@ -667,7 +668,7 @@ var ImportModel = (function () {
 						 * @type {*[]}
 						 */
 						var promises = [
-							schema.tableFetch(tableName)
+							schema.tableFetchIgnoreCache(tableName)
 						];
 						$.when.apply($, promises).done(function () {
 							/**
@@ -680,7 +681,7 @@ var ImportModel = (function () {
 								urlAdd: schema.url + '/' + tableName
 							};
 							options.model = TableModel.extend(options);
-							var tableData = schema.table(tableName);
+							var tableData = schema.tableIgnoreCache(tableName);
 
 							self.processData(parsedData, modelData, tableData, options).done(function () {
 								return deferred.resolve();
@@ -721,6 +722,7 @@ var ImportModel = (function () {
 					return Math.floor(index / n);
 				});
 				lists           = _.toArray(lists);
+				options.mode = "";
 				var collections = [];
 				_.each(lists, function (list, index) {
 					var collection = new TableCollection(false, options);
@@ -920,9 +922,6 @@ var ImportModel = (function () {
 		findRowInCollection:        function (row, models, idAttribute) {
 			var condition          = {};
 			condition[idAttribute] = row[idAttribute];
-			console.dir(models);
-			console.log(idAttribute);
-			console.log(row.attributes[idAttribute]);
 			return _.find(models, function (model) {
 				return model.attributes[idAttribute] == row.attributes[idAttribute];
 			});

@@ -141,13 +141,17 @@ var TableModel = Backbone.Model.extend({
 
 var TableCollection = Backbone.PageableCollection.extend({
 	state: {
-		pageSize: 15,
+		pageSize: 20,
 		sortKey:  "updated",
 		order:    1
 	},
 	mode:  "client",
 	initialize: function (models, options) {
 		if (options && options.url) this.url = options.url;
+		if (options && !_.isUndefined(options.mode)) {
+			console.log("set mode");
+			this.mode = options.mode;
+		}
 	},
 	parse:      function (resp/*,options*/) {
 		var key = this.model.prototype.schema.get('key') || 'id';
