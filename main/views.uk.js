@@ -253,11 +253,6 @@ var FiscDo = PageView.extend({
 		'click #fsc': 'fiscalize'
 	},
 	initialize: function () {
-		this.header = new TableContainer({
-			model:   schema.get('Hdr'),
-			tblMode: true,
-			show:    true
-		});
 		this.taxes  = new TableContainer({
 			model:   schema.get('Tax'),
 			tblMode: true,
@@ -270,7 +265,6 @@ var FiscDo = PageView.extend({
 		});
 	},
 	remove:     function () {
-		this.header.remove();
 		this.taxes.remove();
 		this.eet.remove();
 		PageView.prototype.remove.call(this);
@@ -279,12 +273,10 @@ var FiscDo = PageView.extend({
 		this.initialize();
 		this.delegateEvents();
 		this.$el.html('');
-		this.$el.append(this.header.render().$el);
 		this.$el.append(this.taxes.render().$el);
 		this.$el.append(this.eet.render().$el);
 		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([
-				['hd', 'default', t('Wait...'), t('Save Headers')],
 				['tx', 'default', t('Wait...'), t('Save Taxes')],
 				['fsc', 'primary', t('Wait...'), t('Fiscalize')]],
 			function (memo, el) {

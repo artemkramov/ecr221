@@ -211,7 +211,6 @@ var appStart = function () {
 		fiscalPages  = [
 			{lnk: '#fm/fisc', name: 'Fiscalization', page: new FiscDo()},
 			{lnk: '#fm/time', name: 'Time', page: new FiscTime()},
-			{lnk: '#fm/reset', name: 'Reset', page: new FiscReset()}
 		];
 		var models   = schema.tableGroup('net');
 		networkViews = [new InterfacesTable()];

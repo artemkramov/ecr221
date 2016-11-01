@@ -824,11 +824,12 @@ var TableDisplay = Backgrid.Grid.extend({
 			}
 		}
 	},
-	render: function () {
-		var self = this;
-		var view = Backgrid.Grid.prototype.render.apply(this);
+	render:     function () {
+		var self      = this;
+		var view      = Backgrid.Grid.prototype.render.apply(this);
 		var paginator = new Backgrid.Extension.Paginator({
-			collection: self.collection
+			collection:              self.collection,
+			renderMultiplePagesOnly: true
 		});
 		view.$el.append(paginator.render().el);
 		return view;
