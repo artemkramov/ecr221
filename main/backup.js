@@ -1,0 +1,405 @@
+/**
+ * The layout view for the backup page
+ */
+var BackupScreenView = Backbone.View.extend({
+	template: _.template($("#backup-block").html()),
+	render:   function () {
+		var self       = this;
+		this.$el.empty();
+		/**
+		 * Load export and import view and append them
+		 * to the current view
+		 */
+		var exportView = new ExportView();
+		var importView = new ImportView();
+		this.$el.append(this.template());
+		this.$el.find("#export").append(exportView.render().$el);
+		this.$el.find("#import").append(importView.render().$el);
+		this.delegateEvents();
+		return this;
+	}
+});
+
+/**
+ * Parent subview for export and import blocks
+ * in which we define the common properties and functions
+ */
+var BackupSubView = Backbone.View.extend({
+
+	/**
+	 * Bind the method to the error event firing
+	 */
+	initialize:        function () {
+		this.listenTo(events, this.errorTag, this.onErrorEvent);
+	},
+	/**
+	 * Show alert error message
+	 * @param message
+	 */
+	onErrorEvent:      function (message) {
+		var alert = new Alert({
+			model: {
+				type:    "danger",
+				message: message
+			}
+		});
+		this.clearMessageBlock().append(alert.render().$el);
+	},
+	/**
+	 * Clear error block
+	 * @returns {*}
+	 */
+	clearMessageBlock: function () {
+		return this.$el.find(".error-block").empty();
+	},
+	/**
+	 * Toggle all checkboxes in the row
+	 * when clicking on the checkbox in the table header
+	 * Binding between them is done via attributes data-type and data-toggle
+	 * @param e
+	 */
+	onToggleClick:     function (e) {
+		var checkbox = $(e.target);
+		var group    = checkbox.data('toggle').toString();
+		checkbox.closest('table').find('[data-type=' + group + ']').prop('checked', checkbox.prop('checked'));
+	},
+});
+
+/**
+ * Export view implementation
+ */
+var ExportView = BackupSubView.extend({
+	/**
+	 * Template for the view
+	 */
+	template: _.template($("#backup-export-block").html()),
+
+	/**
+	 * Html with the list of the all available models to export
+	 */
+	backupList: "",
+
+	/**
+	 * Models which are not allowed to export
+	 */
+	excludeModels: [
+		'Logo', 'Time'
+	],
+
+	/**
+	 * All events related to this view
+	 */
+	events: {
+		"click .btn-export":     "onButtonExportClick",
+		"click .toggle-all":     "onToggleClick",
+		"click .btn-run-export": "onButtonRunExportClick"
+	},
+
+	/**
+	 * Error tag for the event triggering
+	 */
+	errorTag: "exportError",
+
+	/**
+	 * Render content
+	 * @returns {ExportView}
+	 */
+	render:                 function () {
+		var self = this;
+		this.delegateEvents();
+		this.$el.empty();
+		this.$el.append(this.template({
+			backupList: self.backupList
+		}));
+		return this;
+	},
+	/**
+	 * Get all available models and build the export table
+	 * @param e
+	 */
+	onButtonExportClick:    function (e) {
+		var self        = this;
+		var models      = _.filter(schema.models, function (model) {
+			return (!_.isUndefined(model.syncCol)) && (_.indexOf(self.excludeModels, model.get('id')) == -1);
+		});
+		var compiled    = _.template($("#backup-export-list").html());
+		this.backupList = compiled({
+			models: models
+		});
+		this.render();
+		$(".btn-run-export").removeAttr("disabled");
+	},
+	/**
+	 * Go through all models and make the ZIP archive report
+	 * @param e
+	 */
+	onButtonRunExportClick: function (e) {
+		var models = [];
+		$(".table-backup-list").find(".model-checkbox").each(function () {
+			if ($(this).prop('checked')) {
+				models.push(schema.get($(this).data('id')));
+			}
+		});
+		if (!_.isEmpty(models)) {
+			this.clearMessageBlock();
+			ExportModel.isReturn = true;
+			ExportModel.run(models).done(function (zip) {
+				zip.generateAsync({type: "blob"})
+					.then(function (content) {
+						ExportModel.stop();
+						ExportModel.saveAs(content, t("Backup") + ".zip");
+					});
+			});
+		}
+		else {
+			events.trigger(this.errorTag, t("Choose at least 1 item"));
+		}
+	}
+});
+
+
+/**
+ * Import view implementation
+ */
+var ImportView = BackupSubView.extend({
+	/**
+	 * Template for the view
+	 */
+	template: _.template($("#backup-import-block").html()),
+
+	/**
+	 * All selected CSV files for the import
+	 */
+	files: [],
+
+	/**
+	 * All selected certificated for the import
+	 */
+	certificates: [],
+
+	/**
+	 * Allowed extensions for the tables
+	 */
+	fileExtensions: ['csv'],
+
+	/**
+	 * Allowed extensions for the certificates
+	 */
+	certificateExtensions: ['p12', 'crt'],
+
+	/**
+	 * The list of the parsed files in the ZIP
+	 */
+	parsedFiles: [],
+
+	/**
+	 * Error message tag
+	 */
+	errorTag: "importError",
+
+	/**
+	 * Describe events
+	 */
+	events:           {
+		"change #file-import":   "onFileChange",
+		"click #file-import":    "onFileClick",
+		"click .toggle-all":     "onToggleClick",
+		"click .btn-import-run": "onImportRunClick"
+	},
+	/**
+	 * Render content
+	 * @returns {ImportView}
+	 */
+	render:           function () {
+		this.delegateEvents();
+		this.$el.empty().append(this.template());
+		return this;
+	},
+	/**
+	 * On the file change method
+	 * @param e
+	 */
+	onFileChange:     function (e) {
+		/**
+		 * Clear all properties
+		 */
+		var self          = this;
+		this.files        = [];
+		this.certificates = [];
+		this.parsedFiles  = [];
+		this.clearFileList();
+		var fileList      = e.target.files;
+		this.getImportButton().attr("disabled", true);
+		if (!fileList) {
+			return;
+		}
+		/**
+		 * Wait until the ZIP file will be loaded
+		 */
+		ImportModel.loadFile(fileList).done(function (zipFile) {
+			/**
+			 * Go through each file and parse it
+			 * @type {Array}
+			 */
+			var promises = [];
+			_.each(zipFile.files, function (file) {
+				if (!file.dir) {
+					promises.push(self.parseFile(file));
+				}
+			});
+			/**
+			 * Wait until the all files are build
+			 * Than render the listview with the parsed data
+			 */
+			$.when.apply($, promises).then(function () {
+				var listView = new ImportViewList({
+					model: {
+						parsedFiles: self.parsedFiles
+					}
+				});
+				self.clearFileList().append(listView.render().$el);
+				self.getImportButton().removeAttr("disabled");
+			});
+		});
+	},
+	/**
+	 * Clear the file value on the click
+	 * @param e
+	 */
+	onFileClick:      function (e) {
+		e.target.value = "";
+	},
+	onImportError:    function (message) {
+	},
+	/**
+	 * Get the import button DOM-element
+	 * @returns {*}
+	 */
+	getImportButton:  function () {
+		return this.$el.find(".btn-import-run");
+	},
+	/**
+	 * Clear parsed file list
+	 * @returns {*}
+	 */
+	clearFileList:    function () {
+		return this.$el.find("#parsed-files-list").empty();
+	},
+	/**
+	 * Parse the given file
+	 * In the end of the method the object must be added to the parsed files array
+	 * @param file
+	 * @returns {*}
+	 */
+	parseFile:        function (file) {
+		var tableName = file.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
+		var extension = file.name.split('.').pop();
+		var self      = this;
+		var deferred  = $.Deferred();
+		/**
+		 * If the file is the database file
+		 */
+		if (_.indexOf(this.fileExtensions, extension) > -1) {
+			/**
+			 * If the name of the file doesn't match any table
+			 * than push error
+			 */
+			if (_.isUndefined(schema.get(tableName))) {
+				self.parsedFiles.push({
+					file:  file,
+					error: t("Table was not found")
+				});
+				return deferred.resolve();
+			}
+			else {
+				file.async("string").then(function (csvText) {
+					/**
+					 * Try to parse the CSV file
+					 * if the parsing isn't successfully done
+					 * than push errors
+					 */
+					var parsedData      = Papa.parse(csvText, {
+						header: true
+					});
+					var errorMessage    = false;
+					var maxErrorLength  = 5;
+					var errorCollection = [];
+					if (!_.isEmpty(parsedData.errors)) {
+						_.each(parsedData.errors, function (item) {
+							if (maxErrorLength > errorCollection.length) {
+								var message = t(item.message);
+								if (typeof item.row != 'undefined') {
+									message += " - " + t("row") + " " + item.row;
+								}
+								errorCollection.push(message);
+							}
+						});
+						errorMessage = errorCollection.join("<br />");
+					}
+					self.parsedFiles.push({
+						file:  file,
+						error: errorMessage
+					});
+					return deferred.resolve();
+				});
+			}
+		}
+		else {
+			/**
+			 * Check if the file extensions is supported by the import mechanism
+			 * @type {boolean}
+			 */
+			var error = false;
+			if (_.indexOf(_.union(this.certificateExtensions, this.fileExtensions), extension) == -1) {
+				error = t("Not correct file format.");
+			}
+			self.parsedFiles.push({
+				file:  file,
+				error: error
+			});
+			return deferred.resolve();
+		}
+
+		return deferred.promise();
+	},
+	onImportRunClick: function () {
+		var self = this;
+		this.$el.find(".model-checkbox").each(function () {
+			if ($(this).prop("checked")) {
+				var fileName  = $(this).data('id');
+				var extension = fileName.split('.').pop();
+				if (_.indexOf(self.fileExtensions, extension)) {
+					self.files.push(fileName);
+				}
+				if (_.indexOf(self.certificateExtensions, extension)) {
+					self.certificates.push(fileName);
+				}
+			}
+		});
+		if (_.isEmpty(_.union(self.files, self.certificates))) {
+			events.trigger(self.errorTag, t("Choose at least 1 item"));
+		}
+		else {
+
+		}
+	}
+
+});
+
+/**
+ * The view for the parsed files from ZIP archive
+ */
+var ImportViewList = Backbone.View.extend({
+	tagName:  'div',
+	template: _.template($("#backup-import-list").html()),
+	render:   function () {
+		var self = this;
+		this.delegateEvents();
+		this.$el.empty();
+		this.$el.append(this.template({
+			files: self.model.parsedFiles
+		}));
+		return this;
+	}
+});
+

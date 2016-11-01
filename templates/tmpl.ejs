@@ -384,7 +384,7 @@
 <script type="text/template" id="cert-upload-block">
     <div class="cert-upload private">
         <label><%= t("Certificate uploading") %></label>
-        <input type="file" name="file" id="file-certificate" accept=".p12" />
+        <input type="file" name="file" id="file-certificate" accept=".p12"/>
         <button type="button" class="btn btn-primary" id="btn-certificate-upload">
             <span class="glyphicon glyphicon-upload upload"></span>
             <span class="glyphicon glyphicon-refresh spin refresh"></span>
@@ -394,7 +394,7 @@
     </div>
     <div class="cert-upload public">
         <label><%= t("SSL certificate upload") %></label>
-        <input type="file" name="file" id="ssl-file-certificate" accept=".crt" />
+        <input type="file" name="file" id="ssl-file-certificate" accept=".crt"/>
         <button type="button" class="btn btn-primary" id="btn-ssl-certificate-upload">
             <span class="glyphicon glyphicon-upload upload"></span>
             <span class="glyphicon glyphicon-refresh spin refresh"></span>
@@ -409,4 +409,134 @@
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
         <%= message %>
     </div>
+</script>
+
+<script type="text/template" id="backup-block">
+    <div class="container">
+        <div class="row">
+
+            <!-- EXPORT BLOCK -->
+            <div class="col-sm-12">
+                <div id="export"></div>
+            </div>
+            <!-- END EXPORT BLOCK -->
+
+            <!-- IMPORT BLOCK -->
+            <div class="col-sm-12">
+                <div id="import"></div>
+            </div>
+            <!-- END IMPORT BLOCK -->
+
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="backup-export-block">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <%= t("Export") %>
+        </div>
+        <div class="panel-body">
+            <button type="button" class="btn btn-primary btn-export">
+                <%= t("Choose table") %>
+            </button>
+            <button type="button" class="btn btn-danger btn-run-export" disabled="true">
+                <%= t("Run") %>
+            </button>
+            <div class="error-block"></div>
+            <%= backupList %>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="backup-export-list">
+    <table class="table table-striped table-backup-list">
+        <thead>
+        <tr>
+            <th>
+                <input type="checkbox" data-toggle="backup-checkbox" class="toggle-all" checked="true"/>
+            </th>
+            <th>
+                <%= t("Table") %>
+            </th>
+            <th>
+                <%= t("Description") %>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <% _.each(models, function (model) { %>
+        <tr>
+            <td>
+                <input type="checkbox" class="model-checkbox" data-type="backup-checkbox"
+                       data-id="<%= model.get('id') %>" checked="true"/>
+            </td>
+            <td>
+                <%= model.get('id') %>
+            </td>
+            <td>
+                <%= model.get('name') %>
+            </td>
+        </tr>
+        <% }) %>
+        </tbody>
+    </table>
+
+</script>
+
+<script type="text/template" id="backup-import-block">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <%= t("Import") %>
+        </div>
+        <div class="panel-body">
+            <label><%= t("Choose an archive to import") %></label>
+            <input type="file" accept=".zip" id="file-import">
+            <button type="button" class="btn btn-danger btn-import-run" disabled="true">
+                <%= t("Import") %>
+            </button>
+
+            <div class="error-block"></div>
+            <div id="parsed-files-list"></div>
+
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="backup-import-list">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>
+                <input type="checkbox" data-toggle="backup-import-checkbox" class="toggle-all" checked="true"/>
+            </th>
+            <th>
+                <%= t("Name") %>
+            </th>
+            <th>
+                <%= t("Error") %>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <% _.each(files, function (fileData) { %>
+        <tr>
+            <td>
+                <% if (!fileData.error) { %>
+                <input type="checkbox" class="model-checkbox" data-type="backup-import-checkbox"
+                       data-id="<%= fileData.file.name %>" checked="true"/>
+                <% } %>
+            </td>
+            <td>
+                <%= fileData.file.name %>
+            </td>
+            <td>
+                <% if (fileData.error) { %>
+                <%= fileData.error %>
+                <% } %>
+            </td>
+        </tr>
+        <% }) %>
+        </tbody>
+    </table>
 </script>

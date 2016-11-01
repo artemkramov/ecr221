@@ -111,3 +111,9 @@ a img:active {
         transform: rotate(360deg);
     }
 }
+.error-block {
+    margin-top: 15px;
+}
+#file-import {
+    margin-bottom: 15px;
+}

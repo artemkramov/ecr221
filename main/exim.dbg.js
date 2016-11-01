@@ -344,6 +344,11 @@ var ExportModel = function () {
 		viewProgressBar: false,
 
 		/**
+		 * Return
+		 */
+		isReturn: false,
+
+		/**
 		 * Reset percentage
 		 */
 		resetPercentage: function () {
@@ -421,12 +426,17 @@ var ExportModel = function () {
 					}
 				});
 				if (self.isRunning) {
-					zip.generateAsync({type: "blob"})
-						.then(function (content) {
-							// see FileSaver.js
-							self.stop();
-							self.saveAs(content, t("Export") + ".zip");
-						});
+					if (self.isReturn) {
+						deferred.resolve(zip);
+					}
+					else {
+						zip.generateAsync({type: "blob"})
+							.then(function (content) {
+								// see FileSaver.js
+								self.stop();
+								self.saveAs(content, t("Export") + ".zip");
+							});
+					}
 				}
 				deferred.resolve();
 			}).fail(function () {

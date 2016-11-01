@@ -152,6 +152,10 @@ Name=underscore.min.js
 File=js/underscore-min.js;
 Content-Type=application/javascript
 
+Name=js/backup.js
+File=main/backup.js;
+Content-Type=application/javascript
+
 #image files
 
 Name=img/table-h.png
