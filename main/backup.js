@@ -198,9 +198,14 @@ var ImportView = BackupSubView.extend({
 	errorTag: "importError",
 
 	/**
+	 * Import model for the importing process
+	 */
+	importModel: false,
+
+	/**
 	 * Describe events
 	 */
-	events:           {
+	events:               {
 		"change #file-import":   "onFileChange",
 		"click #file-import":    "onFileClick",
 		"click .toggle-all":     "onToggleClick",
@@ -210,7 +215,7 @@ var ImportView = BackupSubView.extend({
 	 * Render content
 	 * @returns {ImportView}
 	 */
-	render:           function () {
+	render:               function () {
 		this.delegateEvents();
 		this.$el.empty().append(this.template());
 		return this;
@@ -219,7 +224,7 @@ var ImportView = BackupSubView.extend({
 	 * On the file change method
 	 * @param e
 	 */
-	onFileChange:     function (e) {
+	onFileChange:         function (e) {
 		/**
 		 * Clear all properties
 		 */
@@ -266,23 +271,26 @@ var ImportView = BackupSubView.extend({
 	 * Clear the file value on the click
 	 * @param e
 	 */
-	onFileClick:      function (e) {
+	onFileClick:          function (e) {
 		e.target.value = "";
+		this.clearFileList();
+		this.getImportButton().attr("disabled", true);
+		this.clearMessageBlock();
 	},
-	onImportError:    function (message) {
+	onImportError:        function (message) {
 	},
 	/**
 	 * Get the import button DOM-element
 	 * @returns {*}
 	 */
-	getImportButton:  function () {
+	getImportButton:      function () {
 		return this.$el.find(".btn-import-run");
 	},
 	/**
 	 * Clear parsed file list
 	 * @returns {*}
 	 */
-	clearFileList:    function () {
+	clearFileList:        function () {
 		return this.$el.find("#parsed-files-list").empty();
 	},
 	/**
@@ -291,7 +299,7 @@ var ImportView = BackupSubView.extend({
 	 * @param file
 	 * @returns {*}
 	 */
-	parseFile:        function (file) {
+	parseFile:            function (file) {
 		var tableName = file.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
 		var extension = file.name.split('.').pop();
 		var self      = this;
@@ -362,16 +370,21 @@ var ImportView = BackupSubView.extend({
 
 		return deferred.promise();
 	},
-	onImportRunClick: function () {
-		var self = this;
+	/**
+	 * Implementation of the import process
+	 */
+	onImportRunClick:     function () {
+		var self          = this;
+		this.files        = [];
+		this.certificates = [];
 		this.$el.find(".model-checkbox").each(function () {
 			if ($(this).prop("checked")) {
 				var fileName  = $(this).data('id');
-				var extension = fileName.split('.').pop();
-				if (_.indexOf(self.fileExtensions, extension)) {
+				var extension = self.getFileExtension(fileName);
+				if (_.indexOf(self.fileExtensions, extension) > -1) {
 					self.files.push(fileName);
 				}
-				if (_.indexOf(self.certificateExtensions, extension)) {
+				if (_.indexOf(self.certificateExtensions, extension) > -1) {
 					self.certificates.push(fileName);
 				}
 			}
@@ -380,9 +393,158 @@ var ImportView = BackupSubView.extend({
 			events.trigger(self.errorTag, t("Choose at least 1 item"));
 		}
 		else {
-
+			ImportModel.initModel();
+			this.importCertificates().done(function () {
+				var files = [];
+				_.each(self.parsedFiles, function (fileData) {
+					if (_.indexOf(self.files, fileData.file.name) > -1) {
+						files.push(fileData.file);
+					}
+				});
+				ImportModel.start(files);
+			});
 		}
-	}
+	},
+	/**
+	 * Import the certificates if they are available in the ZIP
+	 * @returns {*}
+	 */
+	importCertificates:   function () {
+		var self            = this;
+		var deferred        = $.Deferred();
+		var certificatesP12 = _.filter(self.certificates, function (fileName) {
+			var extension = self.getFileExtension(fileName);
+			return (extension == 'p12');
+		});
+		var certificatesCRT = _.filter(self.certificates, function (fileName) {
+			var extension = self.getFileExtension(fileName);
+			return (extension == 'crt');
+		});
+		this.importCertificateP12(certificatesP12).done(function () {
+			self.importCertificateCRT(certificatesCRT).done(function () {
+				return deferred.resolve();
+			});
+		});
+		return deferred.promise();
+	},
+	/**
+	 * Import SSL certificate
+	 * @param certificatesCRT
+	 * @returns {*}
+	 */
+	importCertificateCRT: function (certificatesCRT) {
+		var self             = this;
+		var deferred         = $.Deferred();
+		var certificatesView = new CertificateBlock();
+		/**
+		 * If the certificate is available than import it
+		 * Else skip it and go to the next stage of the import
+		 */
+		if (!_.isEmpty(certificatesCRT)) {
+			var fileDataCRT = _.filter(self.parsedFiles, function (fileData) {
+				return (fileData.file.name == certificatesCRT[0]);
+			})[0];
+			/**
+			 * Read the file content and upload it to the server
+			 */
+			fileDataCRT.file.async("arraybuffer").then(function (contents) {
+				var bytes     = new Uint8Array(contents);
+				var modelData = {
+					id:     fileDataCRT.file.name,
+					error:  false,
+					result: t("Finished")
+				};
+				certificatesView.uploadFileToServer("", certificatesView.urlSslCertificate, bytes).done(function (response) {
+					if (parseInt(response.verify)) {
+						ImportModel.history.push(modelData);
+						return deferred.resolve();
+					}
+					else {
+						events.trigger(self.errorTag, t("Certificate wasn't imported"));
+						return deferred.fail();
+					}
+				}).fail(function () {
+					events.trigger(self.errorTag, t("Uncaught error"));
+					return deferred.fail();
+				});
+			});
+		}
+		else {
+			return deferred.resolve();
+		}
+		return deferred.promise();
+	},
+	/**
+	 * Import the p12 certificate from the ZIP
+	 * @param certificatesP12
+	 * @returns {*}
+	 */
+	importCertificateP12: function (certificatesP12) {
+		var self     = this;
+		var deferred = $.Deferred();
+		/**
+		 * If the certificate is available inside the zip than import it
+		 * Else just resolve the method to continue the import process
+		 */
+		if (!_.isEmpty(certificatesP12)) {
+			var fileDataP12 = _.filter(self.parsedFiles, function (fileData) {
+				return (fileData.file.name == certificatesP12[0]);
+			})[0];
+			fileDataP12.file.async("binarystring").then(function (contents) {
+				var modelData = {
+					id:     fileDataP12.file.name,
+					error:  false,
+					result: t("Finished")
+				};
+				/**
+				 * Try to parse the p12 file
+				 */
+				try {
+					var p12Asn1          = forge.asn1.fromDer(contents);
+					var password         = prompt(t("Enter your password", ""));
+					var p12              = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
+					var certificatesView = new CertificateBlock();
+					certificatesView.p12 = p12;
+					/**
+					 * Wait until the private key and certificate are uploading
+					 * @type {*|*[]}
+					 */
+					var promises         = certificatesView.getPromisesForUpload();
+					$.when.apply($, promises).then(function (responseKey, responseCert) {
+						var responses = [responseKey, responseCert];
+						if (certificatesView.isResponseSuccess(responses)) {
+							self.pushDataToHistory(modelData);
+							return deferred.resolve();
+						}
+						else {
+							var message = t("Certificate wasn't imported");
+							events.trigger(self.errorTag, message);
+							return deferred.fail();
+						}
+					});
+				}
+				catch (exception) {
+					events.trigger(self.errorTag, t("Incorrect password"));
+					return deferred.fail();
+				}
+			});
+		}
+		else {
+			return deferred.resolve();
+		}
+		return deferred.promise();
+	},
+	/**
+	 * Get the file extension
+	 * @param fileName
+	 * @returns {T}
+	 */
+	getFileExtension:     function (fileName) {
+		return fileName.split('.').pop();
+	},
+	pushDataToHistory:    function (modelData) {
+		ImportModel.history.push(modelData);
+	},
 
 });
 

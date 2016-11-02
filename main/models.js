@@ -140,16 +140,15 @@ var TableModel = Backbone.Model.extend({
 });
 
 var TableCollection = Backbone.PageableCollection.extend({
-	state: {
+	state:      {
 		pageSize: 20,
 		sortKey:  "updated",
 		order:    1
 	},
-	mode:  "client",
+	mode:       "client",
 	initialize: function (models, options) {
 		if (options && options.url) this.url = options.url;
 		if (options && !_.isUndefined(options.mode)) {
-			console.log("set mode");
 			this.mode = options.mode;
 		}
 	},
@@ -222,12 +221,14 @@ var TableCollection = Backbone.PageableCollection.extend({
 							e && e.set({}, {silent: true});
 						}, this);
 					}
+					else {
+						err = true;
+					}
 					this.on('err', function (model, msg, field) {
 						if (errorRep) {
 							errorRep({msg: msg, fld: field, row: model.id})
 						}
 						err_id = model.id;
-						err    = true;
 					}, this);
 					this.set(resp, {remove: false, parse: true, silent: true});
 					this.off('err', null, this);
@@ -240,7 +241,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 								return false;
 							});
 						}
-						sp.reject();
+						sp.reject(resp);
 					} else sp.resolve();
 				},
 				error:   function (xhr/*,status,error*/) {
@@ -267,6 +268,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 							}
 						}, this);
 					} else {
+						erra = true;
 						this.on('err', function (model, msg, field) {
 							if (errorRep) {
 								errorRep({msg: msg, fld: field, row: model.id})
@@ -278,7 +280,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 						this.off('err', null, this);
 					}
 					if (erra) {
-						if (toAdd.length > 1 && err_id) {
+						if (toAdd.length > 1 && err_ida) {
 							_.find(toAdd, function (el) {
 								if (el[key] == err_ida) return true;
 								var e = this.get(el[key]);
@@ -289,8 +291,11 @@ var TableCollection = Backbone.PageableCollection.extend({
 								return false;
 							});
 						}
-						ap.reject();
-					} else ap.resolve();
+						ap.reject(resp);
+
+					} else {
+						ap.resolve();
+					}
 				},
 				error:   function (xhr/*,status,error*/) {
 					if (errorRep) errorRep({msg: xhrError(xhr)});

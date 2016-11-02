@@ -115,7 +115,8 @@
       "Run": "Run",
       "Choose at least 1 item": "Choose at least 1 item",
       "Choose an archive to import": "Choose an archive to import",
-      "Table was not found": "Table was not found"
+      "Table was not found": "Table was not found",
+      "Incorrect password": "Incorrect password"
     }
   }
 }

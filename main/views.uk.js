@@ -253,12 +253,12 @@ var FiscDo = PageView.extend({
 		'click #fsc': 'fiscalize'
 	},
 	initialize: function () {
-		this.taxes  = new TableContainer({
+		this.taxes = new TableContainer({
 			model:   schema.get('Tax'),
 			tblMode: true,
 			show:    true
 		});
-		this.eet    = new EETContainer({
+		this.eet   = new EETContainer({
 			model:   schema.get('EET'),
 			tblMode: false,
 			show:    true
@@ -449,8 +449,8 @@ var CertificateBlock = Backbone.View.extend({
 	},
 	onUploadSslClick:     function (e) {
 		var messageKey = "public";
-		var self = this;
-		var file = document.getElementById("ssl-file-certificate").files[0];
+		var self       = this;
+		var file       = document.getElementById("ssl-file-certificate").files[0];
 
 		if (!file) {
 			self.pushMessage(t("The file is not chosen"), "danger", messageKey)
@@ -458,8 +458,8 @@ var CertificateBlock = Backbone.View.extend({
 		}
 		var reader    = new FileReader();
 		reader.onload = function (e) {
-			var contents = e.target.result;
-			var bytes    = new Uint8Array(contents);
+			var contents     = e.target.result;
+			var bytes        = new Uint8Array(contents);
 			var wrapperBlock = self.$el.find('.cert-upload.public');
 			$(wrapperBlock).addClass("active");
 			self.uploadFileToServer("", self.urlSslCertificate, bytes).done(function (response) {
@@ -486,19 +486,7 @@ var CertificateBlock = Backbone.View.extend({
 			this.pushMessage(t("Incorrect file format"), "danger", "private");
 			return;
 		}
-		/**
-		 * Get the pair - key and certificate - from the p12
-		 * @type {CertificateBlock}
-		 */
-		var self        = this;
-		var privateKey  = this.getPrivateKey();
-		var certificate = this.getCertificate();
-
-		window.privateKey  = privateKey;
-		window.certificate = certificate;
-
-		window.privateKeyBin  = this.encodeStringToBinary(forge.pki.pemToDer(forge.pki.privateKeyToPem(privateKey)).data);
-		window.certificateBin = this.encodeStringToBinary(forge.pki.pemToDer(forge.pki.certificateToPem(certificate)).data);
+		var self = this;
 
 		var wrapperBlock = this.$el.find('.cert-upload.private');
 		$(wrapperBlock).addClass("active");
@@ -507,8 +495,7 @@ var CertificateBlock = Backbone.View.extend({
 		 * and wait until the finish
 		 * @type {*[]}
 		 */
-		var promises     = [this.uploadFileToServer(forge.pki.privateKeyToPem(privateKey), this.urlPrivateKey),
-			this.uploadFileToServer(forge.pki.certificateToPem(certificate), this.urlCertificate)];
+		var promises     = this.getPromisesForUpload();
 		$.when.apply($, promises).then(function (responseKey, responseCert) {
 			$(wrapperBlock).removeClass("active");
 			var responses = [responseKey, responseCert];
@@ -519,6 +506,16 @@ var CertificateBlock = Backbone.View.extend({
 				self.pushMessage(t("Certificate wasn't imported"), "danger", "private");
 			}
 		});
+	},
+	/**
+	 * Form promises for the private key and certificate upload
+	 * @returns {*[]}
+	 */
+	getPromisesForUpload: function () {
+		var privateKey  = this.getPrivateKey();
+		var certificate = this.getCertificate();
+		return [this.uploadFileToServer(forge.pki.privateKeyToPem(privateKey), this.urlPrivateKey),
+			this.uploadFileToServer(forge.pki.certificateToPem(certificate), this.urlCertificate)];
 	},
 	/**
 	 * Check if the server response was success

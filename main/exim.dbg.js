@@ -546,11 +546,9 @@ var ImportModel = (function () {
 			this.modelPercentage.set('percentage', 0);
 		},
 		/**
-		 * Parse the input file
-		 * @param fileList
+		 * Initialize basic parameters
 		 */
-		parseFile:                  function (fileList) {
-			var self     = this;
+		initModel:                  function () {
 			if (!this.view) {
 				this.view = new ImportDisplay();
 			}
@@ -561,21 +559,36 @@ var ImportModel = (function () {
 			this.resetPercentage();
 			this.history = [];
 			this.isError = false;
+		},
+		/**
+		 * Start the import
+		 * @param files
+		 */
+		start:                      function (files) {
+			var self             = this;
+			self.modal           = new Modal();
+			self.counter++;
+			self.modal.set({
+				header: t("Import")
+			});
+			self.viewProgressBar = new ImportProgress({
+				model: self.modelPercentage,
+				modal: self.modal
+			});
+			self.viewProgressBar.render();
+			self.modal.show();
+			self.isRunning       = true;
+			self.processZipRecursive(files, 0, Object.keys(files));
+		},
+		/**
+		 * Parse the input file
+		 * @param fileList
+		 */
+		parseFile:                  function (fileList) {
+			var self = this;
+			this.initModel();
 			self.loadFile(fileList).done(function (zipFileLoaded) {
-				self.modal           = new Modal();
-				self.counter++;
-				self.modal.set({
-					header: t("Import")
-				});
-				self.viewProgressBar = new ImportProgress({
-					model: self.modelPercentage,
-					modal: self.modal
-				});
-				self.viewProgressBar.render();
-				self.modal.show();
-				self.isRunning       = true;
-				var promises         = [];
-				self.processZipRecursive(zipFileLoaded.files, 0, Object.keys(zipFileLoaded.files));
+				self.start(zipFileLoaded.files);
 				///**
 				// * Loop through the files in zip
 				// */
@@ -604,32 +617,37 @@ var ImportModel = (function () {
 		processCollectionRecursive: function (collections, modelData, index, deferred) {
 			var self       = this;
 			var collection = collections[index];
-			collection.syncSave(function (response) {
-				if (!_.isEmpty(response.msg) && self.isRunning) {
-					modelData.result = response.msg;
-					modelData.error  = true;
-					self.history.push(modelData);
-					events.trigger(self.errorLabel, response.msg);
-					return deferred.resolve();
-				}
-			}).done(function () {
-				/**
-				 * Update progress bar with current percentage
-				 * @type {number}
-				 */
-				var percentage = Math.round(100 * (index + 1) / collections.length);
-				self.setProgressData(percentage);
-				if (collections.length > index + 1) {
-					return self.processCollectionRecursive(collections, modelData, ++index, deferred);
-				}
-				else {
-					if (!modelData.error) {
-						modelData.result = t("Finished");
-						self.history.push(modelData);
+			var result = collection.syncSave();
+			if (_.isObject(result)) {
+				result.done(function () {
+					/**
+					 * Update progress bar with current percentage
+					 * @type {number}
+					 */
+					var percentage = Math.round(100 * (index + 1) / collections.length);
+					self.setProgressData(percentage);
+					if (collections.length > index + 1) {
+						return self.processCollectionRecursive(collections, modelData, ++index, deferred);
 					}
-					return deferred.resolve();
-				}
-			});
+					else {
+						if (!modelData.error) {
+							modelData.result = t("Finished");
+							self.history.push(modelData);
+						}
+						return deferred.resolve();
+					}
+				}).fail(function (response) {
+					console.dir(response);
+					if (!_.isEmpty(response.err) && self.isRunning) {
+						var message = schema.error(response.err.e) + ' - ' + response.err.f + '; id: ' + response.id;
+						modelData.result = message;
+						modelData.error  = true;
+						self.history.push(modelData);
+						events.trigger(self.errorLabel, message);
+						return deferred.resolve();
+					}
+				});
+			}
 		},
 		/**
 		 * Process the all files continuously
@@ -718,6 +736,7 @@ var ImportModel = (function () {
 		processData:                function (parsedData, modelData, tableData, options) {
 			var deferred = $.Deferred();
 			var self     = this;
+			modelData.error = false;
 			/**
 			 * If the model data - table data
 			 */
@@ -732,7 +751,7 @@ var ImportModel = (function () {
 					return Math.floor(index / n);
 				});
 				lists           = _.toArray(lists);
-				options.mode = "";
+				options.mode    = "";
 				var collections = [];
 				_.each(lists, function (list, index) {
 					var collection = new TableCollection(false, options);
@@ -797,9 +816,10 @@ var ImportModel = (function () {
 				var data  = !_.isEmpty(parsedData) ? parsedData[0] : false;
 				if (_.isObject(data)) {
 					delete data['id'];
-					var promise = model.save(data, {patch: true, silent: true, wait: true, parse: false,
+					var promise = model.save(data, {
+						patch: true, silent: true, wait: true, parse: false,
 						error: function (model, response) {
-							modelData.error  = true;
+							modelData.error = true;
 							events.trigger(self.errorLabel, t("Uncaught error"));
 							return deferred.resolve();
 						}
