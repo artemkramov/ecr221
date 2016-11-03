@@ -140,19 +140,19 @@ var TableModel = Backbone.Model.extend({
 });
 
 var TableCollection = Backbone.PageableCollection.extend({
-	state:      {
+	state:               {
 		pageSize: 20,
 		sortKey:  "updated",
 		order:    1
 	},
-	mode:       "client",
-	initialize: function (models, options) {
+	mode:                "client",
+	initialize:          function (models, options) {
 		if (options && options.url) this.url = options.url;
 		if (options && !_.isUndefined(options.mode)) {
 			this.mode = options.mode;
 		}
 	},
-	parse:      function (resp/*,options*/) {
+	parse:               function (resp/*,options*/) {
 		var key = this.model.prototype.schema.get('key') || 'id';
 		if (_.isArray(resp)) {
 			var toRemove = [];
@@ -181,7 +181,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 		}
 		return resp;
 	},
-	syncSave:   function (errorRep) {
+	syncSave:            function (errorRep) {
 		var toSync   = [];
 		var toAdd    = [];
 		var cols     = _.map(this.model.prototype.schema.get('elems'), function (el) {
@@ -222,7 +222,9 @@ var TableCollection = Backbone.PageableCollection.extend({
 						}, this);
 					}
 					else {
-						err = true;
+						if ("err" in resp) {
+							err = true;
+						}
 					}
 					this.on('err', function (model, msg, field) {
 						if (errorRep) {
@@ -268,7 +270,9 @@ var TableCollection = Backbone.PageableCollection.extend({
 							}
 						}, this);
 					} else {
-						erra = true;
+						if ("err" in resp) {
+							erra = true;
+						}
 						this.on('err', function (model, msg, field) {
 							if (errorRep) {
 								errorRep({msg: msg, fld: field, row: model.id})
@@ -306,13 +310,167 @@ var TableCollection = Backbone.PageableCollection.extend({
 		}
 		return (promises.length == 0) ? false : $.when.apply($, promises);
 	},
-	deleteRows: function (models) {
+	deleteRows:          function (models) {
 		_.each(models, function (m) {
 			m.destroy({wait: true});
 		});
 	},
-	newRow:     function () {
+	newRow:              function () {
 		this.unshift({}).newModel = true;
+	},
+	syncSaveSynchronize: function (errorRep) {
+		var toSync   = [];
+		var toAdd    = [];
+		var cols     = _.map(this.model.prototype.schema.get('elems'), function (el) {
+			return (("editable" in el) && !el.editable) ? 0 : el.name;
+		});
+		cols         = _.compact(cols);
+		this.each(function (model) {
+			if (model.hasChanged() || model.isNew()) {
+				if (model.isNew()) {
+					var k = model.keys();
+					var c = _.intersection(k, cols);
+					if (c.length == cols.length) {
+						toAdd.push(model.attributes);
+						//model.newModel = false;
+					}
+				} else {
+					var e                = {};
+					e[model.idAttribute] = model.id;
+					e                    = _.extend(e, model.changedAttributes());
+					toSync.push(e);
+				}
+			}
+		}, this);
+		var self     = this;
+		var deferred = $.Deferred();
+		var key      = this.model.prototype.schema.get('key') || 'id';
+		this.syncEditModels(toSync, errorRep, key).done(function () {
+			self.syncCreateModels(toAdd, errorRep, key).done(function () {
+				return deferred.resolve();
+			}).fail(function (response) {
+				return deferred.reject(response);
+			});
+		}).fail(function (response) {
+			return deferred.reject(response);
+		});
+		return deferred.promise();
+	},
+	syncEditModels:      function (toSync, errorRep, key) {
+		var deferred = $.Deferred();
+		if (!_.isEmpty(toSync)) {
+			var err_id = null;
+			var err    = false;
+			this.sync('patch', this, {
+				attrs:   toSync,
+				context: this,
+				success: function (resp) {
+					var responseReturn = _.clone(resp);
+					responseReturn.key = key;
+					if (_.isObject(resp) && _.isEmpty(resp)) {
+						_.each(toSync, function (el) {
+							var e = this.get(el[key]);
+							e && e.set({}, {silent: true});
+						}, this);
+					}
+					else {
+						if (!_.isUndefined(resp['err'])) {
+							err = true;
+						}
+					}
+					this.on('err', function (model, msg, field) {
+						if (errorRep) {
+							errorRep({msg: msg, fld: field, row: model.id})
+						}
+						err_id = model.id;
+						err    = true;
+					}, this);
+					this.set(resp, {remove: false, parse: true, silent: true});
+					this.off('err', null, this);
+					if (err) {
+						if (toSync.length > 1 && err_id) {
+							_.find(toSync, function (el) {
+								if (el[key] == err_id) return true;
+								var e = this.get(el[key]);
+								e && e.set({}, {silent: true});
+								return false;
+							});
+						}
+						deferred.reject(responseReturn);
+					} else deferred.resolve();
+				},
+				error:   function (xhr/*,status,error*/) {
+					if (errorRep) errorRep({msg: xhrError(xhr)});
+					deferred.reject();
+				}
+			});
+		}
+		else {
+			return deferred.resolve();
+		}
+		return deferred.promise();
+	},
+	syncCreateModels:    function (toAdd, errorRep, key) {
+		var deferred = $.Deferred();
+		if (!_.isEmpty(toAdd)) {
+			var err_ida = null;
+			var erra    = false;
+			this.sync('create', this, {
+				attrs:   toAdd,
+				context: this,
+				success: function (resp) {
+					var responseReturn = _.clone(resp);
+					responseReturn.key = key;
+					if (_.isObject(resp) && _.isEmpty(resp)) {
+						_.each(toAdd, function (el) {
+							var e = this.get(el[key]);
+							if (e) {
+								e.set({}, {silent: true});
+								delete e.newModel;
+							}
+						}, this);
+					} else {
+						if ("err" in resp) {
+							erra = true;
+						}
+						this.on('err', function (model, msg, field) {
+							if (errorRep) {
+								errorRep({msg: msg, fld: field, row: model.id})
+							}
+							err_ida = model.id;
+							erra    = true;
+						}, this);
+						this.set(resp, {remove: false, parse: true, silent: true});
+						this.off('err', null, this);
+					}
+					if (erra) {
+						if (toAdd.length > 1 && err_ida) {
+							_.find(toAdd, function (el) {
+								if (el[key] == err_ida) return true;
+								var e = this.get(el[key]);
+								if (e) {
+									e.set({}, {silent: true});
+									delete e.newModel;
+								}
+								return false;
+							});
+						}
+						deferred.reject(responseReturn);
+
+					} else {
+						deferred.resolve();
+					}
+				},
+				error:   function (xhr/*,status,error*/) {
+					if (errorRep) errorRep({msg: xhrError(xhr)});
+					deferred.reject();
+				}
+			});
+		}
+		else {
+			return deferred.resolve();
+		}
+		return deferred.promise();
 	}
 });
 

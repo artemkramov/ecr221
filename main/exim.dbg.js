@@ -589,22 +589,6 @@ var ImportModel = (function () {
 			this.initModel();
 			self.loadFile(fileList).done(function (zipFileLoaded) {
 				self.start(zipFileLoaded.files);
-				///**
-				// * Loop through the files in zip
-				// */
-				//_.each(zipFileLoaded.files, function (backupFile) {
-				//	promises.push(self.processTable(backupFile));
-				//});
-				///**
-				// * Wait until all promises are done
-				// * then build the report of the import
-				// */
-				//$.when.apply($, promises).then(function () {
-				//	self.viewProgressBar.buildImportReport();
-				//	var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
-				//	var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
-				//	$(progressBar).removeClass('active').addClass(progressBarClass);
-				//})
 			});
 		},
 		/**
@@ -617,7 +601,7 @@ var ImportModel = (function () {
 		processCollectionRecursive: function (collections, modelData, index, deferred) {
 			var self       = this;
 			var collection = collections[index];
-			var result = collection.syncSave();
+			var result = collection.syncSaveSynchronize();
 			if (_.isObject(result)) {
 				result.done(function () {
 					/**
@@ -637,9 +621,14 @@ var ImportModel = (function () {
 						return deferred.resolve();
 					}
 				}).fail(function (response) {
-					console.dir(response);
 					if (!_.isEmpty(response.err) && self.isRunning) {
-						var message = schema.error(response.err.e) + ' - ' + response.err.f + '; id: ' + response.id;
+						var message = schema.error(response.err.e);
+						if (!_.isUndefined(response.err.f)) {
+							message += ' - ' + response.err.f;
+						}
+						if (!_.isUndefined(response[response.key])) {
+							message += ', ' + response.key + ' ' + response[response.key];
+						}
 						modelData.result = message;
 						modelData.error  = true;
 						self.history.push(modelData);
@@ -779,30 +768,8 @@ var ImportModel = (function () {
 
 					});
 					collections.push(collection);
-					//promises.push(collection.syncSave(function (response) {
-					//	/**
-					//	 * Update progress bar with current percentage
-					//	 * @type {number}
-					//	 */
-					//	var percentage = Math.round(100 * (index + 1) / lists.length);
-					//	self.setProgressData(percentage);
-					//	console.log(percentage);
-					//	if (!_.isEmpty(response.msg) && self.isRunning) {
-					//		modelData.result = response.msg;
-					//		modelData.error  = true;
-					//		self.history.push(modelData);
-					//		events.trigger(self.errorLabel, response.msg);
-					//	}
-					//}));
 				});
 				self.processCollectionRecursive(collections, modelData, 0, deferred);
-				//$.when.apply($, promises).then(function () {
-				//	if (!modelData.error) {
-				//		modelData.result = t("Finished");
-				//		self.history.push(modelData);
-				//	}
-				//	return deferred.resolve();
-				//});
 			}
 			/**
 			 * If the model - form
@@ -829,6 +796,9 @@ var ImportModel = (function () {
 						var response = $.parseJSON(promise.responseText);
 						if (_.isObject(response) && response.err) {
 							var errorMessage = schema.error(response.err.e);
+							if (!_.isUndefined(response.err.f)) {
+								errorMessage += " - " + response.err.f;
+							}
 							modelData.result = errorMessage;
 							modelData.error  = true;
 							self.history.push(modelData);

@@ -377,6 +377,7 @@ var ImportView = BackupSubView.extend({
 		var self          = this;
 		this.files        = [];
 		this.certificates = [];
+		this.clearMessageBlock();
 		this.$el.find(".model-checkbox").each(function () {
 			if ($(this).prop("checked")) {
 				var fileName  = $(this).data('id');
