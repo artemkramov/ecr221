@@ -244,28 +244,58 @@ var ImportReport = Backbone.View.extend({
 });
 
 var ImportProgress = Backbone.View.extend({
+
+	/**
+	 * Template of the view
+	 */
 	template:          _.template($("#progress-bar-block").html()),
+
+	/**
+	 * Modal view
+	 */
 	modal:             {},
+
+	/**
+	 * Initialize all listeners
+	 * @param options
+	 */
 	initialize:        function (options) {
 		this.listenTo(events, ImportModel.errorLabel, this.stop);
 		this.listenTo(events, 'clickDlg', this.stop);
 		this.listenTo(this.model, 'change', this.render);
 		this.modal = options.modal;
 	},
+	/**
+	 * Events of the view
+	 */
+	events:            {
+		"click .btn-import-stop": "onImportStop"
+	},
+	/**
+	 * Render view
+	 * @returns {ImportProgress}
+	 */
 	render:            function () {
 		this.$el.html(this.template({
 			model: this.model
 		}));
-		this.delegateEvents();
 		this.modal.set({
 			body: this.$el
 		});
+		this.delegateEvents();
 		return this;
 	},
+	/**
+	 * Stop import process
+	 * @param e
+	 */
 	stop:              function (e) {
 		ImportModel.isRunning = false;
 		ImportModel.isError   = true;
 	},
+	/**
+	 * Finish method
+	 */
 	finish:            function () {
 		this.stop(true, true);
 	},
@@ -276,6 +306,15 @@ var ImportProgress = Backbone.View.extend({
 		var importReport   = new ImportReport();
 		importReport.model = ImportModel.history;
 		this.$el.find('.import-report').empty().append(importReport.render().$el);
+	},
+	/**
+	 * Events of the force import stop
+	 * @param e
+	 */
+	onImportStop:      function (e) {
+		console.log("stop");
+		ImportModel.isRunning = false;
+		this.buildImportReport();
 	}
 });
 
@@ -601,7 +640,7 @@ var ImportModel = (function () {
 		processCollectionRecursive: function (collections, modelData, index, deferred) {
 			var self       = this;
 			var collection = collections[index];
-			var result = collection.syncSaveSynchronize();
+			var result     = collection.syncSaveSynchronize();
 			if (_.isObject(result)) {
 				result.done(function () {
 					/**
@@ -723,8 +762,8 @@ var ImportModel = (function () {
 		 * @returns {*}
 		 */
 		processData:                function (parsedData, modelData, tableData, options) {
-			var deferred = $.Deferred();
-			var self     = this;
+			var deferred    = $.Deferred();
+			var self        = this;
 			modelData.error = false;
 			/**
 			 * If the model data - table data
