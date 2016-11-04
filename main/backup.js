@@ -90,15 +90,26 @@ var ExportView = BackupSubView.extend({
 	 * All events related to this view
 	 */
 	events: {
-		"click .btn-export":     "onButtonExportClick",
-		"click .toggle-all":     "onToggleClick",
-		"click .btn-run-export": "onButtonRunExportClick"
+		"click .btn-export":      "onButtonExportClick",
+		"click .toggle-all":      "onToggleClick",
+		"click .btn-run-export":  "onButtonRunExportClick",
+		"keyup #export-filename": "onFilenameChange"
 	},
 
 	/**
 	 * Error tag for the event triggering
 	 */
 	errorTag: "exportError",
+
+	/**
+	 * Default zip archive filename
+	 */
+	backupFilename: "",
+
+	/**
+	 * Path for the logo upload
+	 */
+	urlLogo: "/cgi/logo.bmp",
 
 	/**
 	 * Render content
@@ -109,7 +120,8 @@ var ExportView = BackupSubView.extend({
 		this.delegateEvents();
 		this.$el.empty();
 		this.$el.append(this.template({
-			backupList: self.backupList
+			backupList: self.backupList,
+			filename:   self.backupFilename
 		}));
 		return this;
 	},
@@ -135,6 +147,7 @@ var ExportView = BackupSubView.extend({
 	 */
 	onButtonRunExportClick: function (e) {
 		var models = [];
+		var self   = this;
 		$(".table-backup-list").find(".model-checkbox").each(function () {
 			if ($(this).prop('checked')) {
 				models.push(schema.get($(this).data('id')));
@@ -144,16 +157,51 @@ var ExportView = BackupSubView.extend({
 			this.clearMessageBlock();
 			ExportModel.isReturn = true;
 			ExportModel.run(models).done(function (zip) {
-				zip.generateAsync({type: "blob"})
-					.then(function (content) {
-						ExportModel.stop();
-						ExportModel.saveAs(content, t("Backup") + ".zip");
-					});
+				self.exportLogo().done(function (response) {
+					zip.file("logo.bmp", response, {binary: true});
+					zip.generateAsync({type: "blob"})
+						.then(function (content) {
+							ExportModel.stop();
+							if (_.isEmpty(self.backupFilename)) {
+								self.backupFilename = t("Backup");
+							}
+							ExportModel.saveAs(content, self.backupFilename + ".zip");
+						});
+				});
+
 			});
 		}
 		else {
 			events.trigger(this.errorTag, t("Choose at least 1 item"));
 		}
+	},
+	/**
+	 * Export the logo image
+	 * @returns {*}
+	 */
+	exportLogo: function () {
+		var self = this;
+		var deferred = $.Deferred();
+		var xhr = new XMLHttpRequest();
+		xhr.responseType = 'blob';
+		xhr.onload = function() {
+			var reader = new FileReader();
+			reader.onloadend = function() {
+				deferred.resolve(reader.result);
+			}
+			reader.readAsBinaryString(xhr.response);
+		};
+		xhr.open('GET', self.urlLogo);
+		xhr.send();
+
+		return deferred.promise();
+	},
+	/**
+	 * Update the current backup file name
+	 * @param e
+	 */
+	onFilenameChange:       function (e) {
+		this.backupFilename = $(e.target).val();
 	}
 });
 
@@ -345,8 +393,9 @@ var ImportView = BackupSubView.extend({
 						errorMessage = errorCollection.join("<br />");
 					}
 					self.parsedFiles.push({
-						file:  file,
-						error: errorMessage
+						file:      file,
+						error:     errorMessage,
+						tableName: tableName
 					});
 					return deferred.resolve();
 				});

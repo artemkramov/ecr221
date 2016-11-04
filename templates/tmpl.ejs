@@ -440,12 +440,18 @@
             <%= t("Export") %>
         </div>
         <div class="panel-body">
-            <button type="button" class="btn btn-primary btn-export">
-                <%= t("Choose table") %>
-            </button>
-            <button type="button" class="btn btn-danger btn-run-export" disabled="true">
-                <%= t("Run") %>
-            </button>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary btn-export">
+                    <%= t("Choose table") %>
+                </button>
+                <button type="button" class="btn btn-danger btn-run-export" disabled="true">
+                    <%= t("Run") %>
+                </button>
+            </div>
+            <div class="form-group">
+                <label><%= t("Backup file name") %></label>
+                <input type="text" class="form-control" id="export-filename" value="<%= filename %>"/>
+            </div>
             <div class="error-block"></div>
             <%= backupList %>
         </div>
@@ -517,6 +523,9 @@
                 <%= t("Name") %>
             </th>
             <th>
+                <%= t("Description") %>
+            </th>
+            <th>
                 <%= t("Error") %>
             </th>
         </tr>
@@ -532,6 +541,13 @@
             </td>
             <td>
                 <%= fileData.file.name %>
+            </td>
+            <td>
+                <% if (!fileData.error && !_.isUndefined(fileData.tableName)) {
+                    var modelData = schema.get(fileData.tableName);
+                %>
+                <%= modelData.get("name") %>
+                <% } %>
             </td>
             <td>
                 <% if (fileData.error) { %>
