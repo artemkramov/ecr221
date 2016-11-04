@@ -276,9 +276,7 @@ var FiscDo = PageView.extend({
 		this.$el.append(this.taxes.render().$el);
 		this.$el.append(this.eet.render().$el);
 		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
-		this.$el.append(_.reduce([
-				['tx', 'default', t('Wait...'), t('Save Taxes')],
-				['fsc', 'primary', t('Wait...'), t('Fiscalize')]],
+		this.$el.append(_.reduce([],
 			function (memo, el) {
 				el[2] = t(el[2]);
 				return memo + vsprintf(tmpl, el);

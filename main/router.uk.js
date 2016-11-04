@@ -152,7 +152,8 @@ var appStart = function () {
 				addView: new NetworkView({model: networkCell})
 			})
 		}),
-		new MainCell({model: new Backbone.Model({lnk: '#report', img: 'sales', name: 'Reports'})})
+		new MainCell({model: new Backbone.Model({lnk: '#report', img: 'sales', name: 'Reports'})}),
+		new MainCell({model: new Backbone.Model({lnk: '#backup', img: 'backup', name: 'Backup'})})
 	];
 	schema          = new Schema();
 	appRouter       = new AppRouter();

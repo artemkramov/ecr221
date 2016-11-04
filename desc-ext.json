@@ -117,7 +117,9 @@
       "Choose an archive to import": "Choose an archive to import",
       "Table was not found": "Table was not found",
       "Incorrect password": "Incorrect password",
-      "Backup file name": "Backup file name"
+      "Backup file name": "Backup file name",
+      "Logo wasn't imported": "Logo wasn't imported",
+      "Backup": "Backup"
     }
   }
 }

@@ -603,7 +603,7 @@ var ImportModel = (function () {
 		 * Start the import
 		 * @param files
 		 */
-		start:                      function (files) {
+		start:                      function () {
 			var self             = this;
 			self.modal           = new Modal();
 			self.counter++;
@@ -617,7 +617,6 @@ var ImportModel = (function () {
 			self.viewProgressBar.render();
 			self.modal.show();
 			self.isRunning       = true;
-			self.processZipRecursive(files, 0, Object.keys(files));
 		},
 		/**
 		 * Parse the input file
@@ -627,7 +626,8 @@ var ImportModel = (function () {
 			var self = this;
 			this.initModel();
 			self.loadFile(fileList).done(function (zipFileLoaded) {
-				self.start(zipFileLoaded.files);
+				self.start();
+				self.processZipRecursive(zipFileLoaded.files, 0, Object.keys(zipFileLoaded.files));
 			});
 		},
 		/**
@@ -712,6 +712,7 @@ var ImportModel = (function () {
 			 * Init schema data
 			 */
 			var modelData = schema.get(tableName);
+			modelData.id = modelData.get("name");
 			if (self.isRunning && modelData) {
 				backupFile.async("string").then(function (csvText) {
 
@@ -731,7 +732,7 @@ var ImportModel = (function () {
 							 * Reset the progress bar and set the current import model
 							 */
 							self.setProgressData(0);
-							self.modelPercentage.set("name", tableName);
+							self.modelPercentage.set("name", schema.get(tableName).get("name"));
 							var options   = {
 								schema: modelData,
 								urlAdd: schema.url + '/' + tableName

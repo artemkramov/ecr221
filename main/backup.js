@@ -12,9 +12,15 @@ var BackupScreenView = Backbone.View.extend({
 		 */
 		var exportView = new ExportView();
 		var importView = new ImportView();
+		var leftColumn = new LeftColumn({
+			model: {
+				models: []
+			}
+		});
 		this.$el.append(this.template());
 		this.$el.find("#export").append(exportView.render().$el);
 		this.$el.find("#import").append(importView.render().$el);
+		this.$el.find("#sidebar-left").append(leftColumn.render().$el);
 		this.delegateEvents();
 		return this;
 	}
@@ -179,14 +185,14 @@ var ExportView = BackupSubView.extend({
 	 * Export the logo image
 	 * @returns {*}
 	 */
-	exportLogo: function () {
-		var self = this;
-		var deferred = $.Deferred();
-		var xhr = new XMLHttpRequest();
+	exportLogo:             function () {
+		var self         = this;
+		var deferred     = $.Deferred();
+		var xhr          = new XMLHttpRequest();
 		xhr.responseType = 'blob';
-		xhr.onload = function() {
-			var reader = new FileReader();
-			reader.onloadend = function() {
+		xhr.onload       = function () {
+			var reader       = new FileReader();
+			reader.onloadend = function () {
 				deferred.resolve(reader.result);
 			}
 			reader.readAsBinaryString(xhr.response);
@@ -226,6 +232,11 @@ var ImportView = BackupSubView.extend({
 	certificates: [],
 
 	/**
+	 * Logo bmp file
+	 */
+	logo: undefined,
+
+	/**
 	 * Allowed extensions for the tables
 	 */
 	fileExtensions: ['csv'],
@@ -234,6 +245,11 @@ var ImportView = BackupSubView.extend({
 	 * Allowed extensions for the certificates
 	 */
 	certificateExtensions: ['p12', 'crt'],
+
+	/**
+	 * Allowed image extensions for the logo
+	 */
+	imageExtensions: ['bmp'],
 
 	/**
 	 * The list of the parsed files in the ZIP
@@ -280,6 +296,7 @@ var ImportView = BackupSubView.extend({
 		this.files        = [];
 		this.certificates = [];
 		this.parsedFiles  = [];
+		this.logo         = undefined;
 		this.clearFileList();
 		var fileList      = e.target.files;
 		this.getImportButton().attr("disabled", true);
@@ -407,7 +424,7 @@ var ImportView = BackupSubView.extend({
 			 * @type {boolean}
 			 */
 			var error = false;
-			if (_.indexOf(_.union(this.certificateExtensions, this.fileExtensions), extension) == -1) {
+			if (_.indexOf(_.union(this.certificateExtensions, this.fileExtensions, this.imageExtensions), extension) == -1) {
 				error = t("Not correct file format.");
 			}
 			self.parsedFiles.push({
@@ -437,6 +454,9 @@ var ImportView = BackupSubView.extend({
 				if (_.indexOf(self.certificateExtensions, extension) > -1) {
 					self.certificates.push(fileName);
 				}
+				if (_.indexOf(self.imageExtensions, extension) > -1) {
+					self.logo = fileName;
+				}
 			}
 		});
 		if (_.isEmpty(_.union(self.files, self.certificates))) {
@@ -451,9 +471,69 @@ var ImportView = BackupSubView.extend({
 						files.push(fileData.file);
 					}
 				});
-				ImportModel.start(files);
+				ImportModel.start();
+				self.importLogo().done(function () {
+					ImportModel.processZipRecursive(files, 0, Object.keys(files));
+				});
+
 			});
 		}
+	},
+	/**
+	 * Import logo from bmp file
+	 * @returns {*}
+	 */
+	importLogo:           function () {
+		var deferred = $.Deferred();
+		var self     = this;
+		if (!_.isUndefined(self.logo) && ImportModel.isRunning) {
+			_.each(self.parsedFiles, function (fileData) {
+				if (fileData.file.name == self.logo) {
+					fileData.file.async("arraybuffer").then(function (bmpData) {
+						var bytes     = new Uint8Array(bmpData);
+						ImportModel.setProgressData(0);
+						ImportModel.modelPercentage.set('name', t("Logo"));
+						var modelData = {
+							id:     t("Logo"),
+							error:  false,
+							result: t("Finished")
+						};
+						$.ajax({
+							xhr:         function () {
+								var xhr = new window.XMLHttpRequest();
+								xhr.upload.addEventListener("progress", function (evt) {
+									if (evt.lengthComputable) {
+										var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+										ImportModel.setProgressData(percentComplete);
+									}
+								}, false);
+								return xhr;
+							},
+							url:         "/cgi/logo.bmp",
+							data:        bytes,
+							type:        'post',
+							processData: false,
+							contentType: 'application/octet-stream',
+						}).success(function () {
+							ImportModel.history.push(modelData);
+							return deferred.resolve();
+						}).error(function () {
+							var errorMessage      = t("Logo wasn't imported");
+							modelData.error       = true;
+							modelData.result      = errorMessage;
+							ImportModel.history.push(modelData);
+							ImportModel.isRunning = false;
+							events.trigger(self.errorTag, errorMessage);
+							return deferred.resolve();
+						});
+					});
+				}
+			})
+		}
+		else {
+			return deferred.resolve();
+		}
+		return deferred.promise();
 	},
 	/**
 	 * Import the certificates if they are available in the ZIP

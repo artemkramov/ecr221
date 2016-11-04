@@ -190,6 +190,10 @@ Name=img/modem-h.png
 File=img/modem-h.png
 Content-Type=image/png
 
+Name=img/backup-h.png
+File=img/backup-h.png
+Content-Type=image/png
+
 Name=img/on.svg
 File=img/on.svg
 Content-Type=image/svg+xml
