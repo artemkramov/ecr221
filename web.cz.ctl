@@ -156,6 +156,10 @@ Name=js/backup.js
 File=main/backup.js;
 Content-Type=application/javascript
 
+Name=js/FileSaver.min.js
+File=js/FileSaver.min.js
+Content-Type=application/javascript
+
 #image files
 
 Name=img/table-h.png
