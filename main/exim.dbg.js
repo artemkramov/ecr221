@@ -698,9 +698,13 @@ var ImportModel = (function () {
 		 * @returns {*}
 		 */
 		processTable:               function (backupFile) {
+			var deferred  = $.Deferred();
+			if (_.isUndefined(backupFile)) {
+				return deferred.resolve();
+			}
 			var tableName = backupFile.name.match(/^.*?([^\\/.]*)[^\\/]*$/)[1];
 			var self      = this;
-			var deferred  = $.Deferred();
+
 			/**
 			 * Init schema data
 			 */

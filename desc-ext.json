@@ -5,7 +5,7 @@
       "Serial#": "Sériové č.",
       "ECR time": "Čas pokladny",
       "PLU": "PLU",
-      "Fiscal": "Servis",
+      "Fiscal": "Nastavení EET",
       "Settings": "Nastavení",
       "Network": "Připojení na internet",
       "Time": "Čas zařízení",
@@ -97,13 +97,13 @@
       "row": "row",
       "Finished": "Finished",
       "Upload": "Upload",
-      "Certificate uploading": "Certificate uploading",
+      "Certificate uploading": "Nahrání certifikátu",
       "Certificate wasn't imported": "Certificate wasn't imported",
       "Certificate was imported successfully": "Certificate was imported successfully",
       "Incorrect file format": "Incorrect file format",
       "Enter your password": "Enter your password",
       "Uncaught error": "Uncaught error",
-      "SSL certificate upload": "SSL certificate upload",
+      "SSL certificate upload": "Nahrání SSL certifikátu",
       "The file is not chosen": "The file is not chosen",
       "Name": "Název",
       "Address": "Adresa",
@@ -119,7 +119,10 @@
       "Incorrect password": "Incorrect password",
       "Backup file name": "Backup file name",
       "Logo wasn't imported": "Logo wasn't imported",
-      "Backup": "Backup"
+      "Backup": "Backup",
+      "Fiscalization": "Nastavení EET",
+      "Fiscalized": "EET start"
+
     }
   }
 }

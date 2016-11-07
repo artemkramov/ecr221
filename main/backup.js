@@ -459,7 +459,7 @@ var ImportView = BackupSubView.extend({
 				}
 			}
 		});
-		if (_.isEmpty(_.union(self.files, self.certificates))) {
+		if (_.isEmpty(_.union(self.files, self.certificates)) && _.isUndefined(self.logo)) {
 			events.trigger(self.errorTag, t("Choose at least 1 item"));
 		}
 		else {

@@ -123,3 +123,6 @@ a img:active {
 #export-filename {
     max-width: 400px;
 }
+.backgrid-pagination-cell {
+    display: table-cell !important;
+}
