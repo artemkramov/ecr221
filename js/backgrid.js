@@ -703,7 +703,6 @@ var InputCellEditor = Backgrid.InputCellEditor = CellEditor.extend({
   */
   initialize: function (options) {
     InputCellEditor.__super__.initialize.apply(this, arguments);
-
     if (options.placeholder) {
       this.$el.attr("placeholder", options.placeholder);
     }
@@ -905,6 +904,7 @@ var Cell = Backgrid.Cell = Backbone.View.extend({
     var column = this.column;
 
     var editable = Backgrid.callByNeed(column.editable(), column, model);
+
     if (editable) {
 
       this.currentEditor = new this.editor({
@@ -2285,11 +2285,13 @@ var Body = Backgrid.Body = Backbone.View.extend({
   initialize: function (options) {
 
     this.columns = options.columns;
+
     if (!(this.columns instanceof Backbone.Collection)) {
       this.columns = new Columns(this.columns);
     }
 
     this.row = options.row || Row;
+
     this.rows = this.collection.map(function (model) {
       var row = new this.row({
         columns: this.columns,
@@ -2759,11 +2761,10 @@ var Grid = Backgrid.Grid = Backbone.View.extend({
   initialize: function (options) {
     // Convert the list of column objects here first so the subviews don't have
     // to.
-    if (!(options.columns instanceof Backbone.Collection)) {
+	  if (!(options.columns instanceof Backbone.Collection)) {
       options.columns = new Columns(options.columns);
     }
     this.columns = options.columns;
-
     var filteredOptions = _.omit(options, ["el", "id", "attributes",
                                            "className", "tagName", "events"]);
 

@@ -93,7 +93,7 @@ File=js/backgrid-select-all.min.js
 Content-Type=application/javascript
 
 Name=js/backgrid.js
-File=js/backgrid.min.js
+File=js/backgrid.js
 Content-Type=application/javascript
 
 Name=js/backbone.js

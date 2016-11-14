@@ -779,6 +779,7 @@ var TableDisplay = Backgrid.Grid.extend({
 		if (args && args.model) {
 			if (!args.columns) {
 				var col = args.model.get('elems');
+
 				if (this.selAll) col = [{name: "", cell: "select-row", headerCell: "select-all"}].concat(col);
 				this.columns = args.columns = col;
 			}
@@ -825,7 +826,10 @@ var TableDisplay = Backgrid.Grid.extend({
 	},
 	render:     function () {
 		var self       = this;
+		this.delegateEvents();
+
 		var view       = Backgrid.Grid.prototype.render.apply(this);
+
 		var paginator  = new Backgrid.Extension.Paginator({
 			collection:              self.collection,
 			renderMultiplePagesOnly: true
@@ -1426,6 +1430,7 @@ var TableContainer = Backbone.View.extend({
 			this.toolbar.remove();
 			delete this.toolbar;
 		}
+		window.globalView = view;
 		this.content = view;
 		this.toolbar = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
 	},
@@ -1441,7 +1446,6 @@ var TableContainer = Backbone.View.extend({
 		this.toggleData();
 		this.showData();
 		var view = new this.table({model: this.model});
-		console.log(view);
 		view.collection.fetch();
 	},
 	render:         function () {
@@ -1492,6 +1496,9 @@ var TableContainer = Backbone.View.extend({
 	showData:       function () {
 		this.showContent = false;
 		this.content.$el.show();
+	},
+	remove: function () {
+		this.content.remove();
 	}
 });
 
