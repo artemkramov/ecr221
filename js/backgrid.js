@@ -2286,6 +2286,7 @@ var Body = Backgrid.Body = Backbone.View.extend({
 
     this.columns = options.columns;
 
+
     if (!(this.columns instanceof Backbone.Collection)) {
       this.columns = new Columns(this.columns);
     }
