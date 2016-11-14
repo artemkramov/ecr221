@@ -263,6 +263,9 @@ var TableCollection = Backbone.PageableCollection.extend({
 				success: function (resp) {
 					if (_.isObject(resp) && _.isEmpty(resp)) {
 						_.each(toAdd, function (el) {
+							console.log('this', this);
+							window.test = this;
+							console.log('el[key]', el[key]);
 							var e = this.get(el[key]);
 							if (e) {
 								e.set({}, {silent: true});

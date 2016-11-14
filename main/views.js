@@ -824,9 +824,9 @@ var TableDisplay = Backgrid.Grid.extend({
 		}
 	},
 	render:     function () {
-		var self      = this;
-		var view      = Backgrid.Grid.prototype.render.apply(this);
-		var paginator = new Backgrid.Extension.Paginator({
+		var self       = this;
+		var view       = Backgrid.Grid.prototype.render.apply(this);
+		var paginator  = new Backgrid.Extension.Paginator({
 			collection:              self.collection,
 			renderMultiplePagesOnly: true
 		});
@@ -847,8 +847,8 @@ var TableDisplay = Backgrid.Grid.extend({
 			 * @type {*|jQuery|HTMLElement}
 			 */
 			var tfoot = $("<tfoot />");
-			var tr = $("<tr />");
-			var td = $("<td />").attr('colspan', fieldCount.toString()).addClass('backgrid-pagination-cell').append(pagination);
+			var tr    = $("<tr />");
+			var td    = $("<td />").attr('colspan', fieldCount.toString()).addClass('backgrid-pagination-cell').append(pagination);
 			tr.append(td);
 			tfoot.append(tr);
 			view.$el.find("thead").after(tfoot);
@@ -866,20 +866,12 @@ var PLUTableDisplay = TableDisplay.extend({
 			this.addToolbar = new ImpExView({model: {models: [args.model]}});
 		}
 	},
-	//render: function () {
-	//	var self = this;
-	//	var view = TableDisplay.prototype.render.apply(this);
-	//	var paginator = new Backgrid.Extension.Paginator({
-	//		collection: self.collection
-	//	});
-	//	view.$el.append(paginator.render().el);
-	//	return view;
-	//},
 	event:      function (ev) {
 		if (!_.isUndefined(ev)) {
 			var $this = this;
 			switch (ev) {
 				case 'del':
+					console.log(this.getSelectedModels());
 					this.collection.deleteRows(this.getSelectedModels());
 					break;
 				case 'ins':
@@ -909,6 +901,48 @@ var PLUTableDisplay = TableDisplay.extend({
 			this.addToolbar = 0;
 		}
 		Backgrid.Grid.prototype.remove.call(this);
+	},
+	syncSave:   function () {
+		var self     = this;
+		var promises = [];
+		self.collection.each(function (model) {
+			if (!_.isUndefined(model) && !model.isNew() && model.hasChanged('Code')) {
+				var deferred    = $.Deferred();
+				var copiedModel = model.clone();
+				model.set('Code', model._previousAttributes['Code'], {silent: true});
+				var data        = model.destroy({
+					wait:    true,
+					success: function (model, response) {
+						var attributes = copiedModel.attributes;
+						self.collection.fetch({
+							success: function () {
+								var opt                         = {schema: self.model, idAttribute: 'Code'};
+								var m                           = TableModel.extend(opt);
+								var tableCollection             = new TableCollection(false, {
+									model: m,
+									url:   '/cgi/tbl/PLU'
+								});
+								tableCollection.add(attributes);
+								tableCollection.last().newModel = true;
+								tableCollection.syncSave().done(function () {
+									return deferred.resolve();
+								});
+							}
+						});
+
+					}
+				});
+				promises.push(deferred);
+			}
+		});
+		if (_.isEmpty(promises)) {
+			self.collection.syncSave();
+		}
+		else {
+			$.when.apply($, promises).done(function () {
+				self.event('refresh');
+			});
+		}
 	}
 });
 
@@ -970,7 +1004,39 @@ var PLUFormDisplay = FormDisplay.extend({
 			this.addToolbar = 0;
 		}
 		Backbone.View.prototype.remove.call(this);
-	}
+	},
+	saveData:   function (ev) {
+		ev.preventDefault();
+		events.trigger("buttonBlock:" + this.model.id, "refresh", true);
+		this.$('button.btn').button('loading');
+		var $this = this;
+		var o     = this.formInObj();
+		var self  = this;
+		if ("Code" in o) {
+			var attributes                  = _.extend(this.data.attributes, o);
+			var opt                         = {schema: self.model, idAttribute: 'Code'};
+			var m                           = TableModel.extend(opt);
+			var tableCollection             = new TableCollection(false, {model: m, url: '/cgi/tbl/PLU'});
+			tableCollection.add(attributes);
+			tableCollection.last().newModel = true;
+			tableCollection.syncSave().done(function () {
+				$this.data.destroy({
+					wait: true,
+					success: function () {
+						$('button.btn', $this.$el).button('reset');
+						events.trigger("buttonBlock:" + $this.model.id, "refresh", false);
+					}
+				});
+			});
+		}
+		else {
+			this.data.save(o, {patch: true, silent: true})
+				.always(function () {
+					$('button.btn', $this.$el).button('reset');
+					events.trigger("buttonBlock:" + $this.model.id, "refresh", false);
+				});
+		}
+	},
 });
 
 var LogoView = Backbone.View.extend({
@@ -1374,6 +1440,9 @@ var TableContainer = Backbone.View.extend({
 		this.render();
 		this.toggleData();
 		this.showData();
+		var view = new this.table({model: this.model});
+		console.log(view);
+		view.collection.fetch();
 	},
 	render:         function () {
 		this.delegateEvents();
