@@ -79,7 +79,7 @@
       "Save logo to ECR": "Nahrajte logo do kasy",
       "Clear logo content": "Vymažte obsah loga",
       "Clear": "Smazat",
-      "Grayscale colorful logo": "Převézt barevné logo na odstíny šedé",
+      "Grayscale colorful logo": "Převést barevné logo na odstíny šedé",
       "Black&white grayscale logo": "Převést logo v odstínech šedé na černo-bílé",
       "B&W": "ČB",
       "Wait...": "Čekejte...",
@@ -121,7 +121,8 @@
       "Logo wasn't imported": "Logo wasn't imported",
       "Backup": "Backup",
       "Fiscalization": "Nastavení EET",
-      "Fiscalized": "EET start"
+      "Fiscalized": "EET start",
+      "Delimiter": "Delimiter"
 
     }
   }

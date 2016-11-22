@@ -126,3 +126,6 @@ a img:active {
 .backgrid-pagination-cell {
     display: table-cell !important;
 }
+.backup-delimiter {
+    max-width: 60px;
+}

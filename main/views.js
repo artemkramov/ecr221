@@ -791,6 +791,8 @@ var TableDisplay = Backgrid.Grid.extend({
 				this.columns = args.columns = col;
 			}
 			if (!args.collection) {
+				console.log('model', args.model);
+				console.log('model id', args.model.id);
 				args            = _.extend(args, {collection: schema.table(args.model.id)});
 				this.collection = args.collection;
 			}
@@ -936,7 +938,7 @@ var PLUTableDisplay = TableDisplay.extend({
 								tableCollection.add(attributes);
 								tableCollection.last().newModel = true;
 								tableCollection.syncSave().done(function () {
-									return deferred.resolve();
+									return deferred.resolve(attributes.Code);
 								});
 							}
 						});
@@ -950,7 +952,13 @@ var PLUTableDisplay = TableDisplay.extend({
 			self.collection.syncSave();
 		}
 		else {
-			$.when.apply($, promises).done(function () {
+			$.when.apply($, promises).done(function (newModelID) {
+				console.log('newModelID', newModelID);
+				var newModel = self.collection.get(newModelID);
+				var position = self.collection.indexOf(newModel);
+				window.collection = self.collection;
+				window.newModel = newModel;
+				console.log('position', position);
 				self.event('refresh');
 			});
 		}

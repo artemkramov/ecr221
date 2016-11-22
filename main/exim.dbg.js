@@ -248,12 +248,12 @@ var ImportProgress = Backbone.View.extend({
 	/**
 	 * Template of the view
 	 */
-	template:          _.template($("#progress-bar-block").html()),
+	template: _.template($("#progress-bar-block").html()),
 
 	/**
 	 * Modal view
 	 */
-	modal:             {},
+	modal: {},
 
 	/**
 	 * Initialize all listeners
@@ -388,12 +388,45 @@ var ExportModel = function () {
 		isReturn: false,
 
 		/**
+		 * Export delimiter for CSV files
+		 */
+		exportDelimiter: ";",
+
+		/**
+		 * Special tables which are not allowed to export
+		 * or have some denied fields
+		 */
+		specialSchemaItems: [],
+
+		/**
 		 * Reset percentage
 		 */
 		resetPercentage: function () {
 			this.modelPercentage.set('id', this.getId());
 			this.modelPercentage.set('name', t("Fetching data..."));
 			this.modelPercentage.set('percentage', 0);
+		},
+
+		/**
+		 * Add the attribute data to the backup
+		 * including the backup special features
+		 * @param modelID
+		 * @param attributes
+		 */
+		pushAttributesToBackup: function (modelID, attributes) {
+			var data = _.findWhere(this.specialSchemaItems, {id: modelID});
+			if (!_.isUndefined(data) && _.isObject(data)) {
+				var fields = {};
+				for (var property in attributes) {
+					if (data.allowedAttributes.indexOf(property) != -1) {
+						fields[property] = attributes[property];
+					}
+				}
+				return fields;
+			}
+			else {
+				return attributes;
+			}
 		},
 
 		/**
@@ -452,15 +485,17 @@ var ExportModel = function () {
 								 */
 								var percentage = Math.round(100 * index / length);
 								self.setProgressData(percentage);
-								data.push(item.attributes);
+								data.push(self.pushAttributesToBackup(model.get("id"), item.attributes));
 							});
 						}
 						else {
-							data.push(modelData.attributes);
+							data.push(self.pushAttributesToBackup(model.get("id"), modelData.attributes));
 						}
 
 						self.setProgressData(100);
-						var csv       = Papa.unparse(data);
+						var csv       = Papa.unparse(data, {
+							delimiter: self.exportDelimiter
+						});
 						zip.file(model.get('id') + ".csv", csv);
 					}
 				});
@@ -568,6 +603,16 @@ var ImportModel = (function () {
 		 */
 		isError: false,
 
+		/**
+		 * Default import delimiter for CSV parsing
+		 */
+		importDelimiter: ";",
+
+		/**
+		 * Special tables which are not allowed to import
+		 * or have some denied fields
+		 */
+		specialSchemaItems: [],
 
 		/**
 		 * Reset percentage
@@ -698,7 +743,7 @@ var ImportModel = (function () {
 		 * @returns {*}
 		 */
 		processTable:               function (backupFile) {
-			var deferred  = $.Deferred();
+			var deferred = $.Deferred();
 			if (_.isUndefined(backupFile)) {
 				return deferred.resolve();
 			}
@@ -709,7 +754,6 @@ var ImportModel = (function () {
 			 * Init schema data
 			 */
 			var modelData = schema.get(tableName);
-			modelData.id = modelData.get("name");
 			if (self.isRunning && modelData) {
 				backupFile.async("string").then(function (csvText) {
 
@@ -760,9 +804,13 @@ var ImportModel = (function () {
 		 * @returns {*}
 		 */
 		processData:                function (parsedData, modelData, tableData, options) {
-			var deferred    = $.Deferred();
-			var self        = this;
-			modelData.error = false;
+			var deferred         = $.Deferred();
+			var self             = this;
+			var modelDataHistory = {
+				id:    modelData.get("name"),
+				error: false
+			};
+			modelData.error      = false;
 			/**
 			 * If the model data - table data
 			 */
@@ -787,6 +835,10 @@ var ImportModel = (function () {
 							 * Check if the item is in the current collection
 							 */
 							collection.url = options.urlAdd;
+							/**
+							 * Update the schema due to the special fields
+							 */
+							item = ExportModel.pushAttributesToBackup(modelData.get("id"), item);
 							var model      = new Backbone.Model(item);
 							var row        = self.findRowInCollection(model, tableData.models, idAttribute);
 							model.isNew    = function () {
@@ -806,7 +858,7 @@ var ImportModel = (function () {
 					});
 					collections.push(collection);
 				});
-				self.processCollectionRecursive(collections, modelData, 0, deferred);
+				self.processCollectionRecursive(collections, modelDataHistory, 0, deferred);
 			}
 			/**
 			 * If the model - form
@@ -819,6 +871,10 @@ var ImportModel = (function () {
 				var model = new TableModel({id: modelData.get('id')}, options);
 				var data  = !_.isEmpty(parsedData) ? parsedData[0] : false;
 				if (_.isObject(data)) {
+					/**
+					 * Update the schema due to the special settings
+					 */
+					data = ExportModel.pushAttributesToBackup(modelData.get("id"), data);
 					delete data['id'];
 					var promise = model.save(data, {
 						patch: true, silent: true, wait: true, parse: false,
@@ -891,8 +947,11 @@ var ImportModel = (function () {
 		 */
 		parseCSV:                   function (csvText, fileName) {
 			var deferred   = $.Deferred();
+			csvText        = csvText.replace(/^\s+|\s+$/g, '');
 			var parsedData = Papa.parse(csvText, {
-				header: true
+				header:         true,
+				skipEmptyLines: true,
+				delimiter:      this.importDelimiter
 			});
 
 			if (!_.isEmpty(parsedData.errors)) {

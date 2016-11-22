@@ -69,6 +69,58 @@ var BackupSubView = Backbone.View.extend({
 		var group    = checkbox.data('toggle').toString();
 		checkbox.closest('table').find('[data-type=' + group + ']').prop('checked', checkbox.prop('checked'));
 	},
+	/**
+	 * Get the special schema for the backup purpose
+	 * @returns {Array}
+	 */
+	getBackupSchema:   function () {
+		var specialSchemaItems = [];
+		//_.each(schema.models, function (model) {
+		//	var item = {
+		//		id:                model.get('id'),
+		//		allowedAttributes: []
+		//	};
+		//	if (!_.isUndefined(model["backup"]) && !parseInt(model["backup"])) {
+		//		specialSchemaItems.push(item);
+		//	}
+		//	else {
+		//		_.each(model.get('elems'), function (field) {
+		//			var isBackupAllow = true;
+		//			if (!_.isUndefined(field["backup"]) && !parseInt(field["backup"])) {
+		//				isBackupAllow = false;
+		//			}
+		//			if (isBackupAllow) {
+		//				item.allowedAttributes.push(field.name);
+		//			}
+		//		});
+		//		specialSchemaItems.push(item);
+		//	}
+		//});
+		specialSchemaItems.push({
+			id:                'Time',
+			allowedAttributes: []
+		});
+		specialSchemaItems.push({
+			id:                'Logo',
+			allowedAttributes: []
+		});
+		specialSchemaItems.push({
+			id:                'NSMEP',
+			allowedAttributes: []
+		});
+		specialSchemaItems.push({
+			id:                'Fsk',
+			allowedAttributes: [
+			]
+		});
+		specialSchemaItems.push({
+			id:                'Adm',
+			allowedAttributes: [
+				'id', 'ParPrg', 'OtcPrg', 'NumOpr', 'PrContr', 'PrEqual'
+			]
+		});
+		return specialSchemaItems;
+	}
 });
 
 /**
@@ -89,17 +141,18 @@ var ExportView = BackupSubView.extend({
 	 * Models which are not allowed to export
 	 */
 	excludeModels: [
-		'Logo', 'Time'
+		'Logo', 'Time', 'Fsk'
 	],
 
 	/**
 	 * All events related to this view
 	 */
 	events: {
-		"click .btn-export":      "onButtonExportClick",
-		"click .toggle-all":      "onToggleClick",
-		"click .btn-run-export":  "onButtonRunExportClick",
-		"keyup #export-filename": "onFilenameChange"
+		"click .btn-export":       "onButtonExportClick",
+		"click .toggle-all":       "onToggleClick",
+		"click .btn-run-export":   "onButtonRunExportClick",
+		"keyup #export-filename":  "onFilenameChange",
+		"keyup #export-delimiter": "onDelimiterChange"
 	},
 
 	/**
@@ -111,6 +164,11 @@ var ExportView = BackupSubView.extend({
 	 * Default zip archive filename
 	 */
 	backupFilename: "",
+
+	/**
+	 * Default export delimiter
+	 */
+	backupDelimiter: ";",
 
 	/**
 	 * Path for the logo upload
@@ -126,8 +184,9 @@ var ExportView = BackupSubView.extend({
 		this.delegateEvents();
 		this.$el.empty();
 		this.$el.append(this.template({
-			backupList: self.backupList,
-			filename:   self.backupFilename
+			backupList:      self.backupList,
+			filename:        self.backupFilename,
+			exportDelimiter: self.backupDelimiter
 		}));
 		return this;
 	},
@@ -136,12 +195,24 @@ var ExportView = BackupSubView.extend({
 	 * @param e
 	 */
 	onButtonExportClick:    function (e) {
-		var self        = this;
-		var models      = _.filter(schema.models, function (model) {
-			return (!_.isUndefined(model.syncCol)) && (_.indexOf(self.excludeModels, model.get('id')) == -1);
+		var self               = this;
+		/**
+		 * Form all exclude models that won't be used in the export
+		 */
+		var specialSchemaItems = this.getBackupSchema();
+		var models             = _.filter(schema.models, function (model) {
+			/**
+			 * Check if the table even exportable
+			 * by checking if the allowed attributes are available
+			 */
+			var data = _.findWhere(specialSchemaItems, {'id': model.get('id')});
+			if (_.isObject(data) && _.isEmpty(data.allowedAttributes)) {
+				return false;
+			}
+			return true;
 		});
-		var compiled    = _.template($("#backup-export-list").html());
-		this.backupList = compiled({
+		var compiled           = _.template($("#backup-export-list").html());
+		this.backupList        = compiled({
 			models: models
 		});
 		this.render();
@@ -162,6 +233,10 @@ var ExportView = BackupSubView.extend({
 		if (!_.isEmpty(models)) {
 			this.clearMessageBlock();
 			ExportModel.isReturn = true;
+			if (!_.isEmpty(self.backupDelimiter)) {
+				ExportModel.exportDelimiter = self.backupDelimiter;
+			}
+			ExportModel.specialSchemaItems = self.getBackupSchema();
 			ExportModel.run(models).done(function (zip) {
 				self.exportLogo().done(function (response) {
 					zip.file("logo.bmp", response, {binary: true});
@@ -208,6 +283,13 @@ var ExportView = BackupSubView.extend({
 	 */
 	onFilenameChange:       function (e) {
 		this.backupFilename = $(e.target).val();
+	},
+	/**
+	 * Update the current delimiter
+	 * @param e
+	 */
+	onDelimiterChange:      function (e) {
+		this.backupDelimiter = $(e.target).val();
 	}
 });
 
@@ -267,21 +349,30 @@ var ImportView = BackupSubView.extend({
 	importModel: false,
 
 	/**
+	 * Default import delimiter
+	 */
+	backupDelimiter: ";",
+
+	/**
 	 * Describe events
 	 */
 	events:               {
-		"change #file-import":   "onFileChange",
-		"click #file-import":    "onFileClick",
-		"click .toggle-all":     "onToggleClick",
-		"click .btn-import-run": "onImportRunClick"
+		"change #file-import":     "onFileChange",
+		"click #file-import":      "onFileClick",
+		"click .toggle-all":       "onToggleClick",
+		"click .btn-import-run":   "onImportRunClick",
+		"keyup #import-delimiter": "onDelimiterChange"
 	},
 	/**
 	 * Render content
 	 * @returns {ImportView}
 	 */
 	render:               function () {
+		var self = this;
 		this.delegateEvents();
-		this.$el.empty().append(this.template());
+		this.$el.empty().append(this.template({
+			importDelimiter: self.backupDelimiter
+		}));
 		return this;
 	},
 	/**
@@ -391,8 +482,10 @@ var ImportView = BackupSubView.extend({
 					 * if the parsing isn't successfully done
 					 * than push errors
 					 */
+					csvText             = csvText.replace(/^\s+|\s+$/g, '');
 					var parsedData      = Papa.parse(csvText, {
-						header: true
+						header:         true,
+						skipEmptyLines: true
 					});
 					var errorMessage    = false;
 					var maxErrorLength  = 5;
@@ -409,11 +502,21 @@ var ImportView = BackupSubView.extend({
 						});
 						errorMessage = errorCollection.join("<br />");
 					}
-					self.parsedFiles.push({
-						file:      file,
-						error:     errorMessage,
-						tableName: tableName
-					});
+					/**
+					 * Check if the table is allowed to import
+					 */
+					var tableData = _.findWhere(self.getBackupSchema(), {id: tableName});
+					var isAllowed = true;
+					if (!_.isUndefined(tableData) && _.isObject(tableData) && _.isEmpty(tableData.allowedAttributes)) {
+						isAllowed = false;
+					}
+					if (isAllowed) {
+						self.parsedFiles.push({
+							file:      file,
+							error:     errorMessage,
+							tableName: tableName
+						});
+					}
 					return deferred.resolve();
 				});
 			}
@@ -464,6 +567,10 @@ var ImportView = BackupSubView.extend({
 		}
 		else {
 			ImportModel.initModel();
+			ExportModel.specialSchemaItems = self.getBackupSchema();
+			if (!_.isEmpty(self.backupDelimiter)) {
+				ImportModel.importDelimiter = self.backupDelimiter;
+			}
 			this.importCertificates().done(function () {
 				var files = [];
 				_.each(self.parsedFiles, function (fileData) {
@@ -675,7 +782,13 @@ var ImportView = BackupSubView.extend({
 	pushDataToHistory:    function (modelData) {
 		ImportModel.history.push(modelData);
 	},
-
+	/**
+	 * Update the current delimiter
+	 * @param e
+	 */
+	onDelimiterChange:    function (e) {
+		this.backupDelimiter = $(e.target).val();
+	}
 });
 
 /**
