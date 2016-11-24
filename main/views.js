@@ -791,8 +791,6 @@ var TableDisplay = Backgrid.Grid.extend({
 				this.columns = args.columns = col;
 			}
 			if (!args.collection) {
-				console.log('model', args.model);
-				console.log('model id', args.model.id);
 				args            = _.extend(args, {collection: schema.table(args.model.id)});
 				this.collection = args.collection;
 			}
@@ -810,6 +808,7 @@ var TableDisplay = Backgrid.Grid.extend({
 		this.listenTo(this.collection, "change", this.syncSave);
 	},
 	syncSave:   function () {
+		var self = this;
 		this.collection.syncSave();
 	},
 	btnDel:     function () {
@@ -821,8 +820,7 @@ var TableDisplay = Backgrid.Grid.extend({
 		//console.log('event',ev);
 		if (!_.isUndefined(ev)) {
 			switch (ev) {
-				case 'refresh':
-				{
+				case 'refresh': {
 					var $this = this;
 					events.trigger("buttonBlock:" + this.model.id, "refresh", true);
 					this.collection.fetch().always(function () {
@@ -884,7 +882,6 @@ var PLUTableDisplay = TableDisplay.extend({
 			var $this = this;
 			switch (ev) {
 				case 'del':
-					console.log(this.getSelectedModels());
 					this.collection.deleteRows(this.getSelectedModels());
 					break;
 				case 'ins':
@@ -953,12 +950,10 @@ var PLUTableDisplay = TableDisplay.extend({
 		}
 		else {
 			$.when.apply($, promises).done(function (newModelID) {
-				console.log('newModelID', newModelID);
 				var newModel = self.collection.get(newModelID);
 				var position = self.collection.indexOf(newModel);
 				window.collection = self.collection;
 				window.newModel = newModel;
-				console.log('position', position);
 				self.event('refresh');
 			});
 		}
@@ -1420,7 +1415,7 @@ var TableContainer = Backbone.View.extend({
 		this.$el.children(":first-child").after(formatAlert(msg));
 	},
 	errorAlert:     function (src, resp, opt) {
-		this.insertAlert(xhrError(resp));
+		this.insertAlert(t("Connection failed"));
 	},
 	errAlert:       function (src, msg, field) {
 		if (field) {

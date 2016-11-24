@@ -182,6 +182,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 		return resp;
 	},
 	syncSave:            function (errorRep) {
+		var self = this;
 		var toSync   = [];
 		var toAdd    = [];
 		var cols     = _.map(this.model.prototype.schema.get('elems'), function (el) {
@@ -214,6 +215,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 			this.sync('patch', this, {
 				attrs:   toSync,
 				context: this,
+				timeout: 5000,
 				success: function (resp) {
 					if (_.isObject(resp) && _.isEmpty(resp)) {
 						_.each(toSync, function (el) {
@@ -247,6 +249,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 					} else sp.resolve();
 				},
 				error:   function (xhr/*,status,error*/) {
+					self.trigger('error');
 					if (errorRep) errorRep({msg: xhrError(xhr)});
 					sp.reject();
 				}
@@ -260,6 +263,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 			this.sync('create', this, {
 				attrs:   toAdd,
 				context: this,
+				timeout: 5000,
 				success: function (resp) {
 					if (_.isObject(resp) && _.isEmpty(resp)) {
 						_.each(toAdd, function (el) {
@@ -305,6 +309,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 					}
 				},
 				error:   function (xhr/*,status,error*/) {
+					self.trigger('error');
 					if (errorRep) errorRep({msg: xhrError(xhr)});
 					ap.reject();
 				}

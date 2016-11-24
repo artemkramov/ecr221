@@ -123,7 +123,8 @@
       "Backup": "Backup",
       "Fiscalization": "Nastavení EET",
       "Fiscalized": "EET start",
-      "Delimiter": "Delimiter"
+      "Delimiter": "Delimiter",
+      "Connection failed": "Connection failed"
 
     }
   }
