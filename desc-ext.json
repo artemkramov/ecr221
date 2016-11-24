@@ -101,6 +101,7 @@
       "Certificate wasn't imported": "Certificate wasn't imported",
       "Certificate was imported successfully": "Certificate was imported successfully",
       "Incorrect file format": "Incorrect file format",
+      "Incorrect file format or password": "Incorrect file format or password",
       "Enter your password": "Enter your password",
       "Uncaught error": "Uncaught error",
       "SSL certificate upload": "Nahrání SSL certifikátu",

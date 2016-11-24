@@ -437,7 +437,7 @@ var CertificateBlock = Backbone.View.extend({
 				self.enableUpload();
 			}
 			catch (exception) {
-				self.pushMessage(t("Incorrect file format"), "danger", "private");
+				self.pushMessage(t("Incorrect file format or password"), "danger", "private");
 			}
 		};
 		reader.readAsBinaryString(file);

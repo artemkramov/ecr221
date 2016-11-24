@@ -4,11 +4,11 @@
     <meta charset=utf8>
     <title>ECR App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/backgrid.js/0.3.5/backgrid.min.css">
     <link rel="stylesheet" href="/css/backgrid-select-all.css">
+    <link rel="stylesheet" href="/css/backgrid-paginator.min.css">
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap-theme.min.css">
 </head>
 <body>
 <div id="lnb"></div>
@@ -28,6 +28,7 @@
     </div>
 </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/sprintf/1.0.2/sprintf.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
@@ -35,12 +36,23 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/backgrid.js/0.3.5/backgrid.min.js"></script>
 <script src="/js/backgrid-select-all.js"></script>
+<script src="/js/papaparse.min.js"></script>
+<script src="/js/jquery.noty.packaged.min.js"></script>
+<script src="/js/forge.min.js"></script>
+<script src="/js/jszip.min.js"></script>
+<script src="/js/FileSaver.min.js"></script>
+<script src="/js/backgrid-paginator.min.js"></script>
+<script src="/js/backbone-pageable.min.js"></script>
+
+
 <!--script src="/js/main.js"></script-->
 <script type="text/javascript">
     $('#lnb').load('tmpl.html',function(){
-        $.getScript('/js/main.js',function(){
-            $(function() {
-                appStart();
+        $.getScript('/js/main.js?v=' + (new Date().getTime()),function(){
+            $.getScript('/js/backup.js?v=' + (new Date().getTime()),function() {
+                $(function () {
+                    appStart();
+                });
             });
         });
     });

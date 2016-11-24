@@ -3,12 +3,12 @@
 <head>
     <meta charset=utf8>
     <title>ECR App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/bootstrap.css">
-    <link rel="stylesheet" href="/css/backgrid.css">
-    <link rel="stylesheet" href="/css/backgrid-select-all.css">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/bootstrap-theme.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/bootstrap.css" />
+    <link rel="stylesheet" href="/css/backgrid.css" />
+    <link rel="stylesheet" href="/css/backgrid-select-all.css" />
+    <link rel="stylesheet" href="/css/backgrid-paginator.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
 </head>
 <body>
 <div id="lnb"></div>
@@ -35,12 +35,21 @@
 <script src="/js/backbone.js"></script>
 <script src="/js/backgrid.js"></script>
 <script src="/js/backgrid-select-all.js"></script>
+<script src="/js/papaparse.min.js"></script>
+<script src="/js/jquery.noty.packaged.min.js"></script>
+<script src="/js/forge.min.js"></script>
+<script src="/js/jszip.min.js"></script>
+<script src="/js/FileSaver.min.js"></script>
+<script src="/js/backgrid-paginator.min.js"></script>
+<script src="/js/backbone-pageable.min.js"></script>
 <!--script src="/js/main.js"></script-->
 <script type="text/javascript">
     $('#lnb').load('tmpl.html',function(){
-        $.getScript('/js/main.js',function(){
-            $(function() {
-                appStart();
+        $.getScript('/js/main.js?v=' + (new Date().getTime()),function(){
+            $.getScript('/js/backup.js?v=' + (new Date().getTime()),function() {
+                $(function () {
+                    appStart();
+                });
             });
         });
     });
