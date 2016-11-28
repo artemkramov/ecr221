@@ -139,6 +139,52 @@ var Modal = Backbone.View.extend({
 	}
 });
 
+var ConfirmModal = Modal.extend({
+
+	callbackConfirm: function () {
+	},
+
+	autoClose: false,
+
+	setCallback:   function (callback) {
+		this.callbackConfirm = callback;
+		this.setButtons(this.buttons());
+	},
+	buttons:       function () {
+		return {
+			confirm: [t('yes'), 'primary'],
+			cancel:  [t('None'), 'danger']
+		};
+	},
+	click:         function (ev) {
+		var buttonType = 'handle-' + $(ev.target).data('ev').toString();
+		buttonType     = toCamelCase(buttonType);
+		if (!_.isUndefined(this[buttonType]) && _.isFunction(this[buttonType])) {
+			this[buttonType]();
+			this.setButtons({});
+		}
+	},
+	cancel:        function () {
+		this.$el.off('click', '.modal-footer button');
+		events.trigger('clickDlg', 'hide');
+	},
+	handleCancel:  function () {
+		this.$el.off('click', '.modal-footer button');
+		this.hide();
+	},
+	handleConfirm: function () {
+		if (_.isFunction(this.callbackConfirm)) {
+			if (this.autoClose) {
+				this.hide();
+			}
+			$('body').removeClass('modal-open');
+			this.callbackConfirm();
+			this.$el.off('click', '.modal-footer button');
+		}
+	}
+
+});
+
 // </editor-fold>
 
 // <editor-fold desc="----------------------Main Screen Views--------------------------">
@@ -889,14 +935,22 @@ var PLUTableDisplay = TableDisplay.extend({
 					break;
 				case 'del-all':
 				{
-					var $this = this;
-					var opt   = {data: []}
-					opt.error = function (resp) {
-						$this.collection.trigger('error', $this.collection, resp, opt);
-					};
-					this.collection.sync('update', this.collection, opt).done(function () {
-						$this.collection.reset();
+					var confirmModal = new ConfirmModal();
+					confirmModal.set({
+						header: t('Warning'),
+						body:   t('Do you want to remove all products?')
 					});
+					confirmModal.autoClose = true;
+					confirmModal.setCallback(function () {
+						var opt   = {data: []};
+						opt.error = function (resp) {
+							$this.collection.trigger('error', $this.collection, resp, opt);
+						};
+						$this.collection.sync('update', $this.collection, opt).done(function () {
+							$this.collection.reset();
+						});
+					});
+					confirmModal.show();
 				}
 					break;
 				default:
@@ -990,15 +1044,23 @@ var PLUFormDisplay = FormDisplay.extend({
 					return;
 				case 'del-all':
 				{
-					var $this = this;
-					var opt   = {data: []};
-					opt.error = function (resp) {
-						$this.collection.trigger('error', $this.collection, resp, opt);
-					};
-					this.tbl.sync('update', this.tbl, opt).done(function () {
-						$this.tbl.reset();
-						$this.event('ins');
+					var confirmModal = new ConfirmModal();
+					confirmModal.set({
+						header: t('Warning'),
+						body:   t('Do you want to remove all products?')
 					});
+					confirmModal.autoClose = true;
+					confirmModal.setCallback(function () {
+						var opt   = {data: []};
+						opt.error = function (resp) {
+							$this.collection.trigger('error', $this.collection, resp, opt);
+						};
+						$this.tbl.sync('update', $this.tbl, opt).done(function () {
+							$this.tbl.reset();
+							$this.event('ins');
+						});
+					});
+					confirmModal.show();
 				}
 					return;
 				case 'ins':

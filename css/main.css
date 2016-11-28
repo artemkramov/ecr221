@@ -75,10 +75,10 @@ a img:active {
 .cert-upload .message {
     margin-top: 10px;
 }
-.cert-upload .refresh, .cert-upload.active .upload {
+.cert-upload .refresh, .cert-upload.active .upload, .btn-cert-remove.active .remove, .btn-cert-remove .refresh-remove {
     display: none;
 }
-.cert-upload.active .refresh {
+.cert-upload.active .refresh, .btn-cert-remove.active .refresh-remove {
     display: inline-block;
 }
 .spin {

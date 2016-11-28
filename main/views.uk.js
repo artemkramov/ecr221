@@ -247,17 +247,17 @@ var GetDateTime = Backbone.View.extend({
  });*/
 
 var FiscDo = PageView.extend({
-	events:     {
+	events:    {
 		'click #hd':  'saveHdr',
 		'click #tx':  'saveTax',
 		'click #fsc': 'fiscalize'
 	},
-	remove:     function () {
+	remove:    function () {
 		this.taxes.remove();
 		this.eet.remove();
 		PageView.prototype.remove.call(this);
 	},
-	render:     function () {
+	render:    function () {
 		this.taxes = new TableContainer({
 			model:   schema.get('Tax'),
 			tblMode: true,
@@ -272,7 +272,7 @@ var FiscDo = PageView.extend({
 		this.$el.html('');
 		this.$el.append(this.taxes.render().$el);
 		this.$el.append(this.eet.render().$el);
-		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
+		var tmpl   = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([],
 			function (memo, el) {
 				el[2] = t(el[2]);
@@ -281,7 +281,7 @@ var FiscDo = PageView.extend({
 		));
 		return this;
 	},
-	checkTime:  function (proc, e) {
+	checkTime: function (proc, e) {
 		var ecrDate  = ecrStatus.getTime();
 		var currDate = new Date();
 		ecrDate.setHours(0, 0, 0, 0);
@@ -306,30 +306,30 @@ var FiscDo = PageView.extend({
 			modal.hide();
 		});
 	},
-	saveHdr:    function (e) {
+	saveHdr:   function (e) {
 		e.preventDefault();
 		this.checkTime(this.doHdr, e);
 		return false;
 	},
-	saveTax:    function (e) {
+	saveTax:   function (e) {
 		e.preventDefault();
 		this.checkTime(this.doTax, e);
 		return false;
 	},
-	fiscalize:  function (e) {
+	fiscalize: function (e) {
 		e.preventDefault();
 		this.checkTime(this.doFisc, e);
 		return false;
 	},
-	doHdr:      function (e) {
+	doHdr:     function (e) {
 		callProc({addr: '/cgi/proc/puthdrfm', btn: e.target/*'#hd'*/});
 		//console.log('Save Hdr');
 	},
-	doTax:      function (e) {
+	doTax:     function (e) {
 		callProc({addr: '/cgi/proc/puttaxfm', btn: e.target/*'#tx'*/});
 		//console.log('Save Tax');
 	},
-	doFisc:     function (e) {
+	doFisc:    function (e) {
 		callProc({addr: '/cgi/proc/fiscalization', btn: e.target/*'#fsc'*/});
 		//console.log('Fiscalize');
 	}
@@ -395,6 +395,8 @@ var CertificateBlock = Backbone.View.extend({
 		"click #ssl-file-certificate":       "onFileClick",
 		"click #btn-certificate-upload":     "onUploadClick",
 		"click #btn-ssl-certificate-upload": "onUploadSslClick",
+		"click #btn-p12-certificate-remove": "onRemoveP12Click",
+		"click #btn-ssl-certificate-remove": "onRemoveSSLClick"
 	},
 	/**
 	 * Render html for the block
@@ -598,6 +600,7 @@ var CertificateBlock = Backbone.View.extend({
 	 * Push message to user
 	 * @param message
 	 * @param type
+	 * @param fileType
 	 */
 	pushMessage:          function (message, type, fileType) {
 		var alert        = new Alert({
@@ -622,6 +625,60 @@ var CertificateBlock = Backbone.View.extend({
 	 */
 	clearMessage:         function () {
 		this.getMessageBlock().empty();
+	},
+	/**
+	 * Clear the P12 certificate
+	 * @param event
+	 */
+	onRemoveP12Click:     function (event) {
+		var self = this;
+		var promises = [];
+		promises.push(this.clearCertificate(this.urlCertificate));
+		promises.push(this.clearCertificate(this.urlPrivateKey));
+		$(event.target).addClass('active');
+		$.when.apply($, promises).done(function (responseCertificate, responsePrivateKey) {
+			var isCleared = true;
+			$(event.target).removeClass('active');
+			_.each(arguments, function (response) {
+				if (_.isObject(response[0]) && parseInt(response[0]['verify']) == 1) {
+					isCleared = false;
+				}
+			});
+			if (isCleared) {
+				self.pushMessage(t("Certificate was cleared successfully"), "success", "private");
+			}
+		}).fail(function () {
+			$(event.target).removeClass('active');
+		});
+	},
+	/**
+	 * Clear SSL certificate
+	 * @param event
+	 */
+	onRemoveSSLClick: function (event) {
+		$(event.target).addClass('active');
+		var self = this;
+		this.clearCertificate(this.urlSslCertificate).done(function () {
+			self.pushMessage(t("Certificate was cleared successfully"), "success", "public");
+			$(event.target).removeClass('active');
+		}).fail(function () {
+			$(event.target).removeClass('active');
+		});
+	},
+	/**
+	 * Clear the certificate
+	 * @param url
+	 * @returns {*}
+	 */
+	clearCertificate:     function (url) {
+		return $.ajax({
+			url:         url,
+			data:        [1,1,1],
+			type:        'post',
+			processData: false,
+			contentType: 'application/octet-stream',
+			timeout:     3000
+		});
 	}
 });
 

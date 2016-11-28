@@ -124,7 +124,10 @@
       "Fiscalization": "Nastavení EET",
       "Fiscalized": "EET start",
       "Delimiter": "Delimiter",
-      "Connection failed": "Connection failed"
+      "Connection failed": "Connection failed",
+      "Warning": "Warning",
+      "Do you want to remove all products?": "Do you want to remove all products?",
+      "Certificate was cleared successfully": "Certificate was cleared successfully"
 
     }
   }
