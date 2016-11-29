@@ -96,10 +96,10 @@
       "Not correct file format.": "Not correct file format.",
       "row": "row",
       "Finished": "Finished",
-      "Upload": "Upload",
+      "Upload": "Nahrát",
       "Certificate uploading": "Nahrání certifikátu",
       "Certificate wasn't imported": "Certificate wasn't imported",
-      "Certificate was imported successfully": "Certificate was imported successfully",
+      "Certificate was imported successfully": "Certifikát se úspěšně nahrál",
       "Incorrect file format": "Incorrect file format",
       "Incorrect file format or password": "Incorrect file format or password",
       "Enter your password": "Enter your password",
@@ -124,11 +124,14 @@
       "Fiscalization": "Nastavení EET",
       "Fiscalized": "EET start",
       "Delimiter": "Delimiter",
-      "Connection failed": "Connection failed",
-      "Warning": "Warning",
-      "Do you want to remove all products?": "Do you want to remove all products?",
-      "Certificate was cleared successfully": "Certificate was cleared successfully"
-
+      "Connection failed": "Spojení selhalo",
+      "Warning": "Varování",
+      "Do you want to remove all products?": "Chcete odstranit všechny položky?",
+      "Certificate was cleared successfully": "Certifikát úspěšně smazán",
+      "Remove": "Odstranit",
+      "Logout": "Odhlásit",
+      "Certificate is verified": "Certifikát ověřen",
+      "Upload from server": "Nahrát ze serveru"
     }
   }
 }

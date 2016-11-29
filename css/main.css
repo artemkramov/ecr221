@@ -129,3 +129,6 @@ a img:active {
 .backup-delimiter {
     max-width: 60px;
 }
+.label-is-verified:hover {
+    cursor: pointer;
+}

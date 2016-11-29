@@ -386,7 +386,13 @@
 
 <script type="text/template" id="cert-upload-block">
     <div class="cert-upload private">
-        <label><%= t("Certificate uploading") %></label>
+        <div>
+            <label><%= t("Certificate uploading") %></label>
+            <% if (eetModel.get('isP12Verified')) { %>
+            <span class="glyphicon glyphicon-ok-circle label-is-verified" data-toggle="tooltip"
+                  data-original-title="<%= t('Certificate is verified') %>"></span>
+            <% } %>
+        </div>
         <input type="file" name="file" id="file-certificate" accept=".p12"/>
         <button type="button" class="btn btn-primary" id="btn-certificate-upload">
             <span class="glyphicon glyphicon-upload upload"></span>
@@ -401,13 +407,26 @@
         <div class="message"></div>
     </div>
     <div class="cert-upload public">
-        <label><%= t("SSL certificate upload") %></label>
+        <div>
+            <label><%= t("SSL certificate upload") %></label>
+            <% if (eetModel.get('isSslVerified')) { %>
+            <span class="glyphicon glyphicon-ok-circle label-is-verified" data-toggle="tooltip"
+                  data-original-title="<%= t('Certificate is verified') %>"></span>
+            <% } %>
+        </div>
         <input type="file" name="file" id="ssl-file-certificate" accept=".crt"/>
         <button type="button" class="btn btn-primary" id="btn-ssl-certificate-upload">
             <span class="glyphicon glyphicon-upload upload"></span>
             <span class="glyphicon glyphicon-refresh spin refresh"></span>
             <%= t("Upload") %>
         </button>
+
+        <button type="button" class="btn btn-default btn-cert-remove" id="btn-certificate-server-upload" >
+            <span class="glyphicon glyphicon-globe remove"></span>
+            <span class="glyphicon glyphicon-refresh spin refresh-remove"></span>
+            <%= t("Upload from server") %>
+        </button>
+
         <button type="button" class="btn btn-danger btn-cert-remove" id="btn-ssl-certificate-remove">
             <span class="glyphicon glyphicon-remove remove"></span>
             <span class="glyphicon glyphicon-refresh spin refresh-remove"></span>

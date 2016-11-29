@@ -182,7 +182,10 @@ var appStart = function () {
 	schema.load(function () {
 		schemaLoaded.resolve();
 	});
-	$.when(qryDone, schemaLoaded).always(function () {
+
+	window.eetModel = new EETModel();
+
+	$.when(qryDone, schemaLoaded, eetModel.initializeData()).always(function () {
 		if (schema.get('PLU')) {
 			mainScreenCells.unshift(new MainCell({
 				model: new Backbone.Model(
