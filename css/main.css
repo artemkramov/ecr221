@@ -132,3 +132,12 @@ a img:active {
 .label-is-verified:hover {
     cursor: pointer;
 }
+#PLU .alert {
+    margin-bottom: 0px;
+    clear: both;
+}
+.plu-info-message {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}

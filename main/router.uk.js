@@ -40,7 +40,7 @@ var AppRouter = Backbone.Router.extend({
 	 receiptScr: function() { tapeView.render(); },*/
 
 	pluScr:     function () {
-		this.view = new TableContainer({
+		this.view = new PLUContainer({
 			model:   schema.get('PLU'),
 			tblMode: true,
 			show:    true,
@@ -113,9 +113,9 @@ var appStart = function () {
 	fiscalCell  = new FiscalCell({
 		firstRep:  1,
 		firstTime: new Date(2000, 1, 1),
-		fiscalize: true,
-		lastRep:   5000,
-		lastTime:  new Date()
+		fiscalize: false,
+		lastRep:   undefined,
+		lastTime:  undefined
 	});
 	networkCell = new NetworkInfo();
 
@@ -185,7 +185,7 @@ var appStart = function () {
 
 	window.eetModel = new EETModel();
 
-	$.when(qryDone, schemaLoaded, eetModel.initializeData()).always(function () {
+	$.when(qryDone, schemaLoaded, eetModel.initializeData(), fiscalCell.initializeData()).always(function () {
 		if (schema.get('PLU')) {
 			mainScreenCells.unshift(new MainCell({
 				model: new Backbone.Model(

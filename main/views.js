@@ -9,7 +9,7 @@
  * Creates one elemView per collection item and insert it to appendEl
  */
 var CollectionView = Backbone.View.extend({
-	subView: {},
+	subView:    {},
 	initialize: function (args) {
 		if (args && args.elemView) this.elemView = args.elemView;
 		this.initEl();
@@ -33,7 +33,7 @@ var CollectionView = Backbone.View.extend({
 		//this.model.each(this.addElem,this);
 		return this;
 	},
-	remove: function() {
+	remove:     function () {
 		this.subView.remove();
 	}
 });
@@ -315,7 +315,15 @@ var PrgView = AddView.extend({
 });
 
 var FiscalView = AddView.extend({
-	template: _.template($('#fiscal-cell').html())
+	template: _.template($('#fiscal-cell').html()),
+	render:     function () {
+		try {
+			this.$el.html(this.template(this.model.toJSON()));
+		} catch (e) {
+			console.log('error', e);
+		}
+		return this;
+	}
 	//initialize: function() {
 	//    fiscalCell.on('changed',this.render,this);
 	//}
@@ -866,7 +874,8 @@ var TableDisplay = Backgrid.Grid.extend({
 		//console.log('event',ev);
 		if (!_.isUndefined(ev)) {
 			switch (ev) {
-				case 'refresh': {
+				case 'refresh':
+				{
 					var $this = this;
 					events.trigger("buttonBlock:" + this.model.id, "refresh", true);
 					this.collection.fetch().always(function () {
@@ -878,10 +887,10 @@ var TableDisplay = Backgrid.Grid.extend({
 		}
 	},
 	render:     function () {
-		var self       = this;
+		var self = this;
 		this.delegateEvents();
 
-		var view       = Backgrid.Grid.prototype.render.apply(this);
+		var view = Backgrid.Grid.prototype.render.apply(this);
 
 		var paginator  = new Backgrid.Extension.Paginator({
 			collection:              self.collection,
@@ -918,9 +927,13 @@ var PLUTableDisplay = TableDisplay.extend({
 	tmpl:       _.template($('#plu-table-bar-template').html()),
 	selAll:     true,
 	initialize: function (args) {
+		var self = this;
 		TableDisplay.prototype.initialize.apply(this, arguments);
 		if (args && args.model) {
-			this.addToolbar = new ImpExView({model: {models: [args.model]}});
+			this.addToolbar = new PLUImportExportView({
+				model: {models: [args.model]},
+				parentContainer: self
+			});
 		}
 	},
 	event:      function (ev) {
@@ -935,7 +948,7 @@ var PLUTableDisplay = TableDisplay.extend({
 					break;
 				case 'del-all':
 				{
-					var confirmModal = new ConfirmModal();
+					var confirmModal       = new ConfirmModal();
 					confirmModal.set({
 						header: t('Warning'),
 						body:   t('Do you want to remove all products?')
@@ -1004,10 +1017,10 @@ var PLUTableDisplay = TableDisplay.extend({
 		}
 		else {
 			$.when.apply($, promises).done(function (newModelID) {
-				var newModel = self.collection.get(newModelID);
-				var position = self.collection.indexOf(newModel);
+				var newModel      = self.collection.get(newModelID);
+				var position      = self.collection.indexOf(newModel);
 				window.collection = self.collection;
-				window.newModel = newModel;
+				window.newModel   = newModel;
 				self.event('refresh');
 			});
 		}
@@ -1017,8 +1030,12 @@ var PLUTableDisplay = TableDisplay.extend({
 var PLUFormDisplay = FormDisplay.extend({
 	tmpl:       _.template($('#plu-form-bar-template').html()),
 	initialize: function (args) {
+		var self = this;
 		if (args && args.model) {
-			this.addToolbar = new ImpExView({model: {models: [args.model]}});
+			this.addToolbar = new PLUImportExportView({
+				model: {models: [args.model]},
+				parentContainer: self
+			});
 		}
 	},
 	event:      function (ev) {
@@ -1044,7 +1061,7 @@ var PLUFormDisplay = FormDisplay.extend({
 					return;
 				case 'del-all':
 				{
-					var confirmModal = new ConfirmModal();
+					var confirmModal       = new ConfirmModal();
 					confirmModal.set({
 						header: t('Warning'),
 						body:   t('Do you want to remove all products?')
@@ -1097,7 +1114,7 @@ var PLUFormDisplay = FormDisplay.extend({
 			tableCollection.last().newModel = true;
 			tableCollection.syncSave().done(function () {
 				$this.data.destroy({
-					wait: true,
+					wait:    true,
 					success: function () {
 						$('button.btn', $this.$el).button('reset');
 						events.trigger("buttonBlock:" + $this.model.id, "refresh", false);
@@ -1503,8 +1520,8 @@ var TableContainer = Backbone.View.extend({
 			delete this.toolbar;
 		}
 		window.globalView = view;
-		this.content = view;
-		this.toolbar = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
+		this.content      = view;
+		this.toolbar      = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
 	},
 	initFormClick:  function () {
 		this.initView("form");
@@ -1569,7 +1586,7 @@ var TableContainer = Backbone.View.extend({
 		this.showContent = false;
 		this.content.$el.show();
 	},
-	remove: function () {
+	remove:         function () {
 		this.content.remove();
 	}
 });
@@ -1585,10 +1602,37 @@ var GroupTable = PageScreen.extend({
 			elemView:  TableContainer
 		});
 	},
-	remove: function () {
+	remove:     function () {
 		this.page.remove();
 	}
 });
+
+
+var PLUContainer = TableContainer.extend({
+	render: function () {
+		var model    = schema.get('PLU');
+		var view     = TableContainer.prototype.render.call(this);
+		var compiled = _.template($("#alert-block").html());
+		var self     = this;
+		_.each(model.get('elems'), function (field) {
+			if (field.name == 'Tax' && !_.isUndefined(field.help)) {
+				var compiledTemplate = _.template($("#plu-alert-preview").html());
+				var message          = compiledTemplate({
+					items: field.help,
+					label: field.label
+				});
+				var alert            = compiled({
+					type:    'info',
+					message: message
+				});
+				self.$el.find('#PLU').append(alert);
+			}
+		});
+
+		return view;
+	}
+});
+
 //</editor-fold>
 
 

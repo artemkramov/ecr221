@@ -253,16 +253,10 @@ var FiscDo = PageView.extend({
 		'click #fsc': 'fiscalize'
 	},
 	remove:    function () {
-		this.taxes.remove();
 		this.eet.remove();
 		PageView.prototype.remove.call(this);
 	},
 	render:    function () {
-		this.taxes = new TableContainer({
-			model:   schema.get('Tax'),
-			tblMode: true,
-			show:    true
-		});
 		this.eet   = new EETContainer({
 			model:   schema.get('EET'),
 			tblMode: false,
@@ -270,7 +264,6 @@ var FiscDo = PageView.extend({
 		});
 		this.delegateEvents();
 		this.$el.html('');
-		this.$el.append(this.taxes.render().$el);
 		this.$el.append(this.eet.render().$el);
 		var tmpl   = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([],

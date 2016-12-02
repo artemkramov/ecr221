@@ -205,11 +205,13 @@ var ImpExView = Backbone.View.extend({
 		);
 	},
 	clickimport:    function () {
+		this.$('.icsv').val("");
 		this.$('.icsv').click();
 	},
 	csvExport:      function () {
 		var models = this.model.models;
 		setTimeout(function () {
+			ExportModel.isReturn = false;
 			ExportModel.run(models);
 		}, 0);
 	},
@@ -224,6 +226,45 @@ var ImpExView = Backbone.View.extend({
 		});
 		$.ajaxSettings.async = tmp;
 	}
+});
+
+var PLUImportExportView = ImpExView.extend({
+	initialize: function (argument) {
+		this.parentContainer = argument.parentContainer;
+		return ImpExView.prototype.initialize.call(this);
+	},
+	csvExport: function () {
+		var models = this.model.models;
+		setTimeout(function () {
+			ExportModel.isReturn = true;
+			ExportModel.run(models).done(function (zip) {
+				zip.file('PLU.csv').async("uint8array").then(function (csvData) {
+					var blob = new Blob(["\ufeff", csvData]);
+					saveAs(blob, "PLU.csv");
+					ExportModel.stop();
+				});
+			});
+		}, 0);
+	},
+	Import:    function (fileList) {
+		if (!fileList) return;
+		var data          = fileList[0];
+		var fileReader    = new FileReader();
+		var self = this;
+		fileReader.onload = function (event) {
+			var content = event.target.result;
+			var zip     = new JSZip();
+			zip.file('PLU.csv', content);
+			ImportModel.initModel();
+			ImportModel.start();
+			var files   = zip.files;
+			ImportModel.processZipRecursive(files, 0, Object.keys(files)).done(function () {
+				self.parentContainer.event('refresh');
+			});
+		};
+		fileReader.readAsText(data);
+		//ImportModel.parseFile(data);
+	},
 });
 
 var ImportReport = Backbone.View.extend({
@@ -722,7 +763,8 @@ var ImportModel = (function () {
 		 * @param fileKeys
 		 */
 		processZipRecursive:        function (files, fileCounter, fileKeys) {
-			var self = this;
+			var self     = this;
+			var deferred = $.Deferred();
 			self.processTable(files[fileKeys[fileCounter]]).then(function () {
 				fileCounter++;
 				if (self.isRunning && fileCounter < fileKeys.length) {
@@ -733,9 +775,10 @@ var ImportModel = (function () {
 					var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
 					var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
 					$(progressBar).removeClass('active').addClass(progressBarClass);
-					console.log("finish");
+					return deferred.resolve();
 				}
 			});
+			return deferred.promise();
 		},
 		/**
 		 * Process the data of the file in archive
@@ -838,7 +881,7 @@ var ImportModel = (function () {
 							/**
 							 * Update the schema due to the special fields
 							 */
-							item = ExportModel.pushAttributesToBackup(modelData.get("id"), item);
+							item           = ExportModel.pushAttributesToBackup(modelData.get("id"), item);
 							var model      = new Backbone.Model(item);
 							var row        = self.findRowInCollection(model, tableData.models, idAttribute);
 							model.isNew    = function () {
@@ -874,7 +917,7 @@ var ImportModel = (function () {
 					/**
 					 * Update the schema due to the special settings
 					 */
-					data = ExportModel.pushAttributesToBackup(modelData.get("id"), data);
+					data        = ExportModel.pushAttributesToBackup(modelData.get("id"), data);
 					delete data['id'];
 					var promise = model.save(data, {
 						patch: true, silent: true, wait: true, parse: false,

@@ -73,20 +73,38 @@ var FiscalCell = Backbone.Model.extend({
 					$this.unset('firstTime');
 				}
 			}
-			$this.set('fiscalize', $this.has('firstRep'));
 		});
-		$.getJSON("/cgi/tbl/FDay?s=-1", function (data, status) {
-			if (_.isArray(data)) data = data[0];
-			if (_.isObject(data)) {
-				if ('id' in data) {
-					//console.log('set lastRep',data.id)
-					$this.set('lastRep', data.id);
-				} else $this.unset('lastRep');
-				if ('Date' in data) {
-					$this.set('lastTime', new Date(data.Date * 1000));
-				} else $this.unset('lastTime');
+	},
+	/**
+	 * Initialize fiscal data
+	 * @returns {*}
+	 */
+	initializeData: function () {
+		var deferred = $.Deferred();
+		var self = this;
+		$.ajax({
+			url: '/cgi/tbl/FTax',
+			success: function (response) {
+				if (!_.isEmpty(response)) {
+					self.set('fiscalize', true);
+				}
+				$.getJSON("/cgi/tbl/FDay?s=-1", function (data) {
+					if (_.isArray(data)) data = data[0];
+					if (_.isObject(data) && !_.isEmpty(data)) {
+						if ('id' in data) {
+							self.set('lastRep', data.id);
+						}
+						if ('Date' in data) {
+							self.set('lastTime', new Date(data.Date * 1000));
+						}
+					}
+					return deferred.resolve();
+				});
+
 			}
-		});
+		})
+
+		return deferred.promise();
 	}
 });
 
