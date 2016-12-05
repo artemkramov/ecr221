@@ -82,6 +82,10 @@ Name=css/main.css
 File=css/main.css
 Content-Type=text/css
 
+Name=css/bootstrap.min.css
+File=permanent_data/css/bootstrap.min.css
+Content-Type=text/css
+
 #Name=firmware.css
 #File=permanent_data/css/firmware.css
 #Content-Type=text/css
@@ -136,10 +140,6 @@ Name=js/forge.min.js
 File=js/forge.min.js
 Content-Type=application/javascript
 
-#Name=Firmware.js
-#File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
-#Content-Type=application/javascript
-
 Name=js/backgrid-paginator.min.js
 File=js/backgrid-paginator.min.js
 Content-Type=application/javascript
@@ -159,6 +159,22 @@ Content-Type=application/javascript
 Name=js/FileSaver.min.js
 File=js/FileSaver.min.js
 Content-Type=application/javascript
+
+Name=js/jquery.min.js
+File=permanent_data/js/jquery.min.js
+Content-Type=application/javascript
+
+Name=js/bootstrap.min.js
+File=permanent_data/js/bootstrap.min.js
+Content-Type=application/javascript
+
+Name=js/underscore-min.js
+File=permanent_data/js/underscore-min.js
+Content-Type=application/javascript
+
+#Name=Firmware.js
+#File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
+#Content-Type=application/javascript
 
 #image files
 

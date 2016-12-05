@@ -260,10 +260,10 @@ var PLUImportExportView = ImpExView.extend({
 			var files   = zip.files;
 			ImportModel.processZipRecursive(files, 0, Object.keys(files)).done(function () {
 				self.parentContainer.event('refresh');
+				Backbone.history.loadUrl(Backbone.history.fragment);
 			});
 		};
-		fileReader.readAsText(data);
-		//ImportModel.parseFile(data);
+		fileReader.readAsText(data, ImportModel.encoding);
 	},
 });
 
@@ -656,6 +656,11 @@ var ImportModel = (function () {
 		specialSchemaItems: [],
 
 		/**
+		 * Encoding of the imported CSV file
+		 */
+		encoding: 'windows-1250',
+
+		/**
 		 * Reset percentage
 		 */
 		resetPercentage:            function () {
@@ -798,39 +803,46 @@ var ImportModel = (function () {
 			 */
 			var modelData = schema.get(tableName);
 			if (self.isRunning && modelData) {
-				backupFile.async("string").then(function (csvText) {
-
-					/**
-					 * Parse CSV data
-					 */
-					self.parseCSV(csvText, backupFile.name).done(function (parsedData) {
+				backupFile.async("uint8array").then(function (csvBuffer) {
+					window.csvBuffer = csvBuffer;
+					var bb = new Blob([csvBuffer]);
+					var f = new FileReader();
+					f.onload = function(e) {
+						var csvText = e.target.result;
 						/**
-						 * Wait until we fetch all records from the table
-						 * @type {*[]}
+						 * Parse CSV data
 						 */
-						var promises = [
-							schema.tableFetchIgnoreCache(tableName)
-						];
-						$.when.apply($, promises).done(function () {
+						self.parseCSV(csvText, backupFile.name).done(function (parsedData) {
 							/**
-							 * Reset the progress bar and set the current import model
+							 * Wait until we fetch all records from the table
+							 * @type {*[]}
 							 */
-							self.setProgressData(0);
-							self.modelPercentage.set("name", schema.get(tableName).get("name"));
-							var options   = {
-								schema: modelData,
-								urlAdd: schema.url + '/' + tableName
-							};
-							options.model = TableModel.extend(options);
-							var tableData = schema.tableIgnoreCache(tableName);
+							var promises = [
+								schema.tableFetchIgnoreCache(tableName)
+							];
+							$.when.apply($, promises).done(function () {
+								/**
+								 * Reset the progress bar and set the current import model
+								 */
+								self.setProgressData(0);
+								self.modelPercentage.set("name", schema.get(tableName).get("name"));
+								var options   = {
+									schema: modelData,
+									urlAdd: schema.url + '/' + tableName
+								};
+								options.model = TableModel.extend(options);
+								var tableData = schema.tableIgnoreCache(tableName);
 
-							self.processData(parsedData, modelData, tableData, options).done(function () {
-								return deferred.resolve();
+								self.processData(parsedData, modelData, tableData, options).done(function () {
+									return deferred.resolve();
+								});
 							});
+						}).fail(function () {
+							return deferred.resolve();
 						});
-					}).fail(function () {
-						return deferred.resolve();
-					});
+					};
+					f.readAsText(bb);
+
 				});
 			}
 			else {
@@ -922,7 +934,7 @@ var ImportModel = (function () {
 					var promise = model.save(data, {
 						patch: true, silent: true, wait: true, parse: false,
 						error: function (model, response) {
-							modelData.error = true;
+							modelDataHistory.error = true;
 							events.trigger(self.errorLabel, t("Uncaught error"));
 							return deferred.resolve();
 						}
@@ -935,14 +947,14 @@ var ImportModel = (function () {
 							if (!_.isUndefined(response.err.f)) {
 								errorMessage += " - " + response.err.f;
 							}
-							modelData.result = errorMessage;
-							modelData.error  = true;
-							self.history.push(modelData);
+							modelDataHistory.result = errorMessage;
+							modelDataHistory.error  = true;
+							self.history.push(modelDataHistory);
 							events.trigger(self.errorLabel, errorMessage);
 						}
 						else {
 							modelData.result = t("Finished");
-							self.history.push(modelData);
+							self.history.push(modelDataHistory);
 						}
 						return deferred.resolve();
 					});

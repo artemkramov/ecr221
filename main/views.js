@@ -961,6 +961,7 @@ var PLUTableDisplay = TableDisplay.extend({
 						};
 						$this.collection.sync('update', $this.collection, opt).done(function () {
 							$this.collection.reset();
+							Backbone.history.loadUrl(Backbone.history.fragment);
 						});
 					});
 					confirmModal.show();
