@@ -154,8 +154,8 @@ var appStart = function () {
 		}),
 		new MainCell({model: new Backbone.Model({lnk: '#report', img: 'sales', name: 'Reports'})}),
 		new MainCell({model: new Backbone.Model({lnk: '#backup', img: 'backup', name: 'Backup'})}),
-		//new MainCell({model: new Backbone.Model({lnk: 'firmware.html', img: 'firmware', name: 'Update the firmware'})}),
-		//new MainCell({model: new Backbone.Model({lnk: 'dwl.html', img: 'dwl', name: 'Update the web-interface'})})
+		new MainCell({model: new Backbone.Model({lnk: 'firmware.html', img: 'firmware', name: 'Update the firmware'})}),
+		new MainCell({model: new Backbone.Model({lnk: 'dwl.html', img: 'dwl', name: 'Update the web-interface'})})
 	];
 	schema          = new Schema();
 	appRouter       = new AppRouter();

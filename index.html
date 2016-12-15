@@ -8,12 +8,12 @@
 <body>
 <progress id="ld"></progress>
 <div id="lnb">
-    <a href="index1.html">Load from Internet</a>&nbsp;&nbsp;
-    <a href="index2.html">Load local</a>
+    <!--<a href="index1.html">Load from Internet</a>&nbsp;&nbsp;-->
+    <!--<a href="index2.html">Load local</a>-->
 </div>
 <div id="logPlace"></div>
 <div id="content" class="container"></div>
-<div id="modalDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dialogLabel" aria-hidden="true">
+<div id="modalDialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dialogLabel" aria-hidden="true" style="display: none">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -90,6 +90,7 @@
 
     function onErrorResult(n, res) {
         return function () {
+            window.location.replace("/index2.html");
             n.parentNode.removeChild(n);
             //console.log('resource', res[1],'error');
             loaderResult(res);
