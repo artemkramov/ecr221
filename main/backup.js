@@ -476,48 +476,54 @@ var ImportView = BackupSubView.extend({
 				return deferred.resolve();
 			}
 			else {
-				file.async("string").then(function (csvText) {
-					/**
-					 * Try to parse the CSV file
-					 * if the parsing isn't successfully done
-					 * than push errors
-					 */
-					csvText             = csvText.replace(/^\s+|\s+$/g, '');
-					var parsedData      = Papa.parse(csvText, {
-						header:         true,
-						skipEmptyLines: true
-					});
-					var errorMessage    = false;
-					var maxErrorLength  = 5;
-					var errorCollection = [];
-					if (!_.isEmpty(parsedData.errors)) {
-						_.each(parsedData.errors, function (item) {
-							if (maxErrorLength > errorCollection.length) {
-								var message = t(item.message);
-								if (typeof item.row != 'undefined') {
-									message += " - " + t("row") + " " + item.row;
+				file.async("uint8array").then(function (csvBuffer) {
+					var bb = new Blob([csvBuffer]);
+					var f = new FileReader();
+					f.onload = function(e) {
+						var csvText = e.target.result;
+						/**
+						 * Try to parse the CSV file
+						 * if the parsing isn't successfully done
+						 * than push errors
+						 */
+						csvText             = csvText.replace(/^\s+|\s+$/g, '');
+						var parsedData      = Papa.parse(csvText, {
+							header:         true,
+							skipEmptyLines: true
+						});
+						var errorMessage    = false;
+						var maxErrorLength  = 5;
+						var errorCollection = [];
+						if (!_.isEmpty(parsedData.errors)) {
+							_.each(parsedData.errors, function (item) {
+								if (maxErrorLength > errorCollection.length) {
+									var message = t(item.message);
+									if (typeof item.row != 'undefined') {
+										message += " - " + t("row") + " " + item.row;
+									}
+									errorCollection.push(message);
 								}
-								errorCollection.push(message);
-							}
-						});
-						errorMessage = errorCollection.join("<br />");
-					}
-					/**
-					 * Check if the table is allowed to import
-					 */
-					var tableData = _.findWhere(self.getBackupSchema(), {id: tableName});
-					var isAllowed = true;
-					if (!_.isUndefined(tableData) && _.isObject(tableData) && _.isEmpty(tableData.allowedAttributes)) {
-						isAllowed = false;
-					}
-					if (isAllowed) {
-						self.parsedFiles.push({
-							file:      file,
-							error:     errorMessage,
-							tableName: tableName
-						});
-					}
-					return deferred.resolve();
+							});
+							errorMessage = errorCollection.join("<br />");
+						}
+						/**
+						 * Check if the table is allowed to import
+						 */
+						var tableData = _.findWhere(self.getBackupSchema(), {id: tableName});
+						var isAllowed = true;
+						if (!_.isUndefined(tableData) && _.isObject(tableData) && _.isEmpty(tableData.allowedAttributes)) {
+							isAllowed = false;
+						}
+						if (isAllowed) {
+							self.parsedFiles.push({
+								file:      file,
+								error:     errorMessage,
+								tableName: tableName
+							});
+						}
+						return deferred.resolve();
+					};
+					f.readAsText(bb, ImportModel.encoding);
 				});
 			}
 		}

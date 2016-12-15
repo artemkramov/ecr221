@@ -9,7 +9,7 @@
  * Creates one elemView per collection item and insert it to appendEl
  */
 var CollectionView = Backbone.View.extend({
-	subView:    {},
+	subViews:    [],
 	initialize: function (args) {
 		if (args && args.elemView) this.elemView = args.elemView;
 		this.initEl();
@@ -21,8 +21,9 @@ var CollectionView = Backbone.View.extend({
 		this.appendEl = this.$el;
 	},
 	addElem:    function (f) {
-		this.subView = new this.elemView({model: f});
-		this.appendEl.append(this.subView.render().$el);
+		var subView = new this.elemView({model: f});
+		this.subViews.push(subView);
+		this.appendEl.append(subView.render().$el);
 	},
 	addAll:     function () {
 		this.initEl();
@@ -34,7 +35,9 @@ var CollectionView = Backbone.View.extend({
 		return this;
 	},
 	remove:     function () {
-		this.subView.remove();
+		_.each(this.subViews, function (subView) {
+			subView.remove();
+		});
 	}
 });
 
@@ -263,7 +266,7 @@ var SummaryTable = Backbone.View.extend({
 var MainCell = Backbone.View.extend({
 	tagName:   'div',
 	className: 'col-md-6',//'col-md-4',
-	template:  _.template('<h2><a class="btn btn-default" href="<%=lnk%>"><img src="img/<%=img%>-h.png"/></a> <%=t(name)%></h2>'),
+	template:  _.template('<h2 class="main-page-cell"><a class="btn btn-default" href="<%=lnk%>"><img src="img/<%=img%>-h.png"/></a> <%=t(name)%></h2>'),
 	render:    function () {
 		this.$el.html(this.template(this.model.toJSON()));
 		var addV = this.model.get('addView');
@@ -835,14 +838,61 @@ var FormDisplay = Backbone.View.extend({
 	}
 });
 
+var HeaderCellHelp = Backgrid.HeaderCell.extend({
+	render: function () {
+		this.$el.empty();
+		var column = this.column;
+		var sortable = Backgrid.callByNeed(column.sortable(), column, this.collection);
+		var label;
+		var headerTitle = column.get("label");
+		var headerHelp = column.get("helpLabel");
+		if (_.isUndefined(headerHelp)) {
+			headerHelp = "";
+		}
+		else {
+			if (_.isArray(headerHelp)) {
+				headerHelp = headerHelp.join("<br/>");
+			}
+		}
+		if (_.isUndefined(headerTitle)) {
+			headerTitle = "";
+		}
+		if(sortable){
+			label = $("<a>");
+			var tooltip = $("<span />").attr('class', 'glyphicon glyphicon-question-sign');
+			var icon = "";
+			if (!_.isEmpty(headerHelp)) {
+				label.attr('data-toggle', 'tooltip').attr('data-original-title', headerHelp);
+				icon = $("<div />").append(" ").append(tooltip).html();
+			}
+			label.html(headerTitle).append(icon).append("<b class='sort-caret'></b>");
+		} else {
+			label = document.createTextNode(headerTitle);
+		}
+
+		this.$el.append(label);
+		this.$el.addClass(column.get("name"));
+		this.$el.addClass(column.get("direction"));
+		this.$('[data-toggle="tooltip"]').tooltip({placement: 'bottom', html: true});
+		this.delegateEvents();
+		return this;
+	}
+});
+
 var TableDisplay = Backgrid.Grid.extend({
 	initialize: function (args) {
 		if (args && args.model) {
 			if (!args.columns) {
-				var col = args.model.get('elems');
+				var col = _.clone(args.model.get('elems'));
 
 				if (this.selAll) col = [{name: "", cell: "select-row", headerCell: "select-all"}].concat(col);
 				this.columns = args.columns = col;
+				_.each(this.columns, function (column) {
+					if (!_.isUndefined(column.help) && !_.isEmpty(column.help)) {
+						column.helpLabel = column.help;
+					}
+					column.headerCell = HeaderCellHelp;
+				});
 			}
 			if (!args.collection) {
 				args            = _.extend(args, {collection: schema.table(args.model.id)});

@@ -214,6 +214,14 @@ Name=img/backup-h.png
 File=img/backup-h.png
 Content-Type=image/png
 
+Name=img/firmware-h.png
+File=img/firmware-h.png
+Content-Type=image/png
+
+Name=img/dwl-h.png
+File=img/dwl-h.png
+Content-Type=image/png
+
 Name=img/on.svg
 File=img/on.svg
 Content-Type=image/svg+xml

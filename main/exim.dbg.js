@@ -255,9 +255,10 @@ var PLUImportExportView = ImpExView.extend({
 			var content = event.target.result;
 			var zip     = new JSZip();
 			zip.file('PLU.csv', content);
-			ImportModel.initModel();
+			ImportModel.initModel(true);
 			ImportModel.start();
 			var files   = zip.files;
+			ImportModel.decoding = 'utf-8';
 			ImportModel.processZipRecursive(files, 0, Object.keys(files)).done(function () {
 				self.parentContainer.event('refresh');
 				Backbone.history.loadUrl(Backbone.history.fragment);
@@ -660,6 +661,8 @@ var ImportModel = (function () {
 		 */
 		encoding: 'windows-1250',
 
+		decoding: 'windows-1250',
+
 		/**
 		 * Reset percentage
 		 */
@@ -682,6 +685,7 @@ var ImportModel = (function () {
 			this.resetPercentage();
 			this.history = [];
 			this.isError = false;
+			this.decoding = this.encoding;
 		},
 		/**
 		 * Start the import
@@ -841,7 +845,7 @@ var ImportModel = (function () {
 							return deferred.resolve();
 						});
 					};
-					f.readAsText(bb);
+					f.readAsText(bb, self.decoding);
 
 				});
 			}

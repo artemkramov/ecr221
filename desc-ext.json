@@ -131,7 +131,9 @@
       "Remove": "Odstranit",
       "Logout": "Odhlásit",
       "Certificate is verified": "Certifikát ověřen",
-      "Upload from server": "Nahrát ze serveru"
+      "Upload from server": "Nahrát ze serveru",
+      "Update the firmware": "Aktualizace firmware",
+      "Update the web-interface": "Aktualizace webového rozhraní"
     }
   }
 }
