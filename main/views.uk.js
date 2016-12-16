@@ -257,7 +257,7 @@ var FiscDo = PageView.extend({
 		PageView.prototype.remove.call(this);
 	},
 	render:    function () {
-		this.eet   = new EETContainer({
+		this.eet = new EETContainer({
 			model:   schema.get('EET'),
 			tblMode: false,
 			show:    true
@@ -265,7 +265,7 @@ var FiscDo = PageView.extend({
 		this.delegateEvents();
 		this.$el.html('');
 		this.$el.append(this.eet.render().$el);
-		var tmpl   = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
+		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([],
 			function (memo, el) {
 				el[2] = t(el[2]);
@@ -464,6 +464,7 @@ var CertificateBlock = Backbone.View.extend({
 	 * @param bytes
 	 */
 	uploadSslFile:        function (bytes) {
+		var deferred     = $.Deferred();
 		var self         = this;
 		var messageKey   = "public";
 		var wrapperBlock = self.$el.find('.cert-upload.public');
@@ -473,16 +474,20 @@ var CertificateBlock = Backbone.View.extend({
 			if (parseInt(response.verify)) {
 				eetModel.set("isSslVerified", true);
 				self.render();
-				self.pushMessage(t("Certificate was imported successfully"), "success", messageKey);
+				self.pushMessage(t("Certificate was imported successfully"), "success", "private");
+				return deferred.resolve();
 			}
 			else {
 				self.pushMessage(t("Certificate wasn't imported"), "danger", messageKey);
+				return deferred.reject();
 			}
 		}).fail(function () {
 			self.pushMessage(t("Uncaught error"), "danger", messageKey);
 			$("#btn-certificate-server-upload").removeClass('active');
 			$(wrapperBlock).removeClass("active");
+			return deferred.reject();
 		});
+		return deferred.promise();
 	},
 	/**
 	 * Event on the upload click
@@ -508,8 +513,13 @@ var CertificateBlock = Backbone.View.extend({
 			var responses = [responseKey, responseCert];
 			if (self.isResponseSuccess(responses)) {
 				eetModel.set("isP12Verified", true);
-				self.render();
-				self.pushMessage(t("Certificate was imported successfully"), "success", "private");
+				self.onUploadSslServer("#btn-certificate-server-upload").then(function () {
+					self.render();
+					self.pushMessage(t("Certificate was imported successfully"), "success", "private");
+				}).fail(function () {
+					self.render();
+					self.pushMessage(t("P12 was imported successfully but SSL certificate loading failed!"), "warning", "private");
+				});
 			}
 			else {
 				self.pushMessage(t("Certificate wasn't imported"), "danger", "private");
@@ -658,8 +668,11 @@ var CertificateBlock = Backbone.View.extend({
 			});
 			if (isCleared) {
 				eetModel.set("isP12Verified", false);
-				self.render();
-				self.pushMessage(t("Certificate was cleared successfully"), "success", "private");
+				self.onRemoveSSLClick("#btn-ssl-certificate-remove").then(function () {
+					self.render();
+					self.pushMessage(t("Certificate was cleared successfully"), "success", "private");
+				});
+
 			}
 		}).fail(function () {
 			$(event.target).removeClass('active');
@@ -670,16 +683,20 @@ var CertificateBlock = Backbone.View.extend({
 	 * @param event
 	 */
 	onRemoveSSLClick:     function (event) {
+		var deferred = $.Deferred();
 		$(event.target).addClass('active');
-		var self = this;
+		var self     = this;
 		this.clearCertificate(this.urlSslCertificate).done(function () {
 			eetModel.set("isSslVerified", false);
 			self.render();
 			self.pushMessage(t("Certificate was cleared successfully"), "success", "public");
 			$(event.target).removeClass('active');
+			return deferred.resolve();
 		}).fail(function () {
 			$(event.target).removeClass('active');
+			return deferred.reject();
 		});
+		return deferred.promise();
 	},
 	/**
 	 * Clear the certificate
@@ -701,8 +718,9 @@ var CertificateBlock = Backbone.View.extend({
 	 * @param event
 	 */
 	onUploadSslServer:    function (event) {
+		var deferred               = $.Deferred();
 		var self                   = this;
-		var filePath               = 'http://help-micro.com.ua/certificates/ssl_cert.crt';
+		var filePath               = 'http://help-micro.com.ua/certificates/ssl_cert.crt?_=' + (new Date()).getTime().toString();
 		var request                = new XMLHttpRequest();
 		request.open("GET", filePath, true);
 		request.responseType       = "arraybuffer";
@@ -714,7 +732,11 @@ var CertificateBlock = Backbone.View.extend({
 					var arrayBuffer = request.response;
 					if (arrayBuffer) {
 						var byteArray = new Uint8Array(arrayBuffer);
-						self.uploadSslFile(byteArray);
+						self.uploadSslFile(byteArray).then(function () {
+							return deferred.resolve();
+						}).fail(function () {
+							return deferred.reject();
+						});
 					}
 					else {
 						$(event.target).removeClass('active');
@@ -723,9 +745,11 @@ var CertificateBlock = Backbone.View.extend({
 				else {
 					self.pushMessage(t("Connection failed"), "danger", "public");
 					$(event.target).removeClass('active');
+					return deferred.reject();
 				}
 			}
-		}
+		};
+		return deferred.promise();
 	}
 });
 

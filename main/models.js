@@ -219,8 +219,12 @@ var TableCollection = Backbone.PageableCollection.extend({
 				} else {
 					var e                = {};
 					e[model.idAttribute] = model.id;
-					e                    = _.extend(e, model.changedAttributes());
-					toSync.push(e);
+					var attributes = model.toJSON();
+					delete attributes[model.idAttribute];
+					e                    = _.extend(e, attributes);
+					if (_.isObject(e)) {
+						toSync.push(e);
+					}
 				}
 			}
 		}, this);

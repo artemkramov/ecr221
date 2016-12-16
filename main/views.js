@@ -9,7 +9,7 @@
  * Creates one elemView per collection item and insert it to appendEl
  */
 var CollectionView = Backbone.View.extend({
-	subViews:    [],
+	subViews:   [],
 	initialize: function (args) {
 		if (args && args.elemView) this.elemView = args.elemView;
 		this.initEl();
@@ -319,7 +319,7 @@ var PrgView = AddView.extend({
 
 var FiscalView = AddView.extend({
 	template: _.template($('#fiscal-cell').html()),
-	render:     function () {
+	render:   function () {
 		try {
 			this.$el.html(this.template(this.model.toJSON()));
 		} catch (e) {
@@ -838,14 +838,14 @@ var FormDisplay = Backbone.View.extend({
 	}
 });
 
-var HeaderCellHelp = Backgrid.HeaderCell.extend({
+var HeaderCellHelp = Backgrid.Extension.SelectAllHeaderCell.extend({
 	render: function () {
 		this.$el.empty();
-		var column = this.column;
-		var sortable = Backgrid.callByNeed(column.sortable(), column, this.collection);
+		var column      = this.column;
+		var sortable    = Backgrid.callByNeed(column.sortable(), column, this.collection);
 		var label;
 		var headerTitle = column.get("label");
-		var headerHelp = column.get("helpLabel");
+		var headerHelp  = column.get("helpLabel");
 		if (_.isUndefined(headerHelp)) {
 			headerHelp = "";
 		}
@@ -857,10 +857,10 @@ var HeaderCellHelp = Backgrid.HeaderCell.extend({
 		if (_.isUndefined(headerTitle)) {
 			headerTitle = "";
 		}
-		if(sortable){
-			label = $("<a>");
+		if (sortable) {
+			label       = $("<a>");
 			var tooltip = $("<span />").attr('class', 'glyphicon glyphicon-question-sign');
-			var icon = "";
+			var icon    = "";
 			if (!_.isEmpty(headerHelp)) {
 				label.attr('data-toggle', 'tooltip').attr('data-original-title', headerHelp);
 				icon = $("<div />").append(" ").append(tooltip).html();
@@ -908,12 +908,11 @@ var TableDisplay = Backgrid.Grid.extend({
 				$this.event('ins');
 			}
 		});
-		this.listenTo(this.collection, "backgrid:selected", this.btnDel);
-		this.listenTo(this.collection, "change", this.syncSave);
+		//this.listenTo(this.collection, "backgrid:selected", this.btnDel);
+		//this.listenTo(this.collection, "change", this.syncSave);
 	},
 	syncSave:   function () {
-		var self = this;
-		this.collection.syncSave();
+		return this.collection.syncSave();
 	},
 	btnDel:     function () {
 		events.trigger("buttonBlock:" + this.model.id, "del", this.getSelectedModels().length == 0);
@@ -981,7 +980,7 @@ var PLUTableDisplay = TableDisplay.extend({
 		TableDisplay.prototype.initialize.apply(this, arguments);
 		if (args && args.model) {
 			this.addToolbar = new PLUImportExportView({
-				model: {models: [args.model]},
+				model:           {models: [args.model]},
 				parentContainer: self
 			});
 		}
@@ -1064,15 +1063,11 @@ var PLUTableDisplay = TableDisplay.extend({
 			}
 		});
 		if (_.isEmpty(promises)) {
-			self.collection.syncSave();
+			return self.collection.syncSave();
 		}
 		else {
 			$.when.apply($, promises).done(function (newModelID) {
-				var newModel      = self.collection.get(newModelID);
-				var position      = self.collection.indexOf(newModel);
-				window.collection = self.collection;
-				window.newModel   = newModel;
-				self.event('refresh');
+				return self.collection.syncSave();
 			});
 		}
 	}
@@ -1084,7 +1079,7 @@ var PLUFormDisplay = FormDisplay.extend({
 		var self = this;
 		if (args && args.model) {
 			this.addToolbar = new PLUImportExportView({
-				model: {models: [args.model]},
+				model:           {models: [args.model]},
 				parentContainer: self
 			});
 		}
@@ -1517,10 +1512,11 @@ var LogoView = Backbone.View.extend({
 var TableContainer = Backbone.View.extend({
 	tagName:        'div',
 	events:         {
-		'click .navbar-brand': 'toggleData',
-		'click button':        'click',
-		'click .btnfrm':       'initFormClick',
-		'click .btntbl':       'initTableClick'
+		'click .navbar-brand':   'toggleData',
+		'click button':          'click',
+		'click .btnfrm':         'initFormClick',
+		'click .btntbl':         'initTableClick',
+		'click .btn-save-table': 'saveTableData'
 	},
 	table:          TableDisplay,
 	form:           FormDisplay,
@@ -1570,7 +1566,6 @@ var TableContainer = Backbone.View.extend({
 			this.toolbar.remove();
 			delete this.toolbar;
 		}
-		window.globalView = view;
 		this.content      = view;
 		this.toolbar      = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
 	},
@@ -1585,8 +1580,8 @@ var TableContainer = Backbone.View.extend({
 		this.render();
 		this.toggleData();
 		this.showData();
-		var view = new this.table({model: this.model});
-		view.collection.fetch();
+		//var view = new this.table({model: this.model});
+		//view.collection.fetch();
 	},
 	render:         function () {
 		this.delegateEvents();
@@ -1639,6 +1634,31 @@ var TableContainer = Backbone.View.extend({
 	},
 	remove:         function () {
 		this.content.remove();
+	},
+	saveTableData:  function (event) {
+		var self    = this;
+		var button  = this.$el.find('.btn-save-table');
+		$(button).button('loading');
+		var syncing = this.content.syncSave();
+		if (_.isObject(syncing)) {
+			syncing.then(function () {
+				$(button).button('reset');
+				self.content.event('refresh');
+				self.$el.find('.alert.alert-danger').remove();
+				//var alert = new Alert({
+				//	model: {
+				//		message: 'TT',
+				//		type: 'success'
+				//	}
+				//});
+				//self.$el.children(":first-child").after(alert.render().$el);
+			}).fail(function () {
+				$(button).button('reset');
+			});
+		}
+		else {
+			$(button).button('reset');
+		}
 	}
 });
 

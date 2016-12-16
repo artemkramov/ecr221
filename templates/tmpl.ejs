@@ -246,6 +246,9 @@
 
 
 <script type="text/template" id="table-bar-template">
+    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>" data-loading-text="<%= t('Saving...') %>">
+        <span class="glyphicon glyphicon-floppy-disk"></span> <%= t('Save') %>
+    </button>
     <button class="btn btn-default btnfrm" data-toggle="tooltip" title="<%= t('Form Mode') %>">
         <span class="glyphicon glyphicon-th-list"></span></button>
     <button class="btn btn-default" data-ev="refresh" data-toggle="tooltip" title="<%= t('Refresh') %>">
@@ -253,12 +256,15 @@
 </script>
 
 <script type="text/template" id="plu-table-bar-template">
+    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>" data-loading-text="<%= t('Saving...') %>">
+        <span class="glyphicon glyphicon-floppy-disk"></span> <%= t('Save') %>
+    </button>
     <button class="btn btn-default" data-ev="del-all" data-toggle="tooltip" title="<%= t('Delete All') %>">
         <span class="glyphicon glyphicon-remove"></span></button>
     <div class="btn-group">
         <button class="btn btn-default" data-ev="ins" data-toggle="tooltip" title="<%= t('Insert Row') %>">
             <span class="glyphicon glyphicon-plus"></span></button>
-        <button class="btn btn-default" data-ev="del" disabled="disabled" data-toggle="tooltip"
+        <button class="btn btn-default" data-ev="del" data-toggle="tooltip"
                 title="<%= t('Delete Selected Rows') %>">
             <span class="glyphicon glyphicon-minus"></span></button>
     </div>
@@ -418,7 +424,7 @@
         </button>
         <div class="message"></div>
     </div>
-    <div class="cert-upload public">
+    <div class="cert-upload public <% if (eetModel.get('isP12Verified') && !eetModel.get('isSslVerified'))  print('visible'); %>">
         <div>
             <label><%= t("SSL certificate upload") %></label>
             <% if (eetModel.get('isSslVerified')) { %>

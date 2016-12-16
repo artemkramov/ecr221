@@ -81,6 +81,12 @@ a img:active {
 .cert-upload.active .refresh, .btn-cert-remove.active .refresh-remove {
     display: inline-block;
 }
+.cert-upload.public {
+    display: none;
+}
+.cert-upload.public.visible {
+    display: block;
+}
 .spin {
     -webkit-animation: spin 2s infinite linear;
     -moz-animation: spin 2s infinite linear;
