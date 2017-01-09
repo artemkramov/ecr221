@@ -113,12 +113,12 @@
       "DNS": "DNS",
       "Table": "Table",
       "Description": "Description",
-      "Run": "Run",
+      "Run": "Spustit",
       "Choose at least 1 item": "Choose at least 1 item",
-      "Choose an archive to import": "Choose an archive to import",
+      "Choose an archive to import": "Vybrat soubor se zálohou k nahrání",
       "Table was not found": "Table was not found",
       "Incorrect password": "Incorrect password",
-      "Backup file name": "Backup file name",
+      "Backup file name": "Jméne souboru se zálohou",
       "Logo wasn't imported": "Logo wasn't imported",
       "Backup": "Backup",
       "Fiscalization": "Nastavení EET",
@@ -133,7 +133,11 @@
       "Certificate is verified": "Certifikát ověřen",
       "Upload from server": "Nahrát ze serveru",
       "Update the firmware": "Aktualizace firmware",
-      "Update the web-interface": "Aktualizace webového rozhraní"
+      "Update the web-interface": "Aktualizace webového rozhraní",
+      "Export current settings": "Export  aktuálních nastavení",
+      "Choose table": "Vybrat nastavení k exportu",
+      "Import settings": "Nahrání souboru se zálohou nastavení",
+      "Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.": "Importujte logo ve formátu bmp a v monochromatické podobě s rozlišením 256x80. Jiné formáty jpg a png jsou možné, ale bude je pravděpodobně nutné upravit."
     }
   }
 }

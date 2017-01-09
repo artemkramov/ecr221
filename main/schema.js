@@ -528,7 +528,7 @@ _.extend(CheckFormatter.prototype, {
 var specialTableSchema = [{
 	id:     "EET",
 	fields: [
-		"DIC_POPL", "ID_POKL", "ID_PROVOZ", "DIC_POVER"
+		"DIC_POPL", "ID_POKL", "ID_PROVOZ", "DIC_POVER", "Enable"
 	]
 }];
 

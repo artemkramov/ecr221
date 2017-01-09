@@ -348,15 +348,18 @@ var ImportProgress = Backbone.View.extend({
 		var importReport   = new ImportReport();
 		importReport.model = ImportModel.history;
 		this.$el.find('.import-report').empty().append(importReport.render().$el);
+		this.hideStopButton();
 	},
 	/**
 	 * Events of the force import stop
 	 * @param e
 	 */
 	onImportStop:      function (e) {
-		console.log("stop");
 		ImportModel.isRunning = false;
 		this.buildImportReport();
+	},
+	hideStopButton: function() {
+		this.$el.find('.btn-import-stop').hide();
 	}
 });
 
@@ -538,7 +541,7 @@ var ExportModel = function () {
 						var csv       = Papa.unparse(data, {
 							delimiter: self.exportDelimiter
 						});
-						zip.file(model.get('id') + ".csv", csv);
+						zip.file(model.get('id') + ".csv", '\uFEFF' + csv);
 					}
 				});
 				if (self.isRunning) {
@@ -696,7 +699,7 @@ var ImportModel = (function () {
 			self.modal           = new Modal();
 			self.counter++;
 			self.modal.set({
-				header: t("Import")
+				header: t("Import settings")
 			});
 			self.viewProgressBar = new ImportProgress({
 				model: self.modelPercentage,
@@ -784,6 +787,7 @@ var ImportModel = (function () {
 					var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
 					var progressBarClass = 'progress-bar-' + (!self.isError ? 'success' : 'danger');
 					$(progressBar).removeClass('active').addClass(progressBarClass);
+
 					return deferred.resolve();
 				}
 			});
@@ -813,6 +817,7 @@ var ImportModel = (function () {
 					var f = new FileReader();
 					f.onload = function(e) {
 						var csvText = e.target.result;
+						window.csvText = csvText;
 						/**
 						 * Parse CSV data
 						 */
@@ -1086,6 +1091,13 @@ var ImportModel = (function () {
 		 */
 		stop:                       function () {
 			ImportModel.isRunning = false;
+			this.hideStopButton();
+		},
+		/**
+		 * Hide stop button
+		 */
+		hideStopButton: function() {
+			this.viewProgressBar.$el.find('.btn-import-stop').hide();
 		}
 	};
 

@@ -1475,6 +1475,12 @@ var LogoView = Backbone.View.extend({
 		root.append($('<div class=" col-md-3"></div>').append(canvas));
 
 		this.imageLoad();
+		var infoBlockView = new Alert({
+			model: {
+				type: "info",
+				message: t("Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.")
+			}
+		});
 		var tmpl               = ['<button type="button" id="', '" class="btn btn-', '" data-loading-text="',
 			'" data-toggle="tooltip" title="', '"><span class="glyphicon glyphicon-', '" aria-hidden="true"></span> ', '</button>'];
 		var cnt                = 0;
@@ -1498,11 +1504,15 @@ var LogoView = Backbone.View.extend({
 		);
 		var inpf               = $('<input id="picFile" type="file"/>').css('display', "none");
 		root.append(inpf);
+
 		this.$el.append('<div class="row">' +
 			'<div class="col-md-12"><input id="edge" type="range" min="1" max="254" data-toggle="tooltip" title="' +
 			t('Adjust white point of image') +
 			'"/></div></div><a href="#" class="btn btn-default" role="button"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true">' +
 			'</span> ' + t('Back') + '</a>');
+
+		this.$el.append($("<div />").css("margin-top", "10px").append(infoBlockView.render().$el));
+
 		this.$('button').css("margin-top", '15px');
 		this.$('[data-toggle="tooltip"]').tooltip({placement: 'bottom'});
 		return this;

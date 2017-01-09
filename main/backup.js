@@ -221,7 +221,7 @@ var ExportView = BackupSubView.extend({
 		});
 
 		this.render();
-		$(".btn-run-export").removeAttr("disabled");
+		$(".btn-run-export").show();
 	},
 	/**
 	 * Go through all models and make the ZIP archive report
@@ -241,7 +241,7 @@ var ExportView = BackupSubView.extend({
 				}
 			}
 		});
-		if (!_.isEmpty(models)) {
+		if (!_.isEmpty(models) || isLogoExported) {
 			this.clearMessageBlock();
 			ExportModel.isReturn = true;
 			if (!_.isEmpty(self.backupDelimiter)) {
@@ -566,6 +566,7 @@ var ImportView = BackupSubView.extend({
 		this.files        = [];
 		this.certificates = [];
 		this.clearMessageBlock();
+		self.logo = undefined;
 		this.$el.find(".model-checkbox").each(function () {
 			if ($(this).prop("checked")) {
 				var fileName  = $(this).data('id');
