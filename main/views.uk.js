@@ -210,6 +210,13 @@ var GetDateTime = Backbone.View.extend({
 	},
 	getDate:    function () {
 		if (this.$("input:checked").length) return new Date();
+		var date = this.$('#d').val();
+		if (!_.isEmpty(date)) {
+			return new Date(getDatetime(date));
+		}
+		else {
+			return new Date();
+		}
 		if (is_type['datetime-local'])
 		//return this.$('#d')[0].valueAsDate; Chrome do not set valueAsDate for this type of input.
 			var dt = new Date();

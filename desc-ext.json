@@ -137,7 +137,8 @@
       "Export current settings": "Export  aktuálních nastavení",
       "Choose table": "Vybrat nastavení k exportu",
       "Import settings": "Nahrání souboru se zálohou nastavení",
-      "Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.": "Importujte logo ve formátu bmp a v monochromatické podobě s rozlišením 256x80. Jiné formáty jpg a png jsou možné, ale bude je pravděpodobně nutné upravit."
+      "Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.": "Importujte logo ve formátu bmp a v monochromatické podobě s rozlišením 256x80. Jiné formáty jpg a png jsou možné, ale bude je pravděpodobně nutné upravit.",
+      "Datetime": "Datum a čas"
     }
   }
 }

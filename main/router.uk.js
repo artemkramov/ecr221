@@ -22,7 +22,9 @@ var AppRouter = Backbone.Router.extend({
 			delete this.view;
 		}
 		if (callback) callback.apply(this, args);
+
 		$('#content').html('').append(this.view.render().$el);
+		initDateTime();
 	},
 	mainScr: function () {
 		this.view = new MainScreenView({inrow: 2, cells: mainScreenCells});
