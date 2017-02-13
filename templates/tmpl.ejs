@@ -246,7 +246,8 @@
 
 
 <script type="text/template" id="table-bar-template">
-    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>" data-loading-text="<%= t('Saving...') %>">
+    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>"
+            data-loading-text="<%= t('Saving...') %>">
         <span class="glyphicon glyphicon-floppy-disk"></span> <%= t('Save') %>
     </button>
     <button class="btn btn-default btnfrm" data-toggle="tooltip" title="<%= t('Form Mode') %>">
@@ -256,7 +257,8 @@
 </script>
 
 <script type="text/template" id="plu-table-bar-template">
-    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>" data-loading-text="<%= t('Saving...') %>">
+    <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>"
+            data-loading-text="<%= t('Saving...') %>">
         <span class="glyphicon glyphicon-floppy-disk"></span> <%= t('Save') %>
     </button>
     <button class="btn btn-default" data-ev="del-all" data-toggle="tooltip" title="<%= t('Delete All') %>">
@@ -299,6 +301,7 @@
     </div>
     <div class="form-group" id="date-group">
         <label for="d" class="col-sm-2 control-label"><%= t("Datetime") %></label>
+
         <div class="col-sm-10">
             <input type="text" class="form-control form-datetime" id="d" placeholder="DD-MM-YYYY H:I:S">
         </div>
@@ -452,6 +455,116 @@
     </div>
 </script>
 
+<script type="text/template" id="cloud-connect">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <%= t("Connection data") %>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label for="cloudUuid"><%= t("POS's Unique Identifier") %></label>
+                <input type="text" class="form-control" id="cloudUuid" value="<%= cloudUuid %>"/>
+            </div>
+            <div class="form-group">
+                <label for="cloudToken"><%= t("POS's Security Token") %></label>
+                <input type="text" class="form-control" id="cloudToken" value="<%= cloudToken %>"/>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary" id="btn-cloud-connect" data-loading-text="<%= t('Connecting...') %>">
+                    <%= t("Connect") %>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <div class="cloud-message-block"></div>
+            </div>
+
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="cloud-synchronize">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <%= t("Synchronization") %>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <button class="btn btn-success" id="btn-cloud-z-report" data-loading-text="<%= t('Connecting...') %>"><%= t("Z-Report") %></button>
+            </div>
+            <div class="form-group">
+                <div class="cloud-message-block"></div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="cloud-registration">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <%= t("Registration") %>
+        </div>
+        <div class="panel-body">
+            <form id="form-cloud-registration">
+                <div class="form-group">
+                    <label for="cloudEmail"><%= t("E-mail") %></label>
+                    <input type="email" class="form-control cloud-registration" id="cloudEmail" value="" required/>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" id="btn-cloud-register"
+                            data-loading-text="<%= t('Connecting...') %>">
+                        <%= t("Register") %>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <div class="cloud-message-block"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="cloud-block">
+    <div class="container">
+        <div class="row">
+
+            <div id="sidebar-left"></div>
+
+            <div class="col-md-10">
+                <div class="row">
+
+                    <!-- CONNECT BLOCK -->
+                    <div class="col-sm-6">
+                        <div id="cloud-connect"></div>
+                    </div>
+                    <!-- END CONNECT BLOCK -->
+
+                    <!-- REGISTER BLOCK -->
+                    <div class="col-sm-6">
+                        <div id="cloud-register"></div>
+                    </div>
+                    <!-- END REGISTER BLOCK -->
+
+                </div>
+
+                <div class="row">
+
+                    <!-- SYNCHRONIZE BLOCK -->
+                    <div class="col-sm-12">
+                        <div id="cloud-synchronize"></div>
+                    </div>
+                    <!-- END SYNCHRONIZE BLOCK -->
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</script>
+
 <script type="text/template" id="backup-block">
     <div class="container">
         <div class="row">
@@ -492,7 +605,7 @@
                     <%= t("Run") %>
                 </button>
             </div>
-            <div class="form-group" style="display: none">
+            <div class="form-group form-group-export-filename" style="display: none">
                 <label><%= t("Backup file name") %></label>
                 <input type="text" class="form-control" id="export-filename" value="<%= filename %>"/>
             </div>

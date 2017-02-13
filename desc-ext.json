@@ -118,7 +118,7 @@
       "Choose an archive to import": "Vybrat soubor se zálohou k nahrání",
       "Table was not found": "Table was not found",
       "Incorrect password": "Incorrect password",
-      "Backup file name": "Jméne souboru se zálohou",
+      "Backup file name": "Jméno souboru se zálohou",
       "Logo wasn't imported": "Logo wasn't imported",
       "Backup": "Backup",
       "Fiscalization": "Nastavení EET",
@@ -138,7 +138,18 @@
       "Choose table": "Vybrat nastavení k exportu",
       "Import settings": "Nahrání souboru se zálohou nastavení",
       "Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.": "Importujte logo ve formátu bmp a v monochromatické podobě s rozlišením 256x80. Jiné formáty jpg a png jsou možné, ale bude je pravděpodobně nutné upravit.",
-      "Datetime": "Datum a čas"
+      "Datetime": "Datum a čas",
+      "Connection data": "Connection data",
+      "POS's Unique Identifier": "POS's Unique Identifier",
+      "POS's Security Token": "POS's Security Token",
+      "Connecting...": "Connecting...",
+      "Connect": "Connect",
+      "Registration": "Registration",
+      "E-mail": "E-mail",
+      "Register": "Register",
+      "Check your e-mail for further instructions.": "Check your e-mail for further instructions.",
+      "Error while registration in the cloud. Check your EET data.": "Error while registration in the cloud. Check your EET data.",
+      "Connected successfully!": "Connected successfully!"
     }
   }
 }

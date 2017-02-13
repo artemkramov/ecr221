@@ -14,7 +14,8 @@ var AppRouter = Backbone.Router.extend({
 		"fm(/:page)":      'fisc',
 		"logo":            'logoScr',
 		"report":          'repScr',
-		"backup":          'backupScr'
+		"backup":          'backupScr',
+		"cloud":           'cloudScr'
 	},
 	execute: function (callback, args) {
 		if (this.view) {
@@ -104,6 +105,9 @@ var AppRouter = Backbone.Router.extend({
 	},
 	backupScr:  function (page) {
 		this.view = new BackupScreenView();
+	},
+	cloudScr: function (page) {
+		this.view = new CloudView();
 	}
 });
 
@@ -246,6 +250,7 @@ var appStart = function () {
 			}), addView: new ImpExView({model: {models: models}})
 			}
 		];
+
 		tickHandler  = setInterval(_.bind(events.trigger, events, 'tick'), 1000);
 		Backbone.history.start();
 	});

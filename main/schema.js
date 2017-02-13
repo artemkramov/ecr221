@@ -3,12 +3,12 @@
  */
 
 var Schema = Backbone.Collection.extend({
-	url:              '/cgi/tbl',
-	initialize:       function () {
-		this.cache = {};
+	url:                   '/cgi/tbl',
+	initialize:            function () {
+		this.cache   = {};
 		this.noCache = {};
 	},
-	tableIgnoreCache: function (name) {
+	tableIgnoreCache:      function (name) {
 		return this.noCache[name];
 	},
 	tableFetchIgnoreCache: function (name) {
@@ -19,7 +19,7 @@ var Schema = Backbone.Collection.extend({
 		if (model.get('tbl')) {
 			options = {schema: model};
 			if (key) options.idAttribute = key;
-			var m     = TableModel.extend(options);
+			var m              = TableModel.extend(options);
 			this.noCache[name] = new TableCollection(false, {model: m, url: address + '/' + name, mode: ""});
 			return this.noCache[name].fetch({reset: true});
 		} else {
@@ -29,7 +29,7 @@ var Schema = Backbone.Collection.extend({
 			return this.noCache[name].fetch({silent: true});
 		}
 	},
-	table:            function (name) {
+	table:                 function (name) {
 		if (name in this.cache) return this.cache[name];
 		var ret = this.get(name);
 		if (ret instanceof Object) {
@@ -50,7 +50,7 @@ var Schema = Backbone.Collection.extend({
 		}
 		return false;
 	},
-	tableFetch:       function (name) {
+	tableFetch:            function (name) {
 		if (!(name in this.cache)) this.table(name);
 		if (name in this.cache) {
 			var tbl = this.cache[name];
@@ -64,7 +64,7 @@ var Schema = Backbone.Collection.extend({
 		}
 		return false;
 	},
-	CSVTable:         function (name, inf, fname) {
+	CSVTable:              function (name, inf, fname) {
 		var ret = new jQuery.Deferred();
 		var t   = this.tableFetch(name);
 		if (!t) {
@@ -186,7 +186,7 @@ var Schema = Backbone.Collection.extend({
 		});
 		return ret.promise();
 	},
-	tableCSV:         function (name) {
+	tableCSV:              function (name) {
 		if (name in this.cache) {
 			var ret = name + '\r\n';
 			var tbl = this.cache[name];
@@ -213,16 +213,16 @@ var Schema = Backbone.Collection.extend({
 		}
 		return "";
 	},
-	tableGroup:       function (prefix) {
+	tableGroup:            function (prefix) {
 		return this.filter(function (el) {
 			return el.get('prefix') == prefix;
 		});
 	},
-	load:             function (callback) {
+	load:                  function (callback) {
 		var $this = this;
 		//var dsc = Backbone.Model.extend({urlRoot:'/'});
 		//this.descr = new dsc({id:'desc'});
-		this.fetch({ cache: false }).done(function () {
+		this.fetch({cache: false}).done(function () {
 			$.get('/desc?' + new Date().getTime()).done(function (desc) {
 				$.get('/desc-ext?' + new Date().getTime()).done(function (ext) {
 					$.extend(true, desc, ext);
@@ -267,11 +267,24 @@ var Schema = Backbone.Collection.extend({
 									if (requiredFields.fields.indexOf(field.name) > -1) {
 										newFields.push(field);
 									}
-									;
 								});
 								model.set("elems", newFields);
 							}
 						});
+						if (model.get('id') == 'TCP') {
+							var newFields = [];
+							var elements  = model.get('elems');
+							elements.forEach(function (field) {
+								newFields.push(field);
+							});
+							newFields.splice(1, 0, {
+								label:    t("Name"),
+								editable: 0,
+								name:     'interface_name',
+								type:     'text'
+							});
+							model.set('elems', newFields);
+						}
 						//console.log(model.get("id"));
 					});
 					$this.each($this.fixupTable, $this);
@@ -316,7 +329,7 @@ var Schema = Backbone.Collection.extend({
 			 });*/
 		});
 	},
-	switchLang:       function (l) {
+	switchLang:            function (l) {
 		var tmp = this.descr.get(l);
 		if (tmp) {
 			this.lang = l;
@@ -324,12 +337,12 @@ var Schema = Backbone.Collection.extend({
 			if (typeof(Storage) !== "undefined") localStorage.lang = l;
 		}
 	},
-	regex:            function (id) {
+	regex:                 function (id) {
 		var list = (this.descr && this.descr.get('regex'));
 		return (list && list[id]) || id;
 	},
-	parseInTypes:     ["time", "number", "summ", "percent", "qty"],
-	parseIn:          function (type, val) {
+	parseInTypes:          ["time", "number", "summ", "percent", "qty"],
+	parseIn:               function (type, val) {
 		switch (type.type) {
 			case "time":
 			{
@@ -352,16 +365,16 @@ var Schema = Backbone.Collection.extend({
 		}
 		return val;
 	},
-	fixIn:            function (tbl, obj) {
+	fixIn:                 function (tbl, obj) {
 		this.fix(tbl, obj, tbl.parseCol, this.parseIn);
 	},
-	fix:              function (tbl, obj, col, parse) {
+	fix:                   function (tbl, obj, col, parse) {
 		if (col) _.each(_.intersection(_.keys(obj), col), function (e) {
 			obj[e] = parse(this.typeCol(tbl, e), obj[e]);
 		}, this);
 	},
-	parseOutTypes:    ["number", "time", "summ", "percent", "qty"],
-	parseOut:         function (type, val) {
+	parseOutTypes:         ["number", "time", "summ", "percent", "qty"],
+	parseOut:              function (type, val) {
 		switch (type.type) {
 			case "summ":
 			case "percent":
@@ -384,15 +397,15 @@ var Schema = Backbone.Collection.extend({
 		}
 		return val;
 	},
-	fixOut:           function (tbl, obj) {
+	fixOut:                function (tbl, obj) {
 		this.fix(tbl, obj, tbl.syncCol, this.parseOut);
 	},
-	typeCol:          function (tbl, field) {
+	typeCol:               function (tbl, field) {
 		return _.find(tbl.get('elems'), function (el) {
 			return el.name == field;
 		});
 	},
-	error:            function (id, params) {
+	error:                 function (id, params) {
 		var txt = this.tr && this.tr.err && this.tr.err[id];
 		if (txt) {
 			if (params) return vsprintf(txt, params);
@@ -400,7 +413,7 @@ var Schema = Backbone.Collection.extend({
 		}
 		return id;
 	},
-	parseError:       function (err, callback) {
+	parseError:            function (err, callback) {
 		var parseErrorInner = function (e, cb) {
 			var msg;
 			if (_.isString(e)) e = {e: e};
@@ -422,10 +435,10 @@ var Schema = Backbone.Collection.extend({
 		 } else if (_.isObject(err)) { parseErrorInner(err,callback);
 		 }*/
 	},
-	str:              function (id) {
+	str:                   function (id) {
 		return (this.tr && this.tr.str && this.tr.str[id]) || id;
 	},
-	fixupTable:       function (tbl) {
+	fixupTable:            function (tbl) {
 		var id = tbl.id;
 		if (!id) return;
 		var t     = this.tr && this.tr.tbl && this.tr.tbl[id];

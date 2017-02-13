@@ -4,16 +4,25 @@
 Name=index.html
 File=index.html
 Content-Type=text/html;charset=utf-8
+Cache-Control: no-cache, no-store, must-revalidate
+Pragma: no-cache
+Expires: 0
 
 Name=index1.html
 File=index1.html
 Content-Type=text/html;charset=utf-8
+Cache-Control: no-cache, no-store, must-revalidate
+Pragma: no-cache
+Expires: 0
 
 Name=index2.html
 File=index2.html
 Content-Type=text/html;charset=utf-8
+Cache-Control: no-cache, no-store, must-revalidate
+Pragma: no-cache
+Expires: 0
 
-Name=firmware-test.html
+Name=firmware-dwl.html
 File=permanent_data/firmware.html
 Content-Type=text/html;charset=utf-8
 
@@ -160,6 +169,10 @@ Name=js/backup.js
 File=main/backup.js;
 Content-Type=application/javascript
 
+Name=js/cloud.js
+File=main/cloud.js;
+Content-Type=application/javascript
+
 Name=js/bootstrap-datetimepicker.min.js
 File=js/bootstrap-datetimepicker.min.js
 Content-Type=application/javascript
@@ -180,9 +193,9 @@ Name=js/underscore-min.js
 File=permanent_data/js/underscore-min.js
 Content-Type=application/javascript
 
-#Name=Firmware.js
-#File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
-#Content-Type=application/javascript
+Name=Firmware.js
+File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
+Content-Type=application/javascript
 
 #image files
 

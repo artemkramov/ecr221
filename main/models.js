@@ -172,6 +172,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 	},
 	parse:               function (resp/*,options*/) {
 		var key = this.model.prototype.schema.get('key') || 'id';
+		var self = this;
 		if (_.isArray(resp)) {
 			var toRemove = [];
 			_.each(resp, function (el) {
@@ -186,6 +187,13 @@ var TableCollection = Backbone.PageableCollection.extend({
 				}
 			});
 			resp         = _.difference(resp, toRemove);
+			var j = 0;
+			if (self.model.prototype.schema.get('id') == "TCP") {
+				_.each(resp, function (item) {
+					item["interface_name"] = networkCell.at(j).get("name");
+					j++;
+				});
+			}
 		} else {
 			if (!key in resp) {
 				if ('err' in resp) {
@@ -197,6 +205,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 				return [];
 			}
 		}
+
 		return resp;
 	},
 	syncSave:            function (errorRep) {
@@ -221,12 +230,17 @@ var TableCollection = Backbone.PageableCollection.extend({
 					e[model.idAttribute] = model.id;
 					var attributes = model.toJSON();
 					delete attributes[model.idAttribute];
+
+					if (self.url == '/cgi/tbl/TCP') {
+						delete attributes["interface_name"];
+					}
 					e                    = _.extend(e, attributes);
 					if (_.isObject(e)) {
 						toSync.push(e);
 					}
 				}
 			}
+
 		}, this);
 		var promises = [];
 		var key      = this.model.prototype.schema.get('key') || 'id';

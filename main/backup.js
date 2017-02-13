@@ -119,6 +119,12 @@ var BackupSubView = Backbone.View.extend({
 				'id', 'ParPrg', 'OtcPrg', 'NumOpr', 'PrContr', 'PrEqual'
 			]
 		});
+		specialSchemaItems.push({
+			id:                'TCP',
+			allowedAttributes: [
+				'id', 'Addr', 'AdptFlg', 'DNS', 'Gate', 'MAC', 'Mask'
+			]
+		});
 		return specialSchemaItems;
 	}
 });
@@ -222,6 +228,7 @@ var ExportView = BackupSubView.extend({
 
 		this.render();
 		$(".btn-run-export").show();
+		$(".form-group-export-filename").show();
 	},
 	/**
 	 * Go through all models and make the ZIP archive report
