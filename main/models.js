@@ -57,7 +57,7 @@ var ECRStatus = Backbone.Model.extend({
 });
 
 var FiscalCell = Backbone.Model.extend({
-	initialize: function () {
+	initialize:     function () {
 		var $this = this;
 		$.getJSON("/cgi/tbl/FDay?s=1&e=2", function (data) {
 			if (_.isArray(data)) data = data[0];
@@ -81,9 +81,9 @@ var FiscalCell = Backbone.Model.extend({
 	 */
 	initializeData: function () {
 		var deferred = $.Deferred();
-		var self = this;
+		var self     = this;
 		$.ajax({
-			url: '/cgi/tbl/FTax',
+			url:     '/cgi/tbl/FTax',
 			success: function (response) {
 				if (!_.isEmpty(response)) {
 					self.set('fiscalize', true);
@@ -171,7 +171,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 		}
 	},
 	parse:               function (resp/*,options*/) {
-		var key = this.model.prototype.schema.get('key') || 'id';
+		var key  = this.model.prototype.schema.get('key') || 'id';
 		var self = this;
 		if (_.isArray(resp)) {
 			var toRemove = [];
@@ -187,7 +187,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 				}
 			});
 			resp         = _.difference(resp, toRemove);
-			var j = 0;
+			var j        = 0;
 			if (self.model.prototype.schema.get('id') == "TCP") {
 				_.each(resp, function (item) {
 					item["interface_name"] = networkCell.at(j).get("name");
@@ -209,7 +209,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 		return resp;
 	},
 	syncSave:            function (errorRep) {
-		var self = this;
+		var self     = this;
 		var toSync   = [];
 		var toAdd    = [];
 		var cols     = _.map(this.model.prototype.schema.get('elems'), function (el) {
@@ -228,13 +228,13 @@ var TableCollection = Backbone.PageableCollection.extend({
 				} else {
 					var e                = {};
 					e[model.idAttribute] = model.id;
-					var attributes = model.toJSON();
+					var attributes       = model.toJSON();
 					delete attributes[model.idAttribute];
 
 					if (self.url == '/cgi/tbl/TCP') {
 						delete attributes["interface_name"];
 					}
-					e                    = _.extend(e, attributes);
+					e = _.extend(e, attributes);
 					if (_.isObject(e)) {
 						toSync.push(e);
 					}
@@ -306,7 +306,7 @@ var TableCollection = Backbone.PageableCollection.extend({
 							console.log('this', this);
 							window.test = this;
 							console.log('el[key]', el[key]);
-							var e = this.get(el[key]);
+							var e       = this.get(el[key]);
 							if (e) {
 								e.set({}, {silent: true});
 								delete e.newModel;
@@ -542,3 +542,4 @@ var NetworkInfo = Backbone.Collection.extend({
 		return d.promise();
 	}
 });
+

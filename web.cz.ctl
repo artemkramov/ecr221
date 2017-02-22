@@ -4,23 +4,23 @@
 Name=index.html
 File=index.html
 Content-Type=text/html;charset=utf-8
-Cache-Control: no-cache, no-store, must-revalidate
-Pragma: no-cache
-Expires: 0
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=index1.html
 File=index1.html
 Content-Type=text/html;charset=utf-8
-Cache-Control: no-cache, no-store, must-revalidate
-Pragma: no-cache
-Expires: 0
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=index2.html
 File=index2.html
 Content-Type=text/html;charset=utf-8
-Cache-Control: no-cache, no-store, must-revalidate
-Pragma: no-cache
-Expires: 0
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=firmware-dwl.html
 File=permanent_data/firmware.html
@@ -33,6 +33,9 @@ Content-Type=text/html;charset=utf-8
 Name=tmpl.html
 File=templates/tmpl.ejs;templates/tmpl.uk.ejs;templates/tmpl.gprs.ejs
 Content-Type=text/html;charset=utf-8
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=desc-ext
 File=desc-ext.json
@@ -167,6 +170,10 @@ Content-Type=application/javascript
 
 Name=js/backup.js
 File=main/backup.js;
+Content-Type=application/javascript
+
+Name=js/firmware.upgrade.js
+File=main/firmware.upgrade.js;
 Content-Type=application/javascript
 
 Name=js/cloud.js

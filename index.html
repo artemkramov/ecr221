@@ -61,6 +61,7 @@
         [0, "/js/backup.js", "", 0],
         [0, "/js/cloud.js", "", 0],
         [0, "/js/main.js", "", 'appStart'],
+        [0, "/js/firmware.upgrade.js", "", 0],
         [0, "/css/main.css", "", 0],
         //[0, "/css/bootstrap-theme.css", "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap-theme.min.css", 0],
     ];
@@ -146,7 +147,7 @@
                     }
                 }
             };
-            xhr.open("GET", res[res[0]]);
+            xhr.open("GET", res[res[0]] + noCacheLabel);
             xhr.send(null);
         }
         res[0] = 1;

@@ -52,7 +52,7 @@
 
 <!--script src="/js/main.js"></script-->
 <script type="text/javascript">
-    $('#lnb').load('tmpl.html',function(){
+    $('#lnb').load('tmpl.html?v=' + (new Date().getTime()),function(){
         $.getScript('/js/main.js?v=' + (new Date().getTime()),function(){
             $.getScript('/js/backup.js?v=' + (new Date().getTime()),function() {
                 $.getScript('/js/cloud.js?v=' + (new Date().getTime()),function() {

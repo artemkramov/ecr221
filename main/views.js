@@ -1475,9 +1475,9 @@ var LogoView = Backbone.View.extend({
 		root.append($('<div class=" col-md-3"></div>').append(canvas));
 
 		this.imageLoad();
-		var infoBlockView = new Alert({
+		var infoBlockView      = new Alert({
 			model: {
-				type: "info",
+				type:    "info",
 				message: t("Import logo in BMP and monochrome format with a resolution of 256x80. Other formats jpg and png are possible, but will probably need adjusting.")
 			}
 		});
@@ -1576,8 +1576,8 @@ var TableContainer = Backbone.View.extend({
 			this.toolbar.remove();
 			delete this.toolbar;
 		}
-		this.content      = view;
-		this.toolbar      = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
+		this.content = view;
+		this.toolbar = new Toolbar({tmpl: view.tmpl, hideTbl: !this.model.get('tbl'), form: this.model.id});
 	},
 	initFormClick:  function () {
 		this.initView("form");
@@ -1816,4 +1816,6 @@ var InterfacesTable = Backbone.View.extend({
 		return this;
 	}
 });
+
+
 

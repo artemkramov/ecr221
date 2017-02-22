@@ -153,3 +153,6 @@ a img:active {
 .main-page-cell {
     font-size: 25px;
 }
+#cloud-synchronize, #btn-cloud-disconnect {
+    display: none;
+}

@@ -149,7 +149,18 @@
       "Register": "Register",
       "Check your e-mail for further instructions.": "Check your e-mail for further instructions.",
       "Error while registration in the cloud. Check your EET data.": "Error while registration in the cloud. Check your EET data.",
-      "Connected successfully!": "Connected successfully!"
+      "Connected successfully!": "Connected successfully!",
+      "Download dwl file": "Download dwl file",
+      "Upload dwl file to cash register": "Upload dwl file to cash register",
+      "Get firmware ID": "Get firmware ID",
+      "Get firmware file location": "Get firmware file location",
+      "Upload firmware status": "Upload firmware status",
+      "Upload firmware": "Upload firmware",
+      "Download firmware file": "Download firmware file",
+      "Get dwl file location": "Get dwl file location",
+      "Get dwl id": "Get dwl id",
+      "Cash register error": "Cash register error",
+      "Network error": "Network error"
     }
   }
 }
