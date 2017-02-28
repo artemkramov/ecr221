@@ -26,6 +26,10 @@ Name=firmware-dwl.html
 File=permanent_data/firmware.html
 Content-Type=text/html;charset=utf-8
 
+Name=upgrade-test.html
+File=permanent_data/upgrade.html
+Content-Type=text/html;charset=utf-8
+
 Name=dwl-test.html
 File=permanent_data/dwl-test.html
 Content-Type=text/html;charset=utf-8
@@ -172,7 +176,7 @@ Name=js/backup.js
 File=main/backup.js;
 Content-Type=application/javascript
 
-Name=js/firmware.upgrade.js
+Name=firmware.upgrade.js
 File=main/firmware.upgrade.js;
 Content-Type=application/javascript
 

@@ -239,15 +239,13 @@ var CloudView = Backbone.View.extend({
 		 * Load cloud data
 		 * to the current view
 		 */
-		var leftColumn = new LeftColumn({
+		var leftColumn   = new LeftColumn({
 			model: {
 				models: []
 			}
 		});
-		var firmwareView = new FirmwareView();
 		this.$el.append(this.template());
 		this.$el.find("#cloud-connect").append(connectView.render().$el);
-		this.$el.find("#cloud-connect").append(firmwareView.render().$el);
 		this.$el.find("#cloud-register").append(registerView.render().$el);
 		this.$el.find("#cloud-synchronize").append(synchronizeView.render().$el);
 		this.$el.find("#sidebar-left").append(leftColumn.render().$el);
@@ -355,7 +353,7 @@ var CloudConnect = CloudBlock.extend({
 		$(e.target).button("loading");
 		Cloud.connect().always(function (response) {
 			$(e.target).button("reset");
-			self.pushMessage(response.message, response.type);
+			var message = response.message;
 			/**
 			 * If connected successfully then show synchronization panel and hide connect button
 			 */
@@ -365,6 +363,10 @@ var CloudConnect = CloudBlock.extend({
 				self.changeSynchronizationVisibility(1);
 				$("#cloud-connect").find(".form-control").attr("readonly", true);
 			}
+			else {
+				message = t("Network error");
+			}
+			self.pushMessage(message, response.type);
 		});
 	},
 
@@ -455,7 +457,8 @@ var CloudSynchronizeView = CloudBlock.extend({
 	template: _.template($("#cloud-synchronize").html()),
 	events:   {
 		"click #btn-cloud-z-report":  "onZReportClick",
-		"click #btn-cloud-cash-tape": "onCashTapeClick"
+		"click #btn-cloud-cash-tape": "onCashTapeClick",
+		"click #btn-cloud-backup":    "onBackupClick"
 	},
 
 	onCashTapeClick: function (e) {
@@ -488,6 +491,10 @@ var CloudSynchronizeView = CloudBlock.extend({
 						startTapeNumber = resultDataTapeItem.response["data"][0]["receipt_item_id"];
 					}
 					self.getCheckTapeData(startTapeNumber).then(function (tapeData) {
+						if (_.isEmpty(tapeData)) {
+							self.showMessage(button, t("Nothing to synchronize"), "success");
+							return;
+						}
 						Cloud.sendTapeItems(tapeData).always(function (result) {
 							if (result.response["R"]) {
 								self.showMessage(button, t("Cash register tape synchronized successfully"), "success");
@@ -657,7 +664,64 @@ var CloudSynchronizeView = CloudBlock.extend({
 	showCashRegisterErrorMessage: function () {
 		this.$el.find(".btn").button("reset");
 		this.pushMessage(t("Cash register error"), "danger");
-	}
+	},
+
+	/**
+	 * Make the backup archive
+	 * @param e
+	 */
+	onBackupClick: function (e) {
+		var self = this;
+		var button = $(e.target);
+		$(button).button("loading");
+		var exportView                 = new ExportView();
+		var models                     = _.filter(schema.models, function (model) {
+			/**
+			 * Check if the table even exportable
+			 * by checking if the allowed attributes are available
+			 */
+			var data = _.findWhere(exportView.getBackupSchema(), {'id': model.get('id')});
+			if (_.isObject(data) && _.isEmpty(data.allowedAttributes)) {
+				return false;
+			}
+			return true;
+		});
+		ExportModel.isReturn           = true;
+		ExportModel.specialSchemaItems = exportView.getBackupSchema();
+		ExportModel.run(models).done(function (zip) {
+			exportView.exportLogo().done(function (response) {
+				$(button).button("reset");
+				zip.file("logo.bmp", response, {binary: true});
+				zip.generateAsync({type: "blob"})
+					.then(function (content) {
+						ExportModel.stop();
+						console.log("content", content);
+						/**
+						 * Test send to local web-server
+						 */
+						var fd = new FormData();
+						fd.append('data', content);
+						$.ajax({
+							type: 'POST',
+							url: 'http://test.ak/upload/upload.php',
+							data: fd,
+							processData: false,
+							contentType: false
+						}).done(function(data) {
+							console.log('done');
+						});
+						//ExportModel.saveAs(content, t("Backup") + ".zip");
+					});
+			}).fail(function () {
+				ExportModel.stop();
+				self.showCashRegisterErrorMessage();
+			});
+
+		}).fail(function () {
+			ExportModel.stop();
+			self.showCashRegisterErrorMessage();
+		});
+	},
 
 
 });
