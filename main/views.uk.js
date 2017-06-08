@@ -350,11 +350,21 @@ var EETContainer = TableContainer.extend({
 			var $this = this;
 			$.when(schema.tableFetch(this.model.get('id'))).done(function () {
 				$this.$el.append($this.content.render().$el);
+				eetModel.set("title", t("Certificate uploading"));
+				eetModel2.set("title", t("Certificate uploading") + " 2");
 				/**
 				 * Append the view for the certificate upload
 				 */
 				var certificateView = new CertificateBlock();
+				certificateView.dataModel = eetModel;
 				$this.$el.find("form").parent().append(certificateView.render().$el);
+				//if (eetModel2.get('isDoubleCertificate')) {
+				//	var certificateView2            = new CertificateBlock();
+				//	certificateView2.urlPrivateKey  = "/cgi/putcert/priv_key/2";
+				//	certificateView2.urlCertificate = "/cgi/putcert/own_cert/2";
+				//	certificateView2.dataModel = eetModel2;
+				//	$this.$el.find("form").parent().append(certificateView2.render().$el);
+				//}
 			});
 		}
 	},
@@ -387,6 +397,11 @@ var CertificateBlock = Backbone.View.extend({
 	 */
 	p12: {},
 
+	/**
+	 * Model with the related data about certificates
+	 */
+	dataModel: undefined,
+
 	btnUpload:            "#btn-certificate-upload",
 	template:             _.template($("#cert-upload-block").html()),
 	events:               {
@@ -404,9 +419,12 @@ var CertificateBlock = Backbone.View.extend({
 	 * @returns {CertificateBlock}
 	 */
 	render:               function () {
+		var self = this;
 		this.p12 = "";
 		this.delegateEvents();
-		this.$el.html(this.template());
+		this.$el.html(this.template({
+			model: self.dataModel
+		}));
 		this.$('[data-toggle="tooltip"]').tooltip({placement: 'bottom'});
 		return this;
 	},
@@ -479,7 +497,7 @@ var CertificateBlock = Backbone.View.extend({
 			$(wrapperBlock).removeClass("active");
 			$("#btn-certificate-server-upload").removeClass('active');
 			if (parseInt(response.verify)) {
-				eetModel.set("isSslVerified", true);
+				self.dataModel.set("isSslVerified", true);
 				self.render();
 				self.pushMessage(t("Certificate was imported successfully"), "success", "private");
 				return deferred.resolve();
@@ -519,7 +537,7 @@ var CertificateBlock = Backbone.View.extend({
 			$(wrapperBlock).removeClass("active");
 			var responses = [responseKey, responseCert];
 			if (self.isResponseSuccess(responses)) {
-				eetModel.set("isP12Verified", true);
+				self.dataModel.set("isP12Verified", true);
 				self.onUploadSslServer("#btn-certificate-server-upload").then(function () {
 					self.render();
 					self.pushMessage(t("Certificate was imported successfully"), "success", "private");
@@ -674,7 +692,7 @@ var CertificateBlock = Backbone.View.extend({
 				}
 			});
 			if (isCleared) {
-				eetModel.set("isP12Verified", false);
+				self.dataModel.set("isP12Verified", false);
 				self.onRemoveSSLClick("#btn-ssl-certificate-remove").then(function () {
 					self.render();
 					self.pushMessage(t("Certificate was cleared successfully"), "success", "private");
@@ -694,7 +712,7 @@ var CertificateBlock = Backbone.View.extend({
 		$(event.target).addClass('active');
 		var self     = this;
 		this.clearCertificate(this.urlSslCertificate).done(function () {
-			eetModel.set("isSslVerified", false);
+			self.dataModel.set("isSslVerified", false);
 			self.render();
 			self.pushMessage(t("Certificate was cleared successfully"), "success", "public");
 			$(event.target).removeClass('active');
@@ -760,14 +778,37 @@ var CertificateBlock = Backbone.View.extend({
 	}
 });
 
+/**
+ * Initialize model for fetching of the certificate data
+ */
+var InitializeDataModel = Backbone.Model.extend({
+	initializeData: function () {
+		var deferred = $.Deferred();
+		eetModel.isCertificateMultipleSupport().always(function (isMultiple) {
+			if (isMultiple) {
+				eetModel2.set("isDoubleCertificate", true);
+				eetModel2.initializeData().done(function () {
+					return deferred.resolve();
+				});
+			}
+			else {
+				return deferred.resolve();
+			}
+		});
+		return deferred.promise();
+	}
+});
+
 var EETModel = Backbone.Model.extend({
 
 	defaults: {
-		urlPrivateKey: '/cgi/vfycert/priv_key',
-		urlPublicKey:  '/cgi/vfycert/own_cert',
-		urlSsl:        '/cgi/vfycert/ssl_server_cert',
-		isP12Verified: true,
-		isSslVerified: true
+		urlPrivateKey:       '/cgi/vfycert/priv_key',
+		urlPublicKey:        '/cgi/vfycert/own_cert',
+		urlSsl:              '/cgi/vfycert/ssl_server_cert',
+		isP12Verified:       true,
+		isSslVerified:       true,
+		isDoubleCertificate: false,
+		title:               "",
 	},
 
 	/**
@@ -792,6 +833,7 @@ var EETModel = Backbone.Model.extend({
 				return deferred.resolve();
 			});
 		});
+		return deferred.promise();
 	},
 
 	/**
@@ -799,10 +841,37 @@ var EETModel = Backbone.Model.extend({
 	 * @param url
 	 * @returns {*}
 	 */
-	isCertificateVerified: function (url) {
+	isCertificateVerified:        function (url) {
 		return $.ajax({
 			url: url
 		});
+	},
+	/**
+	 * Check if the multiple certificate support exists
+	 * @returns {*}
+	 */
+	isCertificateMultipleSupport: function () {
+		var deferred = $.Deferred();
+		var self     = this;
+		$.ajax({
+			url:      '/cgi/tbl/EET',
+			dataType: 'json',
+			success:  function (response) {
+				/**
+				 * Check if the property of the second certificate exists
+				 */
+				var result = false;
+				//var result = true;
+				if (!_.isUndefined(response['DIC_POPL2'])) {
+					result = true;
+				}
+				return deferred.resolve(result);
+			},
+			error:    function () {
+				return deferred.reject(false);
+			}
+		});
+		return deferred.promise();
 	}
 
 });

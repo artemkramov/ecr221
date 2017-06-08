@@ -204,9 +204,9 @@ Name=js/underscore-min.js
 File=permanent_data/js/underscore-min.js
 Content-Type=application/javascript
 
-Name=Firmware.js
-File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
-Content-Type=application/javascript
+#Name=Firmware.js
+#File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
+#Content-Type=application/javascript
 
 #image files
 

@@ -47,10 +47,10 @@
     <table class="table table-striped">
         <tr>
             <th><%= t('Name') %></th>
-            <th><%= t('Address') %></th>
-            <th><%= t('Mask') %></th>
+            <th><%= t('IP address') %></th>
             <th><%= t('Gateway') %></th>
-            <th><%= t('DNS') %></th>
+            <th><%= t('Network mask') %></th>
+            <th><%= t('DNS server address') %></th>
         </tr>
         <% models.each(function(model) { %>
         <tr>
@@ -60,8 +60,8 @@
             if (addr) {
             %>
             <td><%= IP2Str(addr) %></td>
-            <td><%= IP2Str(model.get('mask')) %></td>
             <td><%= IP2Str(model.get('gateway')) %></td>
+            <td><%= IP2Str(model.get('mask')) %></td>
             <td><%= IP2Str(model.get('dns')) %></td>
             <% } else { %>
             <td colspan="4"><%= t('Off') %></td>
@@ -399,8 +399,8 @@
 <script type="text/template" id="cert-upload-block">
     <div class="cert-upload private">
         <div>
-            <label><%= t("Certificate uploading") %></label>
-            <% if (eetModel.get('isP12Verified')) { %>
+            <label><%= model.get("title") %></label>
+            <% if (model.get('isP12Verified')) { %>
             <span class="glyphicon glyphicon-ok-circle label-is-verified" data-toggle="tooltip"
                   data-original-title="<%= t('Certificate is verified') %>"></span>
             <% } %>
@@ -418,10 +418,10 @@
         </button>
         <div class="message"></div>
     </div>
-    <div class="cert-upload public <% if (eetModel.get('isP12Verified') && !eetModel.get('isSslVerified'))  print('visible'); %>">
+    <div class="cert-upload public <% if (model.get('isP12Verified') && !model.get('isSslVerified'))  print('visible'); %>">
         <div>
             <label><%= t("SSL certificate upload") %></label>
-            <% if (eetModel.get('isSslVerified')) { %>
+            <% if (model.get('isSslVerified')) { %>
             <span class="glyphicon glyphicon-ok-circle label-is-verified" data-toggle="tooltip"
                   data-original-title="<%= t('Certificate is verified') %>"></span>
             <% } %>

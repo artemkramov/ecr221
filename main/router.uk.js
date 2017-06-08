@@ -192,8 +192,13 @@ var appStart = function () {
 	});
 
 	window.eetModel = new EETModel();
+	window.eetModel2 = new EETModel();
 
-	$.when(qryDone, schemaLoaded, eetModel.initializeData(), fiscalCell.initializeData()).always(function () {
+	eetModel2.set("urlPrivateKey", "/cgi/vfycert/priv_key/2");
+	eetModel2.set("urlPublicKey", "/cgi/vfycert/own_cert/2");
+	var initModel = new InitializeDataModel();
+
+	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData()).always(function () {
 		if (schema.get('PLU')) {
 			mainScreenCells.unshift(new MainCell({
 				model: new Backbone.Model(

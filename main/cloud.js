@@ -196,6 +196,53 @@ var Cloud = (function () {
 		 */
 		sendTapeItems: function (items) {
 			return this.sendData("post_receipt_items", items);
+		},
+
+		/**
+		 * Send backup zip file
+		 * @param formData
+		 * @returns {*}
+		 */
+		sendBackupFile: function (formData) {
+			var self = this;
+			/**
+			 * Set credentials data
+			 * @type {{username: *, password: *}}
+			 */
+			var data = {
+				username: self.connectModel.get('cloudUuid'),
+				password: self.connectModel.get('cloudToken')
+			};
+			formData.append("username", data.username);
+			formData.append("password", data.password);
+			formData.append("request", "backup");
+
+			var deferred = $.Deferred();
+			$.ajax({
+				url:      apiEndpoint,
+				type:     'post',
+				processData: false,
+				contentType: false,
+				data:     formData,
+				error:    function (response) {
+					return deferred.reject({
+						response: response,
+						message:  response.statusText,
+						type:     "danger"
+					});
+				},
+				success:  function (response) {
+
+					return deferred.resolve({
+						response: response,
+						message:  t("Connected successfully!"),
+						type:     "success"
+					});
+
+
+				}
+			});
+			return deferred.promise();
 		}
 
 	};
@@ -700,16 +747,21 @@ var CloudSynchronizeView = CloudBlock.extend({
 						 * Test send to local web-server
 						 */
 						var fd = new FormData();
-						fd.append('data', content);
-						$.ajax({
-							type: 'POST',
-							url: 'http://test.ak/upload/upload.php',
-							data: fd,
-							processData: false,
-							contentType: false
-						}).done(function(data) {
-							console.log('done');
+						fd.append('backupFile', content);
+						Cloud.sendBackupFile(fd).done(function () {
+							self.showMessage(button, t("Backup was send successfully"), "success");
+						}).fail(function () {
+							self.showMessage(button, t("Network error"), "danger");
 						});
+						//$.ajax({
+						//	type: 'POST',
+						//	url: 'http://test.ak/upload/upload.php',
+						//	data: fd,
+						//	processData: false,
+						//	contentType: false
+						//}).done(function(data) {
+						//	console.log('done');
+						//});
 						//ExportModel.saveAs(content, t("Backup") + ".zip");
 					});
 			}).fail(function () {
@@ -721,7 +773,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 			ExportModel.stop();
 			self.showCashRegisterErrorMessage();
 		});
-	},
+	}
 
 
 });

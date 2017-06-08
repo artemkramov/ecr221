@@ -656,7 +656,7 @@ var FirmwareInfo = Backbone.Model.extend({
 		 * Tasks ti implement
 		 * @type {string[]}
 		 */
-		var actions   = ["getDwlId", "getDwlFileLocation", "getDwlFile", "uploadDwlFile", "getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware"];
+		var actions   = ["getDwlId", "getDwlFileLocation", "getDwlFile", "uploadDwlFile", "getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware", "flashFirmware"];
 		var task      = actions[taskNumber];
 		var taskLabel = this.actionsLabels[task];
 		this[task](data).then(function (response) {
