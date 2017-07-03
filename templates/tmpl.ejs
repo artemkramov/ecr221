@@ -494,8 +494,7 @@
         </div>
         <div class="panel-body">
             <div class="form-group">
-                <button class="btn btn-success" id="btn-cloud-z-report" data-loading-text="<%= t('Connecting...') %>"><%= t("Z-Report") %></button>
-                <button class="btn btn-default" id="btn-cloud-cash-tape" data-loading-text="<%= t('Connecting...') %>"><%= t("Cash register tape") %></button>
+                <button class="btn btn-success" id="btn-test-connection" data-loading-text="<%= t('Connecting...') %>"><%= t("Test connection") %></button>
                 <button class="btn btn-danger" id="btn-cloud-backup" data-loading-text="<%= t('Connecting...') %>"><%= t("Backup") %></button>
             </div>
             <div class="form-group">
@@ -537,41 +536,23 @@
 </script>
 
 <script type="text/template" id="cloud-block">
-    <div class="container">
-        <div class="row">
 
-            <div id="sidebar-left"></div>
+    <div class="row">
 
-            <div class="col-md-10">
-                <div class="row">
-
-                    <!-- CONNECT BLOCK -->
-                    <div class="col-sm-6">
-                        <div id="cloud-connect"></div>
-                    </div>
-                    <!-- END CONNECT BLOCK -->
-
-                    <!-- REGISTER BLOCK -->
-                    <div class="col-sm-6">
-                        <div id="cloud-register"></div>
-                    </div>
-                    <!-- END REGISTER BLOCK -->
-
-                </div>
-
-                <div class="row">
-
-                    <!-- SYNCHRONIZE BLOCK -->
-                    <div class="col-sm-12">
-                        <div id="cloud-synchronize"></div>
-                    </div>
-                    <!-- END SYNCHRONIZE BLOCK -->
-
-                </div>
-            </div>
-
+        <!-- REGISTER BLOCK -->
+        <div class="col-sm-6">
+            <div id="cloud-register"></div>
         </div>
+        <!-- END REGISTER BLOCK -->
+
+        <!-- SYNCHRONIZE BLOCK -->
+        <div class="col-sm-6">
+            <div id="cloud-synchronize-block"></div>
+        </div>
+        <!-- END SYNCHRONIZE BLOCK -->
+
     </div>
+
 </script>
 
 <script type="text/template" id="backup-block">

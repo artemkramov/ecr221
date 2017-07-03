@@ -146,12 +146,20 @@
       "POS's Security Token": "POS's Security Token",
       "Connecting...": "Connecting...",
       "Connect": "Connect",
-      "Registration": "Registration",
+      "Registration": "Registrace",
       "E-mail": "E-mail",
-      "Register": "Register",
+      "Register": "Registruj",
+      "Cloud settings": "Nastavení cloudu",
+      "Synchronization": "Synchronizace",
+      "Test connection": "Test spojení",
+      "Backup": "Záloha",
       "Check your e-mail for further instructions.": "Check your e-mail for further instructions.",
       "Error while registration in the cloud. Check your EET data.": "Error while registration in the cloud. Check your EET data.",
-      "Connected successfully!": "Connected successfully!"
+      "Connected successfully!": "Connected successfully!",
+      "Backup was send successfully": "Backup was send successfully",
+      "Network error": "Network error",
+      "Network error or bad credentials": "Network error or bad credentials",
+      "Unauthorized": "Unauthorized"
     }
   }
 }

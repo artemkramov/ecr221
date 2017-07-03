@@ -107,7 +107,10 @@ var AppRouter = Backbone.Router.extend({
 		this.view = new BackupScreenView();
 	},
 	cloudScr: function (page) {
-		this.view = new CloudView();
+		var cloudPages = [
+			{lnk: '#cloud/settings', name: 'Cloud settings', page: new CloudPage()}
+		];
+		this.view = new PagesScreen({models: cloudPages, no: 0 });
 	}
 });
 
@@ -199,65 +202,76 @@ var appStart = function () {
 	var initModel = new InitializeDataModel();
 
 	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData()).always(function () {
-		if (schema.get('PLU')) {
-			mainScreenCells.unshift(new MainCell({
-				model: new Backbone.Model(
-					{
-						lnk: '#plu', img: 'plu', name: 'PLU'
-						//addView: new PLUView()
-					})
-			}));
-		}
-		if (schema.get('Logo')) {
-			mainScreenCells.push(new MainCell({
-				model: new Backbone.Model(
-					{
-						lnk: '#logo', img: 'logo', name: 'Logo'
-						//addView: new PLUView()
-					})
-			}));
-		}
-		modemPages   = [
-			{lnk: '#modem/state', name: 'State', page: new ModemState({model: modemState})},
-			{
-				lnk: "#modem/settings", name: 'Settings', page: new TableContainer({
-				model:     schema.get('NSMEP'),
-				className: 'col-md-10',
-				tblMode:   false,
-				show:      true
-			})
-			},
-			{lnk: "#modem/docs", name: 'Documents', page: new ModemDocs()}
-		];
-		fiscalPages  = [
-			{lnk: '#fm/fisc', name: 'Fiscalization', page: new FiscDo()},
-			{lnk: '#fm/time', name: 'Time', page: new FiscTime()},
-		];
-		var models   = schema.tableGroup('net');
-		networkViews = [new InterfacesTable()];
-		if (gprsExists) {
-			networkViews.push(new GPRSState());
-		}
-		networkPages = [
-			{
-				lnk: '#network/state', name: 'State', page: new ArrayOfViews({
-				tagName:   'div',
-				className: 'col-md-10',
-				views:     networkViews
-			})
-			},
-			{
-				lnk:     "#network/settings", name: 'Settings', page: new CollectionView({
-				model:     new Backbone.Collection(models),
-				tagName:   'div',
-				className: 'col-md-10',
-				elemView:  TableContainer
-			}), addView: new ImpExView({model: {models: models}})
+		$.when(Cloud.checkIfSupported()).always(function () {
+			if (schema.get('PLU')) {
+				mainScreenCells.unshift(new MainCell({
+					model: new Backbone.Model(
+						{
+							lnk: '#plu', img: 'plu', name: 'PLU'
+							//addView: new PLUView()
+						})
+				}));
 			}
-		];
+			if (Cloud.isSupported) {
+				mainScreenCells.push(new MainCell({
+					model: new Backbone.Model(
+						{
+							lnk: '#cloud', img: 'cloud', name: 'Cloud'
+						})
+				}));
+			}
+			if (schema.get('Logo')) {
+				mainScreenCells.push(new MainCell({
+					model: new Backbone.Model(
+						{
+							lnk: '#logo', img: 'logo', name: 'Logo'
+							//addView: new PLUView()
+						})
+				}));
+			}
+			modemPages   = [
+				{lnk: '#modem/state', name: 'State', page: new ModemState({model: modemState})},
+				{
+					lnk: "#modem/settings", name: 'Settings', page: new TableContainer({
+					model:     schema.get('NSMEP'),
+					className: 'col-md-10',
+					tblMode:   false,
+					show:      true
+				})
+				},
+				{lnk: "#modem/docs", name: 'Documents', page: new ModemDocs()}
+			];
+			fiscalPages  = [
+				{lnk: '#fm/fisc', name: 'Fiscalization', page: new FiscDo()},
+				{lnk: '#fm/time', name: 'Time', page: new FiscTime()},
+			];
+			var models   = schema.tableGroup('net');
+			networkViews = [new InterfacesTable()];
+			if (gprsExists) {
+				networkViews.push(new GPRSState());
+			}
+			networkPages = [
+				{
+					lnk: '#network/state', name: 'State', page: new ArrayOfViews({
+					tagName:   'div',
+					className: 'col-md-10',
+					views:     networkViews
+				})
+				},
+				{
+					lnk:     "#network/settings", name: 'Settings', page: new CollectionView({
+					model:     new Backbone.Collection(models),
+					tagName:   'div',
+					className: 'col-md-10',
+					elemView:  TableContainer
+				}), addView: new ImpExView({model: {models: models}})
+				}
+			];
 
-		tickHandler  = setInterval(_.bind(events.trigger, events, 'tick'), 1000);
-		Backbone.history.start();
+			tickHandler  = setInterval(_.bind(events.trigger, events, 'tick'), 1000);
+			Backbone.history.start();
+		});
+
 	});
 };
 

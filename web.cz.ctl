@@ -246,6 +246,10 @@ Name=img/backup-h.png
 File=img/backup-h.png
 Content-Type=image/png
 
+Name=img/cloud-h.png
+File=img/cloud-h.png
+Content-Type=image/png
+
 Name=img/firmware-h.png
 File=img/firmware-h.png
 Content-Type=image/png
