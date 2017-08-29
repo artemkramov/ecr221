@@ -1311,7 +1311,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 		schema.tableFetchIgnoreCache('Cloud').done(function (response) {
 			console.log('response ', response);
 			cloudConnection.set('cloudUuid', response["UUID"]);
-			cloudConnection.set('cloudToken', response["PIN"]);
+			cloudConnection.set('cloudToken', leadingZero(response["PIN"], 4));
 			return deferred.resolve();
 		}).fail(function () {
 			return deferred.reject();

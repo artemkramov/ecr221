@@ -716,6 +716,9 @@ var FormDisplay = Backbone.View.extend({
 			var val = obj[name];
 			//if (typeof (this.$el[0][name]) != "object") continue;
 			var el   = $('[name=' + name + ']', this.$el);
+			if (name == "PIN" && obj["id"] == "Cloud") {
+				val = leadingZero(val, 4);
+			}
 			var $flt = 0;
 			if (el.length == 0) continue;
 			switch (el.prop('type')) {
