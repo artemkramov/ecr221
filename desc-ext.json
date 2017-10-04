@@ -153,13 +153,13 @@
       "Synchronization": "Synchronizace",
       "Test connection": "Test spojení",
       "Backup": "Záloha",
-      "Check your e-mail for further instructions.": "Check your e-mail for further instructions.",
+      "Check your e-mail for further instructions.": "Další instrukce naleznete ve Vaší emailové schránce.",
       "Error while registration in the cloud. Check your EET data.": "Error while registration in the cloud. Check your EET data.",
-      "Connected successfully!": "Connected successfully!",
-      "Backup was send successfully": "Backup was send successfully",
-      "Network error": "Network error",
-      "Network error or bad credentials": "Network error or bad credentials",
-      "Unauthorized": "Unauthorized"
+      "Connected successfully!": "Spojení navázáno!",
+      "Backup was send successfully": "Záloha úspěšně odeslána.",
+      "Network error": "Chyba sítě",
+      "Network error or bad credentials": "Spojení selhalo.",
+      "Unauthorized": "Spojení selhalo."
     }
   }
 }

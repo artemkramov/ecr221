@@ -145,7 +145,7 @@ var Cloud = (function () {
 				error:    function (response) {
 					return deferred.reject({
 						response: response,
-						message:  response.statusText,
+						message:  t(response.statusText),
 						type:     "danger"
 					});
 				},

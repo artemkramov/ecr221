@@ -355,7 +355,7 @@ var EETContainer = TableContainer.extend({
 				/**
 				 * Append the view for the certificate upload
 				 */
-				var certificateView = new CertificateBlock();
+				var certificateView       = new CertificateBlock();
 				certificateView.dataModel = eetModel;
 				$this.$el.find("form").parent().append(certificateView.render().$el);
 				//if (eetModel2.get('isDoubleCertificate')) {
@@ -1000,43 +1000,91 @@ var ReportPage = Backbone.View.extend({
 });
 
 
-
-
 /**
  * Container for the EET settings
  * Extended to add extra data (certificate uploading)
  */
 var CloudContainer = TableContainer.extend({
+	/**
+	 * Toggle data
+	 */
 	toggleData:     function () {
 		this.showContent = !this.showContent;
-		this.listenTo(events, "buttonBlock:" + this.model.id);
+		this.listenTo(events, "buttonBlock:" + this.model.id, this.afterSafeEvent)
 		if ($('.navbar', this.$el).siblings().length) {
 			this.content.$el.toggle();
 			this.showContent = false;
 		} else {
 			var $this = this;
 			$.when(schema.tableFetch(this.model.get('id'))).done(function () {
+				var data       = schema.table($this.model.get('id'));
+				var pin        = data.get("PIN");
+				var isPinClear = $this.isPinEmpty(pin);
 				$this.$el.append($this.content.render().$el);
 
 				/**
-				 * Append the view for the certificate upload
+				 * Append the view for the cloud operations
 				 */
-				var cloudView = new CloudView();
-				$this.$el.find("form").parent().append(cloudView.render().$el);
+				$this.updateCloudView(isPinClear);
 			});
 		}
+	},
+	/**
+	 * Event after the data was refreshed
+	 * @param event
+	 * @param eventResult
+	 */
+	afterSafeEvent: function (event, eventResult) {
+		var self = this;
+		/**
+		 * If refresh has finished
+		 */
+		if (event == 'refresh' && eventResult == false) {
+			var pin = schema.table(self.model.get('id')).get("PIN");
+			var isPinClear = self.isPinEmpty(pin);
+			self.updateCloudView(isPinClear);
+		}
+	},
+	/**
+	 * Check if PIN is empty
+	 * It helps to decide if the cash register already signed up
+	 * @param pin
+	 * @returns {boolean}
+	 */
+	isPinEmpty: function (pin) {
+		return _.isEmpty(pin.toString()) || pin == 0;
+	},
+	/**
+	 * Update the cloud view basing on the PIN field
+	 * @param isPinClear
+	 */
+	updateCloudView: function (isPinClear) {
+		this.$el.find("form").next().remove();
+		var cloudView            = new CloudView();
+		cloudView.isRegistration = isPinClear;
+		this.$el.find("form").parent().append(cloudView.render().$el);
 	},
 	afterModelSave: function () {
 		this.$el.find("#btn-certificate-upload").attr("disabled", true);
 	}
 });
 
+/**
+ * Cloud page
+ */
 var CloudPage = PageView.extend({
-	remove:    function () {
+	/**
+	 * Remove function
+	 */
+	remove: function () {
 		this.cloud.remove();
 		PageView.prototype.remove.call(this);
 	},
-	render:    function () {
+	/**
+	 * Render container and data itself
+	 * @returns {CloudPage}
+	 */
+	render: function () {
 		this.cloud = new CloudContainer({
 			model:   schema.get('Cloud'),
 			tblMode: false,
@@ -1045,7 +1093,7 @@ var CloudPage = PageView.extend({
 		this.delegateEvents();
 		this.$el.html('');
 		this.$el.append(this.cloud.render().$el);
-		var tmpl = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
+		var tmpl   = "<button type='button' id='%s' class='btn btn-%s' data-loading-text='%s'>%s</button>\n";
 		this.$el.append(_.reduce([],
 			function (memo, el) {
 				el[2] = t(el[2]);
@@ -1062,8 +1110,9 @@ var CloudPage = PageView.extend({
  */
 var CloudView = Backbone.View.extend({
 
-	template: _.template($("#cloud-block").html()),
-	render:   function () {
+	template:       _.template($("#cloud-block").html()),
+	isRegistration: false,
+	render:         function () {
 		this.$el.empty();
 
 		/**
@@ -1091,8 +1140,12 @@ var CloudView = Backbone.View.extend({
 
 
 		this.$el.append(this.template());
-		this.$el.find("#cloud-register").append(registerView.render().$el);
-		this.$el.find("#cloud-synchronize-block").append(synchronizeView.render().$el);
+		if (this.isRegistration) {
+			this.$el.find("#cloud-register").append(registerView.render().$el);
+		}
+		else {
+			this.$el.find("#cloud-synchronize-block").append(synchronizeView.render().$el);
+		}
 		this.delegateEvents();
 
 		return this;
@@ -1298,15 +1351,15 @@ var CloudRegister = CloudBlock.extend({
  */
 var CloudSynchronizeView = CloudBlock.extend({
 
-	template: _.template($("#cloud-synchronize").html()),
-	events:   {
+	template:              _.template($("#cloud-synchronize").html()),
+	events:                {
 		"click #btn-test-connection": "onTestConnectionClick",
 		"click #btn-cloud-z-report":  "onZReportClick",
 		"click #btn-cloud-cash-tape": "onCashTapeClick",
 		"click #btn-cloud-backup":    "onBackupClick"
 	},
-	initCredentials: function () {
-		var deferred = $.Deferred();
+	initCredentials:       function () {
+		var deferred        = $.Deferred();
 		var cloudConnection = Cloud.getConnectModel();
 		schema.tableFetchIgnoreCache('Cloud').done(function (response) {
 			console.log('response ', response);
@@ -1330,7 +1383,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 			self.showMessage(button, t("Network error"), "danger");
 		});
 	},
-	onCashTapeClick: function (e) {
+	onCashTapeClick:       function (e) {
 		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");
@@ -1540,7 +1593,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * @param e
 	 */
 	onBackupClick: function (e) {
-		var self = this;
+		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");
 		this.initCredentials().done(function () {
