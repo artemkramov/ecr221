@@ -21,11 +21,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="web.cz.ctl" pinned="false" current-in-tab="false">
+      <file leaf-file-name="web.cz.ctl" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/web.cz.ctl">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="206" column="0" selection-start-line="206" selection-start-column="0" selection-end-line="206" selection-end-column="0" />
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dwl-test.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/permanent_data/dwl-test.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-7.1923075">
+              <caret line="376" column="36" selection-start-line="376" selection-start-column="36" selection-end-line="376" selection-end-column="36" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Firmware.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/permanent_data/js/Firmware.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="157" column="30" selection-start-line="157" selection-start-column="30" selection-end-line="157" selection-end-column="30" />
               <folding />
             </state>
           </provider>
@@ -35,37 +55,17 @@
         <entry file="file://$PROJECT_DIR$/permanent_data/js/Api.js">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="403" column="18" selection-start-line="403" selection-start-column="18" selection-end-line="403" selection-end-column="18" />
+              <caret line="317" column="31" selection-start-line="317" selection-start-column="31" selection-end-line="317" selection-end-column="31" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="firmware.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/permanent_data/firmware.html">
+      <file leaf-file-name="novelty.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main/novelty.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-9.923077">
-              <caret line="75" column="57" selection-start-line="75" selection-start-column="57" selection-end-line="75" selection-end-column="57" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Firmware.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/permanent_data/js/Firmware.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.0">
-              <caret line="173" column="21" selection-start-line="173" selection-start-column="21" selection-end-line="173" selection-end-column="21" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="App.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/permanent_data/js/App.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="41" column="16" selection-start-line="41" selection-start-column="16" selection-end-line="41" selection-end-column="16" />
+            <state vertical-scroll-proportion="-29.48276">
+              <caret line="131" column="21" selection-start-line="131" selection-start-column="21" selection-end-line="131" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -74,53 +74,11 @@
       <file leaf-file-name="views.uk.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main/views.uk.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1083" column="39" selection-start-line="1083" selection-start-column="39" selection-end-line="1083" selection-end-column="39" />
+            <state vertical-scroll-proportion="7.448276">
+              <caret line="1651" column="8" selection-start-line="1651" selection-start-column="3" selection-end-line="1651" selection-end-column="8" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dwl-test.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/permanent_data/dwl-test.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-2.8909092">
-              <caret line="394" column="4" selection-start-line="394" selection-start-column="4" selection-end-line="404" selection-end-column="7" />
-              <folding>
-                <element signature="n#style#0;n#progress#0;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="desc-ext.json" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/desc-ext.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.4">
-              <caret line="98" column="23" selection-start-line="98" selection-start-column="17" selection-end-line="98" selection-end-column="23" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="tmpl.ejs" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/templates/tmpl.ejs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.0">
-              <caret line="545" column="35" selection-start-line="545" selection-start-column="35" selection-end-line="545" selection-end-column="35" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="router.uk.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/main/router.uk.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="110" column="73" selection-start-line="110" selection-start-column="73" selection-end-line="110" selection-end-column="73" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -130,8 +88,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
         <option value="Html5" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -144,36 +102,37 @@
         <option value="$PROJECT_DIR$/permanent_data/dwl.htm" />
         <option value="$PROJECT_DIR$/util.json" />
         <option value="$PROJECT_DIR$/permanent_data/css/firmware.css" />
-        <option value="$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.html" />
         <option value="$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.css" />
-        <option value="$PROJECT_DIR$/permanent_data/webst.ctl" />
         <option value="$PROJECT_DIR$/js/backgrid.js" />
         <option value="$PROJECT_DIR$/main/exim.dbg.js" />
         <option value="$PROJECT_DIR$/permanent_data/archived/hard_firmware/Firmware.js" />
         <option value="$PROJECT_DIR$/main/backup.js" />
-        <option value="$PROJECT_DIR$/css/main.css" />
-        <option value="$PROJECT_DIR$/index1.html" />
-        <option value="$PROJECT_DIR$/index2.html" />
-        <option value="$PROJECT_DIR$/permanent_data/archived/js/Firmware.js" />
         <option value="$PROJECT_DIR$/permanent_data/upgrade.html" />
         <option value="$PROJECT_DIR$/permanent_data/desc-firmware.json" />
         <option value="$PROJECT_DIR$/main/firmware.upgrade.js" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/main/models.js" />
-        <option value="$PROJECT_DIR$/main/router.uk.js" />
         <option value="$PROJECT_DIR$/main/util.js" />
-        <option value="$PROJECT_DIR$/main/schema.js" />
-        <option value="$PROJECT_DIR$/main/views.js" />
+        <option value="$PROJECT_DIR$/permanent_data/js/App.js" />
+        <option value="$PROJECT_DIR$/permanent_data/firmware.html" />
+        <option value="$PROJECT_DIR$/index.html" />
+        <option value="$PROJECT_DIR$/index1.html" />
+        <option value="$PROJECT_DIR$/index2.html" />
+        <option value="$PROJECT_DIR$/main/views.uk.js" />
+        <option value="$PROJECT_DIR$/css/main.css" />
+        <option value="$PROJECT_DIR$/main/router.uk.js" />
         <option value="$PROJECT_DIR$/main/cloud.js" />
         <option value="$PROJECT_DIR$/desc-ext.json" />
-        <option value="$PROJECT_DIR$/templates/tmpl.ejs" />
-        <option value="$PROJECT_DIR$/main/views.uk.js" />
         <option value="$PROJECT_DIR$/permanent_data/dwl-test.html" />
-        <option value="$PROJECT_DIR$/web.cz.ctl" />
-        <option value="$PROJECT_DIR$/permanent_data/firmware.html" />
-        <option value="$PROJECT_DIR$/permanent_data/js/App.js" />
         <option value="$PROJECT_DIR$/permanent_data/js/Firmware.js" />
+        <option value="$PROJECT_DIR$/templates/tmpl.ejs" />
+        <option value="$PROJECT_DIR$/main/views.js" />
+        <option value="$PROJECT_DIR$/main/schema.js" />
         <option value="$PROJECT_DIR$/permanent_data/js/Api.js" />
+        <option value="$PROJECT_DIR$/permanent_data/webst.ctl" />
+        <option value="$PROJECT_DIR$/permanent_data/archived/js/Firmware.js" />
+        <option value="$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.html" />
+        <option value="$PROJECT_DIR$/main/novelty.js" />
+        <option value="$PROJECT_DIR$/web.cz.ctl" />
       </list>
     </option>
   </component>
@@ -215,6 +174,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -275,7 +236,43 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
+              <option name="myItemId" value="archived" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ecrweb_v221" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ecrweb_v221" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="permanent_data" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="archived" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hard_firmware" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ecrweb_v221" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ecrweb_v221" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -295,8 +292,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -309,11 +304,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\permanent_data" />
       <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\img" />
       <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\permanent_data\js" />
       <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\js" />
       <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\css" />
-      <recent name="E:\DATA(G)\web_ecr\ecrweb_v221\permanent_data" />
     </key>
   </component>
   <component name="RunManager">
@@ -373,8 +368,8 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24158126" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -414,38 +409,10 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/js/backbone.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.187809">
-          <caret line="1131" column="2" selection-start-line="1131" selection-start-column="2" selection-end-line="1131" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/views.sk.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/backgrid.min.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3810345">
           <caret line="7" column="843" selection-start-line="7" selection-start-column="843" selection-end-line="7" selection-end-column="843" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0585198">
-          <caret line="291" column="6" selection-start-line="291" selection-start-column="6" selection-end-line="291" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="1391" selection-start-line="0" selection-start-column="1391" selection-end-line="0" selection-end-column="1391" />
         </state>
       </provider>
     </entry>
@@ -456,24 +423,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/css/firmware.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="91" column="18" selection-start-line="91" selection-start-column="18" selection-end-line="91" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/FileSaver.min.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.028006589">
           <caret line="1" column="4" selection-start-line="1" selection-start-column="4" selection-end-line="1" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/webst.ctl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="47" column="22" selection-start-line="47" selection-start-column="22" selection-end-line="47" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -526,13 +479,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/css/main.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="155" column="1" selection-start-line="155" selection-start-column="1" selection-end-line="155" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/permanent_data/archived/hard_firmware/Firmware.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="120.111115">
@@ -540,31 +486,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/archived/js/Firmware.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8625337">
-          <caret line="195" column="14" selection-start-line="195" selection-start-column="14" selection-end-line="195" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index1.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.46815833">
-          <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="41" selection-end-column="90" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/permanent_data/js/backbone.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index2.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44406196">
-          <caret line="54" column="34" selection-start-line="54" selection-start-column="34" selection-end-line="54" selection-end-column="34" />
         </state>
       </provider>
     </entry>
@@ -610,13 +535,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/firmware.upgrade.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="670" column="21" selection-start-line="670" selection-start-column="21" selection-end-line="670" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/tmpl.uk.ejs">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -641,13 +559,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="48" column="41" selection-start-line="48" selection-start-column="41" selection-end-line="48" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main/util.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -662,42 +573,82 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/main/firmware.upgrade.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="18.764416">
+          <caret line="670" column="21" selection-start-line="670" selection-start-column="21" selection-end-line="670" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/permanent_data/js/App.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="54" column="17" selection-start-line="54" selection-start-column="17" selection-end-line="54" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main/backup.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="265" column="45" selection-start-line="265" selection-start-column="45" selection-end-line="265" selection-end-column="45" />
-          <folding />
+          <caret line="40" column="4" selection-start-line="40" selection-start-column="4" selection-end-line="59" selection-end-column="6" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/models.js">
+    <entry file="file://$PROJECT_DIR$/index2.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="141" column="25" selection-start-line="141" selection-start-column="25" selection-end-line="141" selection-end-column="25" />
-          <folding />
+        <state vertical-scroll-proportion="-10.923077">
+          <caret line="25" column="22" selection-start-line="25" selection-start-column="22" selection-end-line="25" selection-end-column="22" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/views.js">
+    <entry file="file://$PROJECT_DIR$/index1.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="1619" column="6" selection-start-line="1619" selection-start-column="6" selection-end-line="1619" selection-end-column="6" />
-          <folding />
+          <caret line="10" column="38" selection-start-line="10" selection-start-column="38" selection-end-line="10" selection-end-column="38" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/schema.js">
+    <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="32" selection-start-line="38" selection-start-column="32" selection-end-line="38" selection-end-column="32" />
-          <folding />
+          <caret line="19" column="22" selection-start-line="19" selection-start-column="22" selection-end-line="19" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/main.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="244" column="1" selection-start-line="244" selection-start-column="1" selection-end-line="244" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/models.uk.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main/cloud.js">
       <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33217993">
+          <caret line="28" column="138" selection-start-line="28" selection-start-column="134" selection-end-line="28" selection-end-column="138" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/router.uk.js">
+      <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="147" column="56" selection-start-line="147" selection-start-column="56" selection-end-line="147" selection-end-column="56" />
+          <caret line="111" column="75" selection-start-line="111" selection-start-column="75" selection-end-line="111" selection-end-column="75" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/desc-ext.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="154" column="25" selection-start-line="154" selection-start-column="25" selection-end-line="154" selection-end-column="25" />
           <folding />
         </state>
       </provider>
@@ -705,67 +656,95 @@
     <entry file="file://$PROJECT_DIR$/templates/tmpl.ejs">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="545" column="35" selection-start-line="545" selection-start-column="35" selection-end-line="545" selection-end-column="35" />
+          <caret line="162" column="66" selection-start-line="162" selection-start-column="66" selection-end-line="162" selection-end-column="66" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/desc-ext.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.4">
-          <caret line="98" column="23" selection-start-line="98" selection-start-column="17" selection-end-line="98" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/views.uk.js">
+    <entry file="file://$PROJECT_DIR$/main/models.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="1083" column="39" selection-start-line="1083" selection-start-column="39" selection-end-line="1083" selection-end-column="39" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/router.uk.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="110" column="73" selection-start-line="110" selection-start-column="73" selection-end-line="110" selection-end-column="73" />
+          <caret line="305" column="35" selection-start-line="305" selection-start-column="28" selection-end-line="305" selection-end-column="35" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/web.cz.ctl">
+    <entry file="file://$PROJECT_DIR$/permanent_data/js/Firmware.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="206" column="0" selection-start-line="206" selection-start-column="0" selection-end-line="206" selection-end-column="0" />
+          <caret line="157" column="30" selection-start-line="157" selection-start-column="30" selection-end-line="157" selection-end-column="30" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/firmware.html">
+    <entry file="file://$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.923077">
-          <caret line="75" column="57" selection-start-line="75" selection-start-column="57" selection-end-line="75" selection-end-column="57" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="1391" selection-start-line="0" selection-start-column="1391" selection-end-line="0" selection-end-column="1391" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/permanent_data/css/firmware.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="102" column="1" selection-start-line="102" selection-start-column="1" selection-end-line="102" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/permanent_data/archived/hard_firmware/firmware.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.9414802">
+          <caret line="338" column="7" selection-start-line="338" selection-start-column="7" selection-end-line="338" selection-end-column="7" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/permanent_data/dwl-test.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.8909092">
-          <caret line="394" column="4" selection-start-line="394" selection-start-column="4" selection-end-line="404" selection-end-column="7" />
-          <folding>
-            <element signature="n#style#0;n#progress#0;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="-7.1923075">
+          <caret line="376" column="36" selection-start-line="376" selection-start-column="36" selection-end-line="376" selection-end-column="36" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/js/App.js">
+    <entry file="file://$PROJECT_DIR$/permanent_data/firmware.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="41" column="16" selection-start-line="41" selection-start-column="16" selection-end-line="41" selection-end-column="16" />
+        <state vertical-scroll-proportion="-12.346154">
+          <caret line="84" column="0" selection-start-line="84" selection-start-column="0" selection-end-line="84" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/permanent_data/archived/js/Firmware.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="113.666664">
+          <caret line="183" column="56" selection-start-line="183" selection-start-column="56" selection-end-line="183" selection-end-column="56" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/permanent_data/webst.ctl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.42009884">
+          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/schema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33217993">
+          <caret line="182" column="59" selection-start-line="182" selection-start-column="54" selection-end-line="182" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/views.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33217993">
+          <caret line="1198" column="36" selection-start-line="1198" selection-start-column="31" selection-end-line="1198" selection-end-column="36" />
           <folding />
         </state>
       </provider>
@@ -773,15 +752,33 @@
     <entry file="file://$PROJECT_DIR$/permanent_data/js/Api.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="403" column="18" selection-start-line="403" selection-start-column="18" selection-end-line="403" selection-end-column="18" />
+          <caret line="317" column="31" selection-start-line="317" selection-start-column="31" selection-end-line="317" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/permanent_data/js/Firmware.js">
+    <entry file="file://$PROJECT_DIR$/main/views.uk.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0">
-          <caret line="173" column="21" selection-start-line="173" selection-start-column="21" selection-end-line="173" selection-end-column="21" />
+        <state vertical-scroll-proportion="7.448276">
+          <caret line="1651" column="8" selection-start-line="1651" selection-start-column="3" selection-end-line="1651" selection-end-column="8" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/novelty.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-29.48276">
+          <caret line="131" column="21" selection-start-line="131" selection-start-column="21" selection-end-line="131" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/web.cz.ctl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>

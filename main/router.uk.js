@@ -15,7 +15,8 @@ var AppRouter = Backbone.Router.extend({
 		"logo":            'logoScr',
 		"report":          'repScr',
 		"backup":          'backupScr',
-		"cloud":           'cloudScr'
+		"cloud":           'cloudScr',
+		"novelty":         'noveltyScr'
 	},
 	execute: function (callback, args) {
 		if (this.view) {
@@ -106,11 +107,17 @@ var AppRouter = Backbone.Router.extend({
 	backupScr:  function (page) {
 		this.view = new BackupScreenView();
 	},
-	cloudScr: function (page) {
+	cloudScr:   function (page) {
 		var cloudPages = [
 			{lnk: '#cloud/settings', name: 'Cloud settings', page: new CloudPage()}
 		];
-		this.view = new PagesScreen({models: cloudPages, no: 0 });
+		this.view      = new PagesScreen({models: cloudPages, no: 0});
+	},
+	noveltyScr: function (page) {
+		var noveltyPages = [
+			{lnk: '#novelty/list', name: 'Novelties', page: new NoveltyPage()}
+		];
+		this.view        = new PagesScreen({models: noveltyPages, no: 0});
 	}
 });
 
@@ -194,14 +201,14 @@ var appStart = function () {
 		schemaLoaded.resolve();
 	});
 
-	window.eetModel = new EETModel();
+	window.eetModel  = new EETModel();
 	window.eetModel2 = new EETModel();
 
 	eetModel2.set("urlPrivateKey", "/cgi/vfycert/priv_key/2");
 	eetModel2.set("urlPublicKey", "/cgi/vfycert/own_cert/2");
-	var initModel = new InitializeDataModel();
+	var initModel    = new InitializeDataModel();
 
-	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData()).always(function () {
+	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData(), Novelties.getUnreadCount()).always(function () {
 		$.when(Cloud.checkIfSupported()).always(function () {
 			if (schema.get('PLU')) {
 				mainScreenCells.unshift(new MainCell({
@@ -229,6 +236,14 @@ var appStart = function () {
 						})
 				}));
 			}
+			mainScreenCells.unshift(new MailCellNovelty({
+				model: new Backbone.Model({
+					lnk:         '#novelty',
+					img:         'news',
+					name:        'Novelties',
+					unreadCount: Novelties.unreadMessages
+				})
+			}));
 			modemPages   = [
 				{lnk: '#modem/state', name: 'State', page: new ModemState({model: modemState})},
 				{
@@ -268,7 +283,7 @@ var appStart = function () {
 				}
 			];
 
-			tickHandler  = setInterval(_.bind(events.trigger, events, 'tick'), 1000);
+			tickHandler = setInterval(_.bind(events.trigger, events, 'tick'), 1000);
 			Backbone.history.start();
 		});
 

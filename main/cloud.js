@@ -30,11 +30,7 @@ var CloudRegisterModel = Backbone.Model.extend({
  */
 var Cloud = (function () {
 
-	/**
-	 * Endpoint address of the API
-	 * @type {string}
-	 */
-	var apiEndpoint = "https://devapi-standard.pos-data.eu";
+	var protocol = 'https://';
 
 	return {
 		/**
@@ -58,6 +54,17 @@ var Cloud = (function () {
 		 */
 		getSerialNumber: function () {
 			return ecrStatus.get("serial");
+		},
+
+		getApiEndPoint: function () {
+			var deferred = $.Deferred();
+			schema.tableFetchIgnoreCache('Cloud').done(function () {
+				var data = schema.tableIgnoreCache('Cloud');
+				return deferred.resolve(protocol + data.get('Address'));
+			}).fail(function () {
+				return deferred.reject("/");
+			});
+			return deferred.promise();
 		},
 
 		/**
@@ -137,28 +144,30 @@ var Cloud = (function () {
 			 */
 			data.request = request;
 			var deferred = $.Deferred();
-			$.ajax({
-				url:      apiEndpoint,
-				type:     'post',
-				dataType: 'json',
-				data:     JSON.stringify(data),
-				error:    function (response) {
-					return deferred.reject({
-						response: response,
-						message:  t(response.statusText),
-						type:     "danger"
-					});
-				},
-				success:  function (response) {
+			self.getApiEndPoint().always(function (apiEndpoint) {
+				$.ajax({
+					url:      apiEndpoint,
+					type:     'post',
+					dataType: 'json',
+					data:     JSON.stringify(data),
+					error:    function (response) {
+						return deferred.reject({
+							response: response,
+							message:  t(response.statusText),
+							type:     "danger"
+						});
+					},
+					success:  function (response) {
 
-					return deferred.resolve({
-						response: response,
-						message:  t("Connected successfully!"),
-						type:     "success"
-					});
+						return deferred.resolve({
+							response: response,
+							message:  t("Connected successfully!"),
+							type:     "success"
+						});
 
 
-				}
+					}
+				});
 			});
 			return deferred.promise();
 
@@ -244,29 +253,29 @@ var Cloud = (function () {
 			formData.append("request", "backup");
 
 			var deferred = $.Deferred();
-			$.ajax({
-				url:      apiEndpoint,
-				type:     'post',
-				processData: false,
-				contentType: false,
-				data:     formData,
-				error:    function (response) {
-					return deferred.reject({
-						response: response,
-						message:  response.statusText,
-						type:     "danger"
-					});
-				},
-				success:  function (response) {
+			self.getApiEndPoint().always(function (apiEndpoint) {
+				$.ajax({
+					url:      apiEndpoint,
+					type:     'post',
+					processData: false,
+					contentType: false,
+					data:     formData,
+					error:    function (response) {
+						return deferred.reject({
+							response: response,
+							message:  response.statusText,
+							type:     "danger"
+						});
+					},
+					success:  function (response) {
 
-					return deferred.resolve({
-						response: response,
-						message:  t("Connected successfully!"),
-						type:     "success"
-					});
-
-
-				}
+						return deferred.resolve({
+							response: response,
+							message:  t("Connected successfully!"),
+							type:     "success"
+						});
+					}
+				});
 			});
 			return deferred.promise();
 		}

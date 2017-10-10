@@ -277,6 +277,10 @@ var MainCell = Backbone.View.extend({
 	}
 });
 
+var MailCellNovelty = MainCell.extend({
+	template: _.template($("#main-cell-novelty").html())
+});
+
 /**
  * Additional subview to display specific cell information
  */
@@ -648,13 +652,22 @@ var FormDisplay = Backbone.View.extend({
 					if (all || (el.checked && !el.defaultChecked)) obj[name] = el.value;
 					break;
 				case "checkbox":
-					if (!(all || (name in rem))) rem[name] = true;
-					if (name in obj) {
-						if (el.checked) obj[name] |= 1 << el.value;
-					} else {
-						obj[name] = el.checked ? (1 << el.value) : 0;
+					if ($(el).hasClass('checkbox-single')) {
+						var isChecked = 0;
+						if ($(el).prop('checked')) {
+							isChecked = 1;
+						}
+						obj[name] = isChecked;
 					}
-					if (!all && (el.checked != el.defaultChecked)) rem[name] = false;
+					else {
+						if (!(all || (name in rem))) rem[name] = true;
+						if (name in obj) {
+							if (el.checked) obj[name] |= 1 << el.value;
+						} else {
+							obj[name] = el.checked ? (1 << el.value) : 0;
+						}
+						if (!all && (el.checked != el.defaultChecked)) rem[name] = false;
+					}
 					break;
 				case "select-one":
 					if (all || (!el.options[el.selectedIndex].defaultSelected)) {
@@ -705,6 +718,10 @@ var FormDisplay = Backbone.View.extend({
 					el.attr('checked', false);
 					el.prop('defaultChecked', false);
 					break;
+				case "checkbox-single":
+					el.attr('checked', false);
+					el.prop('defaultChecked', false);
+					break;
 				case "select-one":
 					el.val(1);
 					break;
@@ -727,13 +744,20 @@ var FormDisplay = Backbone.View.extend({
 					if (def) $flt.prop('defaultChecked', 'checked');
 					break;
 				case "checkbox":
-					if (_.isString(val)) val = parseInt(val);
-					el.attr('checked', false);
-					if (def) el.prop('defaultChecked', false);
-					for (var i = 0; val != 0; i++, val >>= 1) {
-						if (val & 1) {
-							$flt = el.filter('[value="' + i + '"]').prop('checked', 'checked')
-							if (def) $flt.prop('defaultChecked', 'checked');
+					if (!_.isString(val)) val = parseInt(val);
+					el.prop('checked', false);
+					if ($(el).hasClass('checkbox-single')) {
+						if (val == 1) {
+							el.prop('checked', true);
+						}
+					}
+					else {
+						if (def) el.prop('defaultChecked', false);
+						for (var i = 0; val != 0; i++, val >>= 1) {
+							if (val & 1) {
+								$flt = el.filter('[value="' + i + '"]').prop('checked', 'checked')
+								if (def) $flt.prop('defaultChecked', 'checked');
+							}
 						}
 					}
 					break;

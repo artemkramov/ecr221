@@ -1008,7 +1008,7 @@ var CloudContainer = TableContainer.extend({
 	/**
 	 * Toggle data
 	 */
-	toggleData:     function () {
+	toggleData:      function () {
 		this.showContent = !this.showContent;
 		this.listenTo(events, "buttonBlock:" + this.model.id, this.afterSafeEvent)
 		if ($('.navbar', this.$el).siblings().length) {
@@ -1034,13 +1034,13 @@ var CloudContainer = TableContainer.extend({
 	 * @param event
 	 * @param eventResult
 	 */
-	afterSafeEvent: function (event, eventResult) {
+	afterSafeEvent:  function (event, eventResult) {
 		var self = this;
 		/**
 		 * If refresh has finished
 		 */
 		if (event == 'refresh' && eventResult == false) {
-			var pin = schema.table(self.model.get('id')).get("PIN");
+			var pin        = schema.table(self.model.get('id')).get("PIN");
 			var isPinClear = self.isPinEmpty(pin);
 			self.updateCloudView(isPinClear);
 		}
@@ -1051,7 +1051,7 @@ var CloudContainer = TableContainer.extend({
 	 * @param pin
 	 * @returns {boolean}
 	 */
-	isPinEmpty: function (pin) {
+	isPinEmpty:      function (pin) {
 		return _.isEmpty(pin.toString()) || pin == 0;
 	},
 	/**
@@ -1064,7 +1064,7 @@ var CloudContainer = TableContainer.extend({
 		cloudView.isRegistration = isPinClear;
 		this.$el.find("form").parent().append(cloudView.render().$el);
 	},
-	afterModelSave: function () {
+	afterModelSave:  function () {
 		this.$el.find("#btn-certificate-upload").attr("disabled", true);
 	}
 });
@@ -1646,4 +1646,116 @@ var CloudSynchronizeView = CloudBlock.extend({
 	}
 
 
+});
+
+/**
+ * Novelty page
+ */
+var NoveltyPage = PageView.extend({
+	/**
+	 * Remove function
+	 */
+	remove: function () {
+		this.novelties.remove();
+		PageView.prototype.remove.call(this);
+	},
+	/**
+	 * Render container and data itself
+	 * @returns {NoveltyPage}
+	 */
+	render: function () {
+		var self       = this;
+		this.novelties = new NoveltyList();
+		this.delegateEvents();
+		this.$el.html('');
+		this.showPreloader();
+		Novelties.initializeData().always(function (response) {
+			self.$el.append(self.novelties.render().$el);
+			if (response.isSuccess) {
+				Novelties.setUnreadCount().always(function () {
+					/**
+					 * Check if response was empty
+					 * to inform user that there is no novelty yet
+					 */
+					if (_.isEmpty(Novelties.records)) {
+						self.onInfoEvent(t("There is no novelty."));
+					}
+				});
+
+			}
+			else {
+				self.onErrorEvent(t("Error while receiving novelties. Please check your internet connectivity."));
+			}
+			self.hidePreloader();
+		});
+
+		return this;
+	},
+	/**
+	 * Show alert info message
+	 * @param message
+	 */
+	onInfoEvent: function (message) {
+		this.pushMessage(message, "info");
+	},
+	/**
+	 * Show alert error message
+	 * @param message
+	 */
+	onErrorEvent:      function (message) {
+		this.pushMessage(message, "danger");
+	},
+	/**
+	 * Push alert message
+	 * @param message
+	 * @param type
+	 */
+	pushMessage: function (message, type) {
+		var alert = new Alert({
+			model: {
+				type:    type,
+				message: message
+			}
+		});
+		this.clearMessageBlock().append(alert.render().$el);
+	},
+	/**
+	 * Clear error block
+	 * @returns {*}
+	 */
+	clearMessageBlock: function () {
+		return this.$el.find(".error-block").empty();
+	},
+	/**
+	 * Show preloader
+	 */
+	showPreloader: function () {
+		$("body").addClass("preloading");
+	},
+	/**
+	 * Hide preloader
+	 */
+	hidePreloader: function() {
+		$("body").removeClass("preloading");
+	}
+});
+
+var NoveltyList = Backbone.View.extend({
+	/**
+	 * Template for the list
+	 */
+	template: _.template($("#novelty-list").html()),
+
+	/**
+	 * Render novelty list
+	 * @returns {NoveltyList}
+	 */
+	render: function () {
+		this.delegateEvents();
+		this.$el.html('');
+		this.$el.append(this.template({
+			records: Novelties.records
+		}));
+		return this;
+	}
 });

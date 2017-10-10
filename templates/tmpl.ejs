@@ -157,6 +157,15 @@
                             /><%= label %></label>
             </div>
             <% });} break;
+            case 'checkbox-single': { %>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" class="checkbox-single" name="<%= el.name %>" value="1"
+                            <% if (('editable' in el) && (el.editable == false)) print(' disabled') %>
+                            />
+                </label>
+            </div>
+            <% } break;
             default: { %>
             <input type="<%= el.type %>" name="<%= el.name %>" class="form-control"
                     <% if ('attr' in el) print(el.attr);
@@ -494,8 +503,10 @@
         </div>
         <div class="panel-body">
             <div class="form-group">
-                <button class="btn btn-success" id="btn-test-connection" data-loading-text="<%= t('Connecting...') %>"><%= t("Test connection") %></button>
-                <button class="btn btn-danger" id="btn-cloud-backup" data-loading-text="<%= t('Connecting...') %>"><%= t("Backup") %></button>
+                <button class="btn btn-success" id="btn-test-connection"
+                        data-loading-text="<%= t('Connecting...') %>"><%= t("Test connection") %></button>
+                <button class="btn btn-danger" id="btn-cloud-backup"
+                        data-loading-text="<%= t('Connecting...') %>"><%= t("Backup") %></button>
             </div>
             <div class="form-group">
                 <div class="cloud-message-block"></div>
@@ -709,4 +720,39 @@
         <% }) %>
         </tbody>
     </table>
+</script>
+
+<script type="text/template" id="novelty-list">
+    <div class="error-block"></div>
+    <div>
+        <% _.each(records, function (record) { %>
+        <div class="row row-novelty">
+            <div class="col-md-12">
+                <div class="media">
+                    <div class="media-left">
+                        <img class="media-object" src="<%= record.photo %>" alt="...">
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading"><%= record.title %></h4>
+
+                        <div class="row-novelty-date"><%= record.created_at %></div>
+                        <%= record.description %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</script>
+
+<script type="text/template" id="main-cell-novelty">
+    <h2 class="main-page-cell">
+        <a class="btn btn-default" href="<%= lnk %>">
+            <% if (Novelties.unreadMessages > 0) { %>
+            <span class="main-cell-unread-count"><%= Novelties.unreadMessages %></span>
+            <% } %>
+            <img class="<%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>" src="img/<%= img %>-h.png"/>
+        </a>
+        <%= t(name) %>
+    </h2>
 </script>

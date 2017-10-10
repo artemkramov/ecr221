@@ -159,7 +159,10 @@
       "Backup was send successfully": "Záloha úspěšně odeslána.",
       "Network error": "Chyba sítě",
       "Network error or bad credentials": "Spojení selhalo.",
-      "Unauthorized": "Spojení selhalo."
+      "Unauthorized": "Spojení selhalo.",
+      "Error while receiving novelties. Please check your internet connectivity.": "Error while receiving novelties. Please check your internet connectivity.",
+      "There is no novelty.": "There is no novelty.",
+      "Novelties": "NOVINKY!"
     }
   }
 }

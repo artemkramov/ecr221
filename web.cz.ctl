@@ -22,17 +22,17 @@ Cache-Control=max-age=0, no-cache, no-store, must-revalidate
 Pragma=no-cache
 Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
-Name=firmware-dwl.html
-File=permanent_data/firmware.html
-Content-Type=text/html;charset=utf-8
+#Name=firmware-dwl.html
+#File=permanent_data/firmware.html
+#Content-Type=text/html;charset=utf-8
 
-Name=upgrade-test.html
-File=permanent_data/upgrade.html
-Content-Type=text/html;charset=utf-8
+#Name=upgrade-test.html
+#File=permanent_data/upgrade.html
+#Content-Type=text/html;charset=utf-8
 
-Name=dwl-test.html
-File=permanent_data/dwl-test.html
-Content-Type=text/html;charset=utf-8
+#Name=dwl-test.html
+#File=permanent_data/dwl-test.html
+#Content-Type=text/html;charset=utf-8
 
 Name=tmpl.html
 File=templates/tmpl.ejs;templates/tmpl.uk.ejs;templates/tmpl.gprs.ejs
@@ -176,9 +176,16 @@ Name=js/backup.js
 File=main/backup.js;
 Content-Type=application/javascript
 
-Name=firmware.upgrade.js
-File=main/firmware.upgrade.js;
+Name=js/novelty.js
+File=main/novelty.js;
 Content-Type=application/javascript
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
+
+#Name=firmware.upgrade.js
+#File=main/firmware.upgrade.js;
+#Content-Type=application/javascript
 
 Name=js/cloud.js
 File=main/cloud.js;
@@ -204,67 +211,113 @@ Name=js/underscore-min.js
 File=permanent_data/js/underscore-min.js
 Content-Type=application/javascript
 
-Name=js/Api.js
-File=permanent_data/js/Api.js
-Content-Type=application/javascript
+#Name=js/Api.js
+#File=permanent_data/js/Api.js
+#Content-Type=application/javascript
 
-Name=Firmware.js
-File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
-Content-Type=application/javascript
+#Name=Firmware.js
+#File=permanent_data/js/jquery.noty.packaged.min.js;permanent_data/js/App.js;permanent_data/js/Api.js;permanent_data/js/Firmware.js;permanent_data/js/Buffer.js;permanent_data/js/IntelHex.js;
+#Content-Type=application/javascript
 
 #image files
 
 Name=img/table-h.png
 File=img/table-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/sales-h.png
 File=img/sales-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/receipt-h.png
 File=img/receipt-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/plu-h.png
 File=img/plu-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/network-h.png
 File=img/network-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/logo-h.png
 File=img/logo-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/fm-h.png
 File=img/fm-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/modem-h.png
 File=img/modem-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/backup-h.png
 File=img/backup-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/cloud-h.png
 File=img/cloud-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/firmware-h.png
 File=img/firmware-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/dwl-h.png
 File=img/dwl-h.png
 Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
+
+Name=img/news-h.png
+File=img/news-h.png
+Content-Type=image/png
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 Name=img/on.svg
 File=img/on.svg
 Content-Type=image/svg+xml
+Cache-Control=max-age=0, no-cache, no-store, must-revalidate
+Pragma=no-cache
+Expires=Wed, 11 Jan 1984 05:00:00 GMT
 
 #Name=img/off.svg
 #File=img/off.svg
