@@ -116,6 +116,12 @@
 
 <script type="text/template" id="form-template">
     <form id="<%= id %>" data-fid="<%= id %>" autocomplete="on" class="form-horizontal">
+        <% if (id == 'Cloud') { %>
+        <h4 class="cloud-subtitle">
+            <%= t("If you have already registered, please enter the data, you obtained on your account at") %>
+            <a href="https://www.pos-data.eu" target="_blank">www.pos-data.eu</a>
+        </h4>
+        <% } %>
         <% _.each( elems, function(el){
             if (('renderable' in el) && !el.renderable) return; %>
         <div class="form-group row">
@@ -755,4 +761,13 @@
         </a>
         <%= t(name) %>
     </h2>
+</script>
+
+<script type="text/template" id="notification-header">
+    <a href="#novelty">
+        <% if (Novelties.unreadMessages > 0) { %>
+        <span class="main-cell-unread-count"><%= Novelties.unreadMessages %></span>
+        <% } %>
+        <img class="img-responsive <%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>" src="img/news-h.png"/>
+    </a>
 </script>

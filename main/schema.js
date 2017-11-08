@@ -264,7 +264,19 @@ var Schema = Backbone.Collection.extend({
 								var elements  = model.get("elems");
 								var newFields = [];
 								elements.forEach(function (field) {
-									if (requiredFields.fields.indexOf(field.name) > -1) {
+									var isNeeded = false;
+									_.each(requiredFields.fields, function (requiredField) {
+										var name = _.isObject(requiredField) ? requiredField.name : requiredField;
+										if (name == field.name) {
+											isNeeded = true;
+											if (_.isObject(requiredField)) {
+												for (var property in requiredField) {
+													field[property] = requiredField[property];
+												}
+											}
+										}
+									});
+									if (isNeeded) {
 										newFields.push(field);
 									}
 								});
@@ -547,7 +559,7 @@ var specialTableSchema = [{
 	{
 		id: "Cloud",
 		fields: [
-			"UUID", "PIN", "Param"
+			"UUID", "PIN", {name: "Param", type: "checkbox-single"}
 		]
 	}
 ];

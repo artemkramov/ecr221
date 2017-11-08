@@ -198,7 +198,9 @@ var appStart = function () {
 	});
 
 	schema.load(function () {
-		schemaLoaded.resolve();
+		$.when(Novelties.getUnreadCount()).always(function () {
+			schemaLoaded.resolve();
+		});
 	});
 
 	window.eetModel  = new EETModel();
@@ -208,7 +210,7 @@ var appStart = function () {
 	eetModel2.set("urlPublicKey", "/cgi/vfycert/own_cert/2");
 	var initModel    = new InitializeDataModel();
 
-	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData(), Novelties.getUnreadCount()).always(function () {
+	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData()).always(function () {
 		$.when(Cloud.checkIfSupported()).always(function () {
 			if (schema.get('PLU')) {
 				mainScreenCells.unshift(new MainCell({
@@ -236,14 +238,14 @@ var appStart = function () {
 						})
 				}));
 			}
-			mainScreenCells.unshift(new MailCellNovelty({
-				model: new Backbone.Model({
-					lnk:         '#novelty',
-					img:         'news',
-					name:        'Novelties',
-					unreadCount: Novelties.unreadMessages
-				})
-			}));
+			//mainScreenCells.unshift(new MailCellNovelty({
+			//	model: new Backbone.Model({
+			//		lnk:         '#novelty',
+			//		img:         'news',
+			//		name:        'Novelties',
+			//		unreadCount: Novelties.unreadMessages
+			//	})
+			//}));
 			modemPages   = [
 				{lnk: '#modem/state', name: 'State', page: new ModemState({model: modemState})},
 				{

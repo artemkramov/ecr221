@@ -8,6 +8,11 @@ function t(text) {
 }
 
 /**
+ * Disable ajax caching
+ */
+$.ajaxSetup({cache: false});
+
+/**
  * Extend Backbone events
  * @type {{}}
  */
@@ -51,6 +56,16 @@ var FirmwareView = Backbone.View.extend({
 	 * On firmware update click
 	 */
 	onFirmwareUpdateClick: function () {
+		var template   = _.template($("#modal-template").html());
+		var modalBlock = $("#customer-modal");
+		modalBlock.empty().append(template());
+		$("#customer-email").val(Api.deviceData.email);
+		modalBlock.modal();
+	},
+	/**
+	 * Run upgrade process
+	 */
+	upgrade: function () {
 		this.firmwareModel                 = new FirmwareInfo();
 		var self                           = this;
 		this.percentageModel               = new PercentageModel();
@@ -77,6 +92,23 @@ var FirmwareView = Backbone.View.extend({
 			}
 		});
 	}
+});
+
+$(document).ready(function () {
+
+	$(document).on("submit", "#customer-form-upgrade", function () {
+		var email  = $(this).find("#customer-email").val();
+		var button = $(this).find("input[type=submit]");
+		$(button).button("loading");
+		Api.sendDataToServer(email).always(function () {
+			$("#customer-modal").modal("hide");
+			$(button).button("reset");
+			var firmwareView = new FirmwareView();
+			firmwareView.upgrade();
+		});
+		return false;
+	});
+
 });
 
 /**
@@ -468,7 +500,7 @@ var FirmwareInfo = Backbone.Model.extend({
 		$.ajax({
 			url:     '/cgi/fw_burn',
 			type:    'post',
-			error: function () {
+			error:   function () {
 				return deferred.reject(App.getTranslation("Cash register error"));
 			},
 			success: function () {
@@ -584,33 +616,36 @@ var FirmwareInfo = Backbone.Model.extend({
 	 * Run the upgrade process
 	 * @returns {*}
 	 */
-	run: function () {
-		var self           = this;
+	run:               function () {
+		var self     = this;
 		/**
 		 * Init log data
 		 * @type {Array}
 		 */
-		this.history       = [];
+		this.history = [];
+
+		var upgradeDwlLabel = App.getTranslation("Upgrade web-interface");
+		var upgradeFirmwareLabel = App.getTranslation("Upgrade firmware");
 
 		/**
 		 * Initiate labels
 		 * @type {{getDwlFile: *, uploadDwlFile: *, getFirmwareID: *, getFirmwareFileLocation: *, sendFirmwareStatus: *, uploadFirmware: *, getFirmwareFile: *, getDwlFileLocation: *, getDwlId: *}}
 		 */
 		this.actionsLabels = {
-			getDwlFile:              App.getTranslation("Download dwl file"),
-			uploadDwlFile:           App.getTranslation("Upload dwl file to cash register"),
-			getFirmwareID:           App.getTranslation("Get firmware ID"),
-			getFirmwareFileLocation: App.getTranslation("Get firmware file location"),
-			sendFirmwareStatus:      App.getTranslation("Upload firmware status"),
-			uploadFirmware:          App.getTranslation("Upload firmware"),
-			getFirmwareFile:         App.getTranslation("Download firmware file"),
-			getDwlFileLocation:      App.getTranslation("Get dwl file location"),
-			getDwlId:                App.getTranslation("Get dwl id"),
-			flashFirmware:           App.getTranslation("Flash firmware")
+			getDwlFile:              upgradeDwlLabel,
+			uploadDwlFile:           upgradeDwlLabel,
+			getFirmwareID:           upgradeFirmwareLabel,
+			getFirmwareFileLocation: upgradeFirmwareLabel,
+			sendFirmwareStatus:      upgradeFirmwareLabel,
+			uploadFirmware:          upgradeFirmwareLabel,
+			getFirmwareFile:         upgradeFirmwareLabel,
+			getDwlFileLocation:      upgradeDwlLabel,
+			getDwlId:                upgradeDwlLabel,
+			flashFirmware:           upgradeFirmwareLabel
 		};
 
-		this.isRunning     = true;
-		var deferred       = $.Deferred();
+		this.isRunning = true;
+		var deferred   = $.Deferred();
 		this.handleData(deferred).done(function () {
 			self.isRunning = false;
 			return deferred.resolve({
@@ -624,19 +659,28 @@ var FirmwareInfo = Backbone.Model.extend({
 		});
 		return deferred.promise();
 	},
-
 	/**
 	 * Insert log data
 	 * @param id
 	 * @param isError
 	 * @param result
 	 */
-	pushDataToHistory: function (id, isError, result) {
-		this.history.push({
-			id:     id,
-			error:  isError,
-			result: result
+	pushPartialData:   function (id, isError, result) {
+		var isAlreadyInHistory = false;
+		_.each(this.history, function (item) {
+			if (item.id == id) {
+				item.error         = isError;
+				item.result = result;
+				isAlreadyInHistory = true;
+			}
 		});
+		if (!isAlreadyInHistory) {
+			this.history.push({
+				id:    id,
+				error: isError,
+				result: result
+			});
+		}
 	},
 
 	/**
@@ -661,7 +705,7 @@ var FirmwareInfo = Backbone.Model.extend({
 		var taskLabel = this.actionsLabels[task];
 		this[task](data).then(function (response) {
 			taskNumber++;
-			self.pushDataToHistory(taskLabel, false, App.getTranslation("Done"));
+			self.pushPartialData(taskLabel, false, App.getTranslation("Done"));
 			if (taskNumber < actions.length && self.viewProgressBar.isRunning) {
 				self.handleData(deferred, taskNumber, response);
 			}
@@ -672,7 +716,7 @@ var FirmwareInfo = Backbone.Model.extend({
 				});
 			}
 		}).fail(function (responseText) {
-			self.pushDataToHistory(taskLabel, true, responseText);
+			self.pushPartialData(taskLabel, true, App.getTranslation("Error"));
 			App.pushMessage(responseText, "error");
 			return deferred.reject({
 				error: true

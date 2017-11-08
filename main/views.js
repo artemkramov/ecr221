@@ -194,7 +194,7 @@ var ConfirmModal = Modal.extend({
 
 var LanguageSelector = Backbone.View.extend({
 	tagName:   'select',
-	className: 'pull-right',
+	className: 'header-right pull-right',
 	events:    {
 		'change': 'langChg'
 	},
@@ -213,6 +213,19 @@ var LanguageSelector = Backbone.View.extend({
 		Backbone.history.loadUrl(Backbone.history.fragment);
 		//console.log('lang',this.$el.val());
 		return false;
+	}
+});
+
+/**
+ * Notification sign in the header
+ */
+var NotificationHeader = Backbone.View.extend({
+	template: _.template($("#notification-header").html()),
+	className: 'header-right notification-header pull-right',
+	render: function () {
+		this.delegateEvents();
+		this.$el.empty().append(this.template());
+		return this;
 	}
 });
 
@@ -360,10 +373,12 @@ var MainScreenView = Backbone.View.extend({
 		}
 		if (!this.inrow) this.inrow = 2;
 		this.lang = new LanguageSelector();
+		this.notification = new NotificationHeader();
 	},
 	render:     function () {
 		this.$el.html('');
 		this.$el.append(this.lang.render().$el);
+		this.$el.append(this.notification.render().$el);
 		this.$el.append(this.$summary.render().$el);
 		if (this.cells) {
 			var row = false;

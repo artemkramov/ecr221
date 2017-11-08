@@ -4,7 +4,7 @@ var Novelties = (function () {
 	 * API URL
 	 * @type {string}
 	 */
-	const API_URL = 'http://help-micro.com.ua';
+	const API_URL = 'https://api-standard.pos-data.eu';
 
 	const API_ENDPOINT = '/api/novelties/get-novelties';
 
@@ -78,7 +78,7 @@ var Novelties = (function () {
 					if (_.isObject(response)) {
 						var lastID = response.ComPsw;
 						$.ajax({
-							url: API_URL + API_ENDPOINT_UNREAD_COUNT + lastID.toString(),
+							url: API_URL + '/' + self.getLanguageSegment() + API_ENDPOINT_UNREAD_COUNT + lastID.toString(),
 							type: 'get',
 							timeout: 2000,
 							cache: false,
@@ -136,7 +136,7 @@ var Novelties = (function () {
 				setTimeout(function () {
 					self.unreadMessages = 0;
 					return deferred.resolve();
-				}, 500);
+				}, 0);
 			}
 			return deferred.promise();
 		},
@@ -145,6 +145,7 @@ var Novelties = (function () {
 		 * @returns {string}
 		 */
 		getUrl: function () {
+			//return API_URL + API_ENDPOINT;
 			return API_URL + '/' + this.getLanguageSegment() + API_ENDPOINT;
 		},
 		/**

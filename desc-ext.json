@@ -146,7 +146,7 @@
       "POS's Security Token": "POS's Security Token",
       "Connecting...": "Connecting...",
       "Connect": "Connect",
-      "Registration": "Registrace",
+      "Registration": "Nová registrace",
       "E-mail": "E-mail",
       "Register": "Registruj",
       "Cloud settings": "Nastavení cloudu",
@@ -160,9 +160,12 @@
       "Network error": "Chyba sítě",
       "Network error or bad credentials": "Spojení selhalo.",
       "Unauthorized": "Spojení selhalo.",
-      "Error while receiving novelties. Please check your internet connectivity.": "Error while receiving novelties. Please check your internet connectivity.",
-      "There is no novelty.": "There is no novelty.",
-      "Novelties": "NOVINKY!"
+      "Error while receiving novelties. Please check your internet connectivity.": "Chyba při přenosu novinek. Prosím zkontrolujte si připojení k internetu.",
+      "There is no novelty.": "Nejsou žádné novinky.",
+      "Please enter you e-mail to receive a better support": "Zadejte svou emailovou adresu pro zajištění lepšího servisu.",
+      "Close": "Zavřít",
+      "Novelties": "NOVINKY!",
+      "If you have already registered, please enter the data, you obtained on your account at": "Pokud jste se již registrovali, zadejte údaje, které jste obdrželi ve svém účtu na"
     }
   }
 }

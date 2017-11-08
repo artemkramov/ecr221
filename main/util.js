@@ -158,7 +158,7 @@ function initDateTime() {
 		meridiem: []
 	};
 
-	$(".form-datetime").datetimepicker({format: 'dd-mm-yyyy hh:ii:ss', language: schema.lang});
+	$(".form-datetime").datetimepicker({format: 'dd-mm-yyyy hh:ii:ss', language: schema.lang, autoclose: true});
 }
 
 function getDatetime(dateTime) {

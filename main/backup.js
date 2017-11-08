@@ -122,7 +122,7 @@ var BackupSubView = Backbone.View.extend({
 		specialSchemaItems.push({
 			id:                'TCP',
 			allowedAttributes: [
-				'id', 'Addr', 'AdptFlg', 'DNS', 'Gate', 'MAC', 'Mask'
+				'id', 'Addr', 'AdptFlg', 'DNS', 'Gate', 'Mask'
 			]
 		});
 		return specialSchemaItems;
