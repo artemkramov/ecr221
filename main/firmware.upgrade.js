@@ -65,49 +65,141 @@ var FirmwareView = Backbone.View.extend({
 	/**
 	 * Run upgrade process
 	 */
-	upgrade: function () {
-		this.firmwareModel                 = new FirmwareInfo();
-		var self                           = this;
-		this.percentageModel               = new PercentageModel();
-		this.modal                         = new Modal();
+	upgrade:               function () {
+		this.firmwareModel                     = new FirmwareInfo();
+		var self                               = this;
+
+		/**
+		 * Initialize percentage models
+		 * for web-interface and firmware update
+		 */
+		this.percentageModelWeb                = new PercentageModel();
+		this.percentageModelWeb.set('name', App.getTranslation('Upgrade web-interface'));
+		this.percentageModelFirmware           = new PercentageModel();
+		this.percentageModelFirmware.set('name', App.getTranslation('Upgrade firmware'));
+
+		/**
+		 * Initialize modal window
+		 */
+		this.modal                             = new Modal();
 		this.modal.set({
 			header: App.getTranslation("System upgrade")
 		});
-		this.viewProgressBar               = new UpgradeProgress({
-			model: self.percentageModel,
+
+		/**
+		 * Initialize progress bars view
+		 * and set current percentage models to view
+		 */
+		this.viewProgressBar                   = new UpgradeProgress({
 			modal: self.modal
 		});
+		this.viewProgressBar.modelWebInterface = this.percentageModelWeb;
+		this.viewProgressBar.modelFirmware     = this.percentageModelFirmware;
+		this.viewProgressBar.initEvents();
+		//this.viewProgressBar.activeModel       = 1;
 		self.viewProgressBar.render();
-		self.viewProgressBar.isRunning     = true;
+		self.viewProgressBar.isRunning         = true;
+
+		/**
+		 * Show modal and set current percentage model
+		 */
 		this.modal.show();
-		this.firmwareModel.percentageModel = self.percentageModel;
-		this.firmwareModel.viewProgressBar = self.viewProgressBar;
+		this.firmwareModel.percentageModel     = self.percentageModelWeb;
+		this.firmwareModel.viewProgressBar     = self.viewProgressBar;
+
+		/**
+		 * Set necessary actions for web-interface upgrade
+		 * @type {string[]}
+		 */
+		this.firmwareModel.actions             = ["getDwlId", "getDwlFileLocation", "getDwlFile", "uploadDwlFile"];
 		this.firmwareModel.run().always(function (response) {
-			var progressBar      = self.viewProgressBar.$el.find('.progress-bar');
-			var progressBarClass = 'progress-bar-' + (!response.error ? 'success' : 'danger');
-			$(progressBar).removeClass('active').addClass(progressBarClass);
-			self.viewProgressBar.buildReport(self.firmwareModel.history);
+			/**
+			 * If web-interface upgrade was successful
+			 * than run upgrade process for firmware
+			 */
 			if (!response.error) {
-				App.pushMessage(App.getTranslation("Upgrade is complete. Follow the flash process steps to finish."), "success");
+				self.viewProgressBar.modelWebInterface.set('success', true);
+				self.firmwareModel.percentageModel = self.percentageModelFirmware;
+				self.firmwareModel.actions         = ["getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware", "flashFirmware"];
+				self.viewProgressBar.isRunning = true;
+				self.firmwareModel.run().always(function (responseFirmware) {
+					/**
+					 * Update progress bar status
+					 */
+					var progressBarFirmware      = self.viewProgressBar.$el.find('.progress-bar-firmware');
+					var progressBarClassFirmware = 'progress-bar-' + (!responseFirmware.error ? 'success' : 'danger');
+					$(progressBarFirmware).removeClass('active').addClass(progressBarClassFirmware);
+					if (!responseFirmware.error) {
+						App.pushMessage(App.getTranslation("Upgrade is complete. Follow the flash process steps to finish."), "success");
+					}
+					self.viewProgressBar.buildReport(self.firmwareModel.history);
+				});
+
 			}
+			else {
+				var progressBar      = self.viewProgressBar.$el.find('.progress-bar-web');
+				var progressBarClass = 'progress-bar-danger';
+				$(progressBar).removeClass('active').addClass(progressBarClass);
+				self.viewProgressBar.buildReport(self.firmwareModel.history);
+			}
+
+
 		});
 	}
 });
 
+/**
+ * Init basic event that are not connected with view
+ */
 $(document).ready(function () {
 
+	/**
+	 * Submit form which sends user data
+	 * to the server
+	 */
 	$(document).on("submit", "#customer-form-upgrade", function () {
-		var email  = $(this).find("#customer-email").val();
-		var button = $(this).find("input[type=submit]");
+		var email        = $(this).find("#customer-email").val();
+		var button       = $(this).find("input[type=submit]");
 		$(button).button("loading");
 		Api.sendDataToServer(email).always(function () {
 			$("#customer-modal").modal("hide");
 			$(button).button("reset");
+
+			/**
+			 * Run upgrade process
+			 */
 			var firmwareView = new FirmwareView();
 			firmwareView.upgrade();
 		});
 		return false;
 	});
+
+	/**
+	 * Event on Z-report click
+	 */
+	$(document).on("click", "#btn-print-z-report", function () {
+		var button = $(this);
+		button.attr("disabled", true);
+		$.ajax({
+			url:     '/cgi/proc/printreport?0',
+			type:    'get',
+			cache:   true,
+			success: function (response) {
+				/**
+				 * Parse response to detect the error
+				 */
+				$(button).removeAttr("disabled");
+				if (_.isObject(response) && !_.isUndefined(response['err']) && !_.isEmpty(response['err'])) {
+					App.pushMessage(App.getTranslation(response['err'], 'err'), "error");
+				}
+			},
+			error:   function () {
+				$(button).removeAttr("disabled");
+				//App.pushMessage(App.getTranslation("Cash register error"), "error");
+			}
+		})
+	});
+
 
 });
 
@@ -439,8 +531,9 @@ var FirmwareInfo = Backbone.Model.extend({
 			},
 			success:     function (response) {
 				self.percentageModel.set("percentage", 100);
-				if (!_.isUndefined(response["fw_info_error"]) && (response["fw_info_error"] != "0")) {
-					return deferred.reject(App.getTranslation(response["fw_info_error"], "err"));
+				var result = Api.checkResponseForError(response);
+				if (!result.success) {
+					return deferred.reject(App.getTranslation(result.error, "err"));
 				}
 				else {
 					return deferred.resolve(data);
@@ -480,7 +573,11 @@ var FirmwareInfo = Backbone.Model.extend({
 			error:       function () {
 				return deferred.reject(App.getTranslation("Cash register error"));
 			},
-			success:     function () {
+			success:     function (response) {
+				var result = Api.checkResponseForError(response);
+				if (!result.success) {
+					return deferred.reject(App.getTranslation(result.error, "err"));
+				}
 				return deferred.resolve();
 			}
 		});
@@ -503,8 +600,12 @@ var FirmwareInfo = Backbone.Model.extend({
 			error:   function () {
 				return deferred.reject(App.getTranslation("Cash register error"));
 			},
-			success: function () {
+			success: function (response) {
 				self.percentageModel.set("percentage", 100);
+				var result = Api.checkResponseForError(response);
+				if (!result.success) {
+					return deferred.reject(App.getTranslation(result.error, "err"));
+				}
 				return deferred.resolve();
 			}
 		});
@@ -616,15 +717,10 @@ var FirmwareInfo = Backbone.Model.extend({
 	 * Run the upgrade process
 	 * @returns {*}
 	 */
-	run:               function () {
-		var self     = this;
-		/**
-		 * Init log data
-		 * @type {Array}
-		 */
-		this.history = [];
+	run:             function () {
+		var self = this;
 
-		var upgradeDwlLabel = App.getTranslation("Upgrade web-interface");
+		var upgradeDwlLabel      = App.getTranslation("Upgrade web-interface");
 		var upgradeFirmwareLabel = App.getTranslation("Upgrade firmware");
 
 		/**
@@ -665,19 +761,19 @@ var FirmwareInfo = Backbone.Model.extend({
 	 * @param isError
 	 * @param result
 	 */
-	pushPartialData:   function (id, isError, result) {
+	pushPartialData: function (id, isError, result) {
 		var isAlreadyInHistory = false;
 		_.each(this.history, function (item) {
 			if (item.id == id) {
 				item.error         = isError;
-				item.result = result;
+				item.result        = result;
 				isAlreadyInHistory = true;
 			}
 		});
 		if (!isAlreadyInHistory) {
 			this.history.push({
-				id:    id,
-				error: isError,
+				id:     id,
+				error:  isError,
 				result: result
 			});
 		}
@@ -695,12 +791,13 @@ var FirmwareInfo = Backbone.Model.extend({
 		if (_.isUndefined(taskNumber)) {
 			taskNumber = 0;
 		}
-		//var actions = ["getDwlId", "getDwlFileLocation", "getDwlFile", "getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware"];
+		var actions   = this.actions;
+		console.log('actions', actions);
 		/**
 		 * Tasks ti implement
 		 * @type {string[]}
 		 */
-		var actions   = ["getDwlId", "getDwlFileLocation", "getDwlFile", "uploadDwlFile", "getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware", "flashFirmware"];
+		    //var actions   = ["getDwlId", "getDwlFileLocation", "getDwlFile", "uploadDwlFile", "getFirmwareID", "getFirmwareFileLocation", "getFirmwareFile", "sendFirmwareStatus", "uploadFirmware", "flashFirmware"];
 		var task      = actions[taskNumber];
 		var taskLabel = this.actionsLabels[task];
 		this[task](data).then(function (response) {
@@ -734,7 +831,8 @@ var PercentageModel = Backbone.Model.extend({
 	defaults: {
 		id:         "s",
 		name:       "",
-		percentage: 0
+		percentage: 0,
+		success: false
 	}
 });
 
@@ -784,14 +882,24 @@ var UpgradeProgress = Backbone.View.extend({
 		"click .btn-import-stop": "onButtonStopClick"
 	},
 
+	modelWebInterface: undefined,
+
+	modelFirmware: undefined,
+
+	activeModel: 1,
+
 	/**
 	 * Initialize all listeners
 	 * @param options
 	 */
 	initialize: function (options) {
 		this.listenTo(events, 'clickDlg', this.stop);
-		this.listenTo(this.model, 'change', this.render);
 		this.modal = options.modal;
+	},
+
+	initEvents: function () {
+		this.listenTo(this.modelWebInterface, 'change', this.render);
+		this.listenTo(this.modelFirmware, 'change', this.render);
 	},
 
 	/**
@@ -799,6 +907,10 @@ var UpgradeProgress = Backbone.View.extend({
 	 */
 	finish: function () {
 		this.stop(true, true);
+	},
+
+	getActiveModel: function () {
+		return this.activeModel == 1 ? this.modelWebInterface : this.modelFirmware;
 	},
 
 	/**
@@ -824,7 +936,8 @@ var UpgradeProgress = Backbone.View.extend({
 	 */
 	render:      function () {
 		this.$el.html(this.template({
-			model: this.model
+			modelWebInterface: this.modelWebInterface,
+			modelFirmware:     this.modelFirmware
 		}));
 		this.modal.set({
 			body: this.$el
