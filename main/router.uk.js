@@ -212,6 +212,7 @@ var appStart = function () {
 
 	$.when(qryDone, schemaLoaded, eetModel.initializeData(), initModel.initializeData(), fiscalCell.initializeData()).always(function () {
 		$.when(Cloud.checkIfSupported()).always(function () {
+			console.log(Cloud.isProductSynchronizationOn);
 			if (schema.get('PLU')) {
 				mainScreenCells.unshift(new MainCell({
 					model: new Backbone.Model(

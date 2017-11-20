@@ -1112,6 +1112,7 @@ var CloudView = Backbone.View.extend({
 
 	template:       _.template($("#cloud-block").html()),
 	isRegistration: false,
+
 	render:         function () {
 		this.$el.empty();
 
@@ -1134,10 +1135,12 @@ var CloudView = Backbone.View.extend({
 		/**
 		 * Get synchronization view
 		 */
+		var syncModel = new Backbone.Model();
 		var synchronizeView = new CloudSynchronizeView({
-			model: new Backbone.Model()
+			model: syncModel
 		});
 
+		this.listenTo(syncModel, 're-render', this.render);
 
 		this.$el.append(this.template());
 		if (this.isRegistration) {
@@ -1351,18 +1354,19 @@ var CloudRegister = CloudBlock.extend({
  */
 var CloudSynchronizeView = CloudBlock.extend({
 
-	template:              _.template($("#cloud-synchronize").html()),
-	events:                {
-		"click #btn-test-connection": "onTestConnectionClick",
-		"click #btn-cloud-z-report":  "onZReportClick",
-		"click #btn-cloud-cash-tape": "onCashTapeClick",
-		"click #btn-cloud-backup":    "onBackupClick"
+	template:                  _.template($("#cloud-synchronize").html()),
+	events:                    {
+		"click #btn-test-connection":           "onTestConnectionClick",
+		"click #btn-cloud-z-report":            "onZReportClick",
+		"click #btn-cloud-cash-tape":           "onCashTapeClick",
+		"click #btn-cloud-backup":              "onBackupClick",
+		"click #btn-cloud-product-sync":        "onProductSyncClick",
+		"click #btn-cloud-product-sync-remove": "onProductSyncRemoveClick"
 	},
-	initCredentials:       function () {
+	initCredentials:           function () {
 		var deferred        = $.Deferred();
 		var cloudConnection = Cloud.getConnectModel();
 		schema.tableFetchIgnoreCache('Cloud').done(function (response) {
-			console.log('response ', response);
 			cloudConnection.set('cloudUuid', response["UUID"]);
 			cloudConnection.set('cloudToken', leadingZero(response["PIN"], 4));
 			return deferred.resolve();
@@ -1371,7 +1375,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 		});
 		return deferred.promise();
 	},
-	onTestConnectionClick: function (e) {
+	onTestConnectionClick:     function (e) {
 		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");
@@ -1383,7 +1387,167 @@ var CloudSynchronizeView = CloudBlock.extend({
 			self.showMessage(button, t("Network error"), "danger");
 		});
 	},
-	onCashTapeClick:       function (e) {
+	/**
+	 * On product synchronization button click
+	 * @param e
+	 */
+	onProductSyncClick:        function (e) {
+		var self   = this;
+		var button = $(e.target);
+
+		/**
+		 * Set labels
+		 */
+		var errorMessage = t("Network error");
+		var errorType    = "danger";
+		var successType  = "success";
+
+		var confirmModal       = new ConfirmModal();
+		confirmModal.set({
+			header: t('Warning'),
+			body:   t('Product synchronization with cloud make all products non-editable from device. Do you want to continue?')
+		});
+		confirmModal.autoClose = true;
+		confirmModal.setCallback(function () {
+			$(button).button("loading");
+
+			/**
+			 * Refresh credentials data for cloud
+			 */
+			self.initCredentials().done(function () {
+				/**
+				 * Fetch all data necessary to synchronize products between device and cloud
+				 */
+				self.getProductDataForConnect().done(function (productData) {
+					/**
+					 * Run synchronization
+					 */
+					Cloud.connectToApi(productData.data).done(function () {
+						self.setProductSynchronization(1).always(function () {
+							self.showMessage(button, t("Synchronization successful!"), successType);
+						});
+					}).fail(function () {
+						self.showMessage(button, errorMessage, errorType);
+					});
+				}).fail(function () {
+					self.showMessage(button, errorMessage, errorType);
+				});
+			}).fail(function () {
+				self.showMessage(button, errorMessage, errorType);
+			});
+		});
+		confirmModal.show();
+	},
+	/**
+	 * Switch state
+	 * @param flag
+	 */
+	switchState: function (flag) {
+		var block = this.$el.find('.state-cloud');
+		if (flag) {
+			$(block).addClass('active');
+		}
+		else {
+			$(block).removeClass('active');
+		}
+	},
+	/**
+	 * Remove the synchronization with cloud
+	 * @param e
+	 */
+	onProductSyncRemoveClick: function (e) {
+		var self   = this;
+		var button = $(e.target);
+
+		/**
+		 * Set labels
+		 */
+		var errorMessage = t("Network error");
+		var errorType    = "danger";
+		var successType  = "success";
+
+		var confirmModal       = new ConfirmModal();
+		confirmModal.set({
+			header: t('Warning'),
+			body:   t('Do you want to turn off product synchronization with Cloud?')
+		});
+		confirmModal.autoClose = true;
+		confirmModal.setCallback(function () {
+			$(button).button("loading");
+			self.setProductSynchronization(0).done(function () {
+				self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
+			}).fail(function () {
+				self.showMessage(button, errorMessage, errorType);
+			});
+		});
+		confirmModal.show();
+
+	},
+	/**
+	 * Fetch product data for connection with cloud
+	 * @returns {*}
+	 */
+	getProductDataForConnect:  function () {
+		var deferred = $.Deferred();
+		var self     = this;
+		var response = {
+			data: {
+				Dep: [],
+				PLU: []
+			}
+		};
+		/**
+		 * Fetch all departments
+		 */
+		schema.tableFetchIgnoreCache('Dep').done(function () {
+			response.data.Dep = schema.tableIgnoreCache('Dep').toJSON();
+			/**
+			 * Fetch all products
+			 */
+			schema.tableFetchIgnoreCache('PLU').done(function () {
+				response.data.PLU = schema.tableIgnoreCache('PLU').toJSON();
+				return deferred.resolve(response);
+			}).fail(function () {
+				return deferred.reject();
+			});
+		}).fail(function () {
+			return deferred.reject();
+		});
+		return deferred.promise();
+	},
+	/**
+	 * Set the flag about product synchronization with Cloud
+	 * @param flag - 0 or 1
+	 */
+	setProductSynchronization: function (flag) {
+		var deferred = $.Deferred();
+		var data     = {
+			NetPsw: flag
+		};
+		var self = this;
+		$.ajax({
+			url:         "/cgi/tbl/Net",
+			contentType: "json",
+			type:        "POST",
+			headers:     {
+				'X-HTTP-Method-Override': 'PATCH'
+			},
+			data:        JSON.stringify(data),
+			success:     function (response) {
+				if (_.isEmpty(response.err)) {
+					Cloud.isProductSynchronizationOn = flag ? true : false;
+					self.switchState(flag);
+					return deferred.resolve();
+				}
+				return deferred.reject();
+			},
+			error:       function () {
+				return deferred.reject();
+			}
+		});
+		return deferred.promise();
+	},
+	onCashTapeClick:           function (e) {
 		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");
@@ -1655,7 +1819,7 @@ var NoveltyPage = PageView.extend({
 	/**
 	 * Remove function
 	 */
-	remove: function () {
+	remove:            function () {
 		this.novelties.remove();
 		PageView.prototype.remove.call(this);
 	},
@@ -1663,7 +1827,7 @@ var NoveltyPage = PageView.extend({
 	 * Render container and data itself
 	 * @returns {NoveltyPage}
 	 */
-	render: function () {
+	render:            function () {
 		var self       = this;
 		this.novelties = new NoveltyList();
 		this.delegateEvents();
@@ -1695,7 +1859,7 @@ var NoveltyPage = PageView.extend({
 	 * Show alert info message
 	 * @param message
 	 */
-	onInfoEvent: function (message) {
+	onInfoEvent:       function (message) {
 		this.pushMessage(message, "info");
 	},
 	/**
@@ -1710,7 +1874,7 @@ var NoveltyPage = PageView.extend({
 	 * @param message
 	 * @param type
 	 */
-	pushMessage: function (message, type) {
+	pushMessage:       function (message, type) {
 		var alert = new Alert({
 			model: {
 				type:    type,
@@ -1729,13 +1893,13 @@ var NoveltyPage = PageView.extend({
 	/**
 	 * Show preloader
 	 */
-	showPreloader: function () {
+	showPreloader:     function () {
 		$("body").addClass("preloading");
 	},
 	/**
 	 * Hide preloader
 	 */
-	hidePreloader: function() {
+	hidePreloader:     function () {
 		$("body").removeClass("preloading");
 	}
 });

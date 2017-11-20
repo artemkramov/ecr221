@@ -104,12 +104,21 @@
 <script type="text/template" id="impex-view">
     <a class="btn btn-default" href="#" data-toggle="tooltip" title="<%= t('Back') %>">
         <span class="glyphicon glyphicon-arrow-left"></span></a>
+    <div hidden><a class="csv" download="tables.csv"/>
+        <input type="file" class="icsv"/></div>
+</script>
+
+<script type="text/template" id="impex-view-plu">
+    <a class="btn btn-default" href="#" data-toggle="tooltip" title="<%= t('Back') %>">
+        <span class="glyphicon glyphicon-arrow-left"></span></a>
+    <% if (!Cloud.isProductSynchronizationOn) { %>
     <div class="btn-group">
         <button class="export btn btn-default" draggable="true" data-toggle="tooltip" title="<%= t('Export') %>"><span
                     class="glyphicon glyphicon-export"></span></button>
         <button class="import btn btn-default"><span class="glyphicon glyphicon-import" data-toggle="tooltip"
                                                      title="<%= t('Import') %>"></span></button>
     </div>
+    <% } %>
     <div hidden><a class="csv" download="tables.csv"/>
         <input type="file" class="icsv"/></div>
 </script>
@@ -272,6 +281,7 @@
 </script>
 
 <script type="text/template" id="plu-table-bar-template">
+    <% if (!Cloud.isProductSynchronizationOn) { %>
     <button class="btn btn-primary btn-save-table" data-toggle="tooltip" title="<%= t('Save') %>"
             data-loading-text="<%= t('Saving...') %>">
         <span class="glyphicon glyphicon-floppy-disk"></span> <%= t('Save') %>
@@ -287,6 +297,7 @@
     </div>
     <button class="btn btn-default btnfrm" data-toggle="tooltip" title="<%= t('Form Mode') %>">
         <span class="glyphicon glyphicon-th-list"></span></button>
+    <% } %>
     <button class="btn btn-default" data-ev="refresh" data-toggle="tooltip" title="<%= t('Refresh') %>">
         <span class="glyphicon glyphicon-refresh"></span></button>
 </script>
@@ -512,7 +523,18 @@
                 <button class="btn btn-success" id="btn-test-connection"
                         data-loading-text="<%= t('Connecting...') %>"><%= t("Test connection") %></button>
                 <button class="btn btn-danger" id="btn-cloud-backup"
-                        data-loading-text="<%= t('Connecting...') %>"><%= t("Backup") %></button>
+                        data-loading-text="<%= t('Connecting...') %>"><span
+                            class="glyphicon glyphicon-save"></span> <%= t("Backup") %></button>
+                <div class="state-cloud <%= Cloud.isProductSynchronizationOn ? "active" : "" %>">
+                    <button class="btn btn-default" id="btn-cloud-product-sync-remove"
+                            data-loading-text="<%= t('Connecting...') %>"><span
+                                class="glyphicon glyphicon-cloud"></span> <%= t("Disconnect from cloud product sync") %>
+                    </button>
+                    <button class="btn btn-primary" id="btn-cloud-product-sync"
+                            data-loading-text="<%= t('Connecting...') %>"><span
+                                class="glyphicon glyphicon-cloud-upload"></span> <%= t("Synchronize products") %>
+                    </button>
+                </div>
             </div>
             <div class="form-group">
                 <div class="cloud-message-block"></div>
@@ -757,7 +779,8 @@
             <% if (Novelties.unreadMessages > 0) { %>
             <span class="main-cell-unread-count"><%= Novelties.unreadMessages %></span>
             <% } %>
-            <img class="<%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>" src="img/<%= img %>-h.png"/>
+            <img class="<%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>"
+                 src="img/<%= img %>-h.png"/>
         </a>
         <%= t(name) %>
     </h2>
@@ -768,6 +791,7 @@
         <% if (Novelties.unreadMessages > 0) { %>
         <span class="main-cell-unread-count"><%= Novelties.unreadMessages %></span>
         <% } %>
-        <img class="img-responsive <%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>" src="img/news-h.png"/>
+        <img class="img-responsive <%= Novelties.unreadMessages > 0 ? 'mail-cell-novelty-ring' : '' %>"
+             src="img/news-h.png"/>
     </a>
 </script>

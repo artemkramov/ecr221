@@ -49,6 +49,11 @@ var Cloud = (function () {
 		isSupported: false,
 
 		/**
+		 * Check if products are synchronized with Cloud
+		 */
+		isProductSynchronizationOn: false,
+
+		/**
 		 * Get serial number of the device
 		 * @returns {*}
 		 */
@@ -90,7 +95,17 @@ var Cloud = (function () {
 				dataType: "json",
 				success: function () {
 					self.isSupported = true;
-					return deferred.resolve();
+					$.ajax({
+						url: "/cgi/tbl/Net",
+						dataType: "json",
+						success: function (response) {
+							self.isProductSynchronizationOn = response['NetPsw'] != 0;
+							return deferred.resolve();
+						},
+						error: function () {
+							return deferred.reject();
+						}
+					});
 				},
 				error: function () {
 					return deferred.reject();
@@ -201,6 +216,15 @@ var Cloud = (function () {
 		 */
 		sendZReport: function (reportData) {
 			return this.sendData("post_z_report", reportData);
+		},
+
+		/**
+		 * Connect device to Cloud API
+		 * @param connectData
+		 * @returns {*}
+		 */
+		connectToApi: function (connectData) {
+			return this.sendData("connectToDevice", connectData);
 		},
 
 		/**

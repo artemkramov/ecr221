@@ -229,6 +229,7 @@ var ImpExView = Backbone.View.extend({
 });
 
 var PLUImportExportView = ImpExView.extend({
+	template: _.template($("#impex-view-plu").html()),
 	initialize: function (argument) {
 		this.parentContainer = argument.parentContainer;
 		return ImpExView.prototype.initialize.call(this);

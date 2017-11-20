@@ -185,6 +185,15 @@ a img:active {
 .file-loader .progress {
     width: 100%;
 }
+
+.state-cloud #btn-cloud-product-sync-remove, .state-cloud.active #btn-cloud-product-sync {
+    display: none;
+}
+
+.state-cloud, .state-cloud.active #btn-cloud-product-sync-remove, .state-cloud #btn-cloud-product-sync {
+    display: inline-block;
+}
+
 body.preloading .preloader, body.uploading .file-loader {
     display: flex !important;
 }

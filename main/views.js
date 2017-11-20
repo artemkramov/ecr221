@@ -1744,6 +1744,9 @@ var PLUContainer = TableContainer.extend({
 					items: field.help,
 					label: field.label
 				});
+				if (Cloud.isProductSynchronizationOn) {
+					message = t("Device is connected to Cloud therefore you can't edit product data.");
+				}
 				var alert            = compiled({
 					type:    'info',
 					message: message
