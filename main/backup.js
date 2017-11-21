@@ -71,9 +71,10 @@ var BackupSubView = Backbone.View.extend({
 	},
 	/**
 	 * Get the special schema for the backup purpose
+	 * @param isImport
 	 * @returns {Array}
 	 */
-	getBackupSchema:   function () {
+	getBackupSchema:   function (isImport) {
 		var specialSchemaItems = [];
 		//_.each(schema.models, function (model) {
 		//	var item = {
@@ -110,8 +111,7 @@ var BackupSubView = Backbone.View.extend({
 		});
 		specialSchemaItems.push({
 			id:                'Fsk',
-			allowedAttributes: [
-			]
+			allowedAttributes: []
 		});
 		specialSchemaItems.push({
 			id:                'Adm',
@@ -125,6 +125,16 @@ var BackupSubView = Backbone.View.extend({
 				'id', 'Addr', 'AdptFlg', 'DNS', 'Gate', 'Mask'
 			]
 		});
+		if (!_.isUndefined(isImport) && isImport) {
+			if (Cloud.isProductSynchronizationOn) {
+				_.each(Cloud.managedTables, function (tableName) {
+					specialSchemaItems.push({
+						id:                tableName,
+						allowedAttributes: []
+					});
+				});
+			}
+		}
 		return specialSchemaItems;
 	}
 });
@@ -217,7 +227,7 @@ var ExportView = BackupSubView.extend({
 			}
 			return true;
 		});
-		var logoItem = new Backbone.Model();
+		var logoItem           = new Backbone.Model();
 		logoItem.set('id', 'Logo');
 		logoItem.set('name', t('Logo'));
 		models.unshift(logoItem);
@@ -235,8 +245,8 @@ var ExportView = BackupSubView.extend({
 	 * @param e
 	 */
 	onButtonRunExportClick: function (e) {
-		var models = [];
-		var self   = this;
+		var models         = [];
+		var self           = this;
 		var isLogoExported = false;
 		$(".table-backup-list").find(".model-checkbox").each(function () {
 			if ($(this).prop('checked')) {
@@ -393,6 +403,15 @@ var ImportView = BackupSubView.extend({
 		this.$el.empty().append(this.template({
 			importDelimiter: self.backupDelimiter
 		}));
+		if (Cloud.isProductSynchronizationOn) {
+			var alert = new Alert({
+				model: {
+					type:    'warning',
+					message: t("Device makes products synchronization with Cloud therefore PLU csv file will be ignored")
+				}
+			});
+			$(self.$el.find('#import-warning').empty().append(alert.render().$el));
+		}
 		return this;
 	},
 	/**
@@ -497,10 +516,10 @@ var ImportView = BackupSubView.extend({
 			}
 			else {
 				file.async("uint8array").then(function (csvBuffer) {
-					var bb = new Blob([csvBuffer]);
-					var f = new FileReader();
-					f.onload = function(e) {
-						var csvText = e.target.result;
+					var bb   = new Blob([csvBuffer]);
+					var f    = new FileReader();
+					f.onload = function (e) {
+						var csvText         = e.target.result;
 						/**
 						 * Try to parse the CSV file
 						 * if the parsing isn't successfully done
@@ -529,7 +548,7 @@ var ImportView = BackupSubView.extend({
 						/**
 						 * Check if the table is allowed to import
 						 */
-						var tableData = _.findWhere(self.getBackupSchema(), {id: tableName});
+						var tableData = _.findWhere(self.getBackupSchema(true), {id: tableName});
 						var isAllowed = true;
 						if (!_.isUndefined(tableData) && _.isObject(tableData) && _.isEmpty(tableData.allowedAttributes)) {
 							isAllowed = false;
@@ -573,7 +592,7 @@ var ImportView = BackupSubView.extend({
 		this.files        = [];
 		this.certificates = [];
 		this.clearMessageBlock();
-		self.logo = undefined;
+		self.logo         = undefined;
 		this.$el.find(".model-checkbox").each(function () {
 			if ($(this).prop("checked")) {
 				var fileName  = $(this).data('id');
@@ -594,7 +613,7 @@ var ImportView = BackupSubView.extend({
 		}
 		else {
 			ImportModel.initModel();
-			ExportModel.specialSchemaItems = self.getBackupSchema();
+			ExportModel.specialSchemaItems = self.getBackupSchema(true);
 			if (!_.isEmpty(self.backupDelimiter)) {
 				ImportModel.importDelimiter = self.backupDelimiter;
 			}

@@ -689,6 +689,7 @@
             <%= t("Import settings") %>
         </div>
         <div class="panel-body">
+            <div id="import-warning" class="form-group"></div>
             <label><%= t("Choose an archive to import") %></label>
             <input type="file" accept=".zip" id="file-import">
             <button type="button" class="btn btn-danger btn-import-run" disabled="true">

@@ -940,6 +940,14 @@ var TableDisplay = Backgrid.Grid.extend({
 				args            = _.extend(args, {collection: schema.table(args.model.id)});
 				this.collection = args.collection;
 			}
+			window.testData = arguments;
+			if (Cloud.isProductSynchronizationOn && args.model.id == 'PLU') {
+				for (var i = 0; i < arguments[0].columns.length; i++) {
+					var data = _.clone(arguments[0].columns[i]);
+					data.editable = 0;
+					arguments[0].columns[i] = data;
+				}
+			}
 		}
 		Backgrid.Grid.prototype.initialize.apply(this, arguments);
 		var $this = this;

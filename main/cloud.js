@@ -54,6 +54,11 @@ var Cloud = (function () {
 		isProductSynchronizationOn: false,
 
 		/**
+		 * Tables which are controlled from the Cloud
+		 */
+		managedTables: ["PLU"],
+
+		/**
 		 * Get serial number of the device
 		 * @returns {*}
 		 */

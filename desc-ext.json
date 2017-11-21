@@ -171,7 +171,8 @@
       "Product synchronization with cloud make all products non-editable from device. Do you want to continue?": "Product synchronization with cloud make all products non-editable from device. Do you want to continue?",
       "Disconnected from cloud product sync!": "Disconnected from cloud product sync!",
       "Disconnect from cloud product sync": "Disconnect from cloud product sync",
-      "Do you want to turn off product synchronization with Cloud?": "Do you want to turn off product synchronization with Cloud?"
+      "Do you want to turn off product synchronization with Cloud?": "Do you want to turn off product synchronization with Cloud?",
+      "Device makes products synchronization with Cloud therefore PLU csv file will be ignored": "Device makes products synchronization with Cloud therefore PLU csv file will be ignored"
     }
   }
 }
