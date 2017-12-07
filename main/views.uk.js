@@ -1113,7 +1113,7 @@ var CloudView = Backbone.View.extend({
 	template:       _.template($("#cloud-block").html()),
 	isRegistration: false,
 
-	render:         function () {
+	render: function () {
 		this.$el.empty();
 
 		/**
@@ -1135,7 +1135,7 @@ var CloudView = Backbone.View.extend({
 		/**
 		 * Get synchronization view
 		 */
-		var syncModel = new Backbone.Model();
+		var syncModel       = new Backbone.Model();
 		var synchronizeView = new CloudSynchronizeView({
 			model: syncModel
 		});
@@ -1354,16 +1354,17 @@ var CloudRegister = CloudBlock.extend({
  */
 var CloudSynchronizeView = CloudBlock.extend({
 
-	template:                  _.template($("#cloud-synchronize").html()),
-	events:                    {
+	template:                       _.template($("#cloud-synchronize").html()),
+	events:                         {
 		"click #btn-test-connection":           "onTestConnectionClick",
 		"click #btn-cloud-z-report":            "onZReportClick",
 		"click #btn-cloud-cash-tape":           "onCashTapeClick",
 		"click #btn-cloud-backup":              "onBackupClick",
 		"click #btn-cloud-product-sync":        "onProductSyncClick",
-		"click #btn-cloud-product-sync-remove": "onProductSyncRemoveClick"
+		"click #btn-cloud-product-sync-remove": "onProductSyncRemoveClick",
+		"click #btn-cloud-product-sync-test":   "onProductSyncTestClick"
 	},
-	initCredentials:           function () {
+	initCredentials:                function () {
 		var deferred        = $.Deferred();
 		var cloudConnection = Cloud.getConnectModel();
 		schema.tableFetchIgnoreCache('Cloud').done(function (response) {
@@ -1375,7 +1376,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 		});
 		return deferred.promise();
 	},
-	onTestConnectionClick:     function (e) {
+	onTestConnectionClick:          function (e) {
 		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");
@@ -1387,11 +1388,274 @@ var CloudSynchronizeView = CloudBlock.extend({
 			self.showMessage(button, t("Network error"), "danger");
 		});
 	},
+	onProductSyncTestClick:         function (e) {
+		var self   = this;
+		var button = $(e.target);
+
+		/**
+		 * Set labels
+		 */
+		var errorMessage = t("Network error");
+		var errorType    = "danger";
+		var successType  = "success";
+
+		$(button).button("loading");
+
+		/**
+		 * Refresh credentials data for cloud
+		 */
+		self.initCredentials().done(function () {
+			self.getTag().done(function (tag) {
+				var currentTag = tag;
+				console.log('Get tag', tag);
+				var tableName = "PLU";
+				/**
+				 * Fetch model data
+				 * @type {*[]}
+				 */
+				var promises  = [
+					schema.tableFetchIgnoreCache(tableName)
+				];
+				var modelData = schema.get(tableName);
+				$.when.apply($, promises).done(function () {
+					var options   = {
+						schema: modelData,
+						urlAdd: schema.url + '/' + tableName
+					};
+					options.model = TableModel.extend(options);
+					var tableData = schema.tableIgnoreCache(tableName);
+
+					Cloud.syncProductsCount(tag).done(function (cloudResponseCount) {
+						var count      = cloudResponseCount.response.data[0].count;
+						var chunkSize  = 1;
+						function syncProductsRecursively(tag) {
+							Cloud.syncProducts(tag, chunkSize).done(function (cloudResponse) {
+
+								var data = cloudResponse.response.data[0];
+								if (!_.isUndefined(data)) {
+									if (currentTag !== data.tag) {
+										/**
+										 * Create new items and update existing
+										 */
+										var items = data.create.concat(data.update);
+
+										self.processDataTest(items, modelData, tableData, options).done(function () {
+
+											/**
+											 * Delete necessary products by the given Code
+											 */
+											self.deleteCollectionTest(data.delete).done(function () {
+												self.setTag(data.tag).done(function () {
+													if (data.waiting > 0) {
+														syncProductsRecursively(data.tag);
+													}
+													else {
+														self.showMessage(button, t("Synchronization successful!"), successType);
+													}
+												}).fail(function () {
+													self.showMessage(button, errorMessage, errorType);
+												});
+
+											});
+										});
+									}
+									else {
+										self.showMessage(button, t("Synchronization successful!"), successType);
+									}
+								}
+							}).fail(function () {
+								self.showMessage(button, errorMessage, errorType);
+							});
+						}
+
+						syncProductsRecursively(tag);
+					});
+				});
+			}).fail(function () {
+				self.showMessage(button, errorMessage, errorType);
+			});
+
+		}).fail(function () {
+			self.showMessage(button, errorMessage, errorType);
+		});
+	},
+	/**
+	 * Process data
+	 * @param parsedData
+	 * @param modelData
+	 * @param tableData
+	 * @param options
+	 * @returns {*}
+	 */
+	processDataTest:                function (parsedData, modelData, tableData, options) {
+		var self        = this;
+		var deferred    = $.Deferred();
+		if (_.isEmpty(parsedData)) {
+			console.log(parsedData);
+			deferred.resolve();
+		}
+		else {
+			var idAttribute = modelData.attributes.key ? modelData.attributes.key : 'id';
+			/**
+			 * Split the data to chunks
+			 * @type {number}
+			 */
+			var n           = 30;
+			var lists       = _.groupBy(parsedData, function (element, index) {
+				return Math.floor(index / n);
+			});
+			lists           = _.toArray(lists);
+			options.mode    = "";
+			var collections = [];
+			_.each(lists, function (list, index) {
+				var collection = new TableCollection(false, options);
+				_.each(list, function (item) {
+
+					/**
+					 * Check if the item is in the current collection
+					 */
+					collection.url = options.urlAdd;
+					/**
+					 * Update the schema due to the special fields
+					 */
+					item           = ExportModel.pushAttributesToBackup(modelData.get("id"), item);
+					var model      = new Backbone.Model(item);
+					var row        = self.findRowInCollection(model, tableData.models, idAttribute);
+					model.isNew    = function () {
+						return (typeof row == 'undefined');
+					};
+					if (row && _.isObject(row) && !_.isEqual(row.attributes, model.attributes)) {
+						model.hasChanged        = function () {
+							return true;
+						};
+						model.changedAttributes = function () {
+							return model.attributes;
+						};
+					}
+					collection.push(model);
+
+				});
+				collections.push(collection);
+			});
+			console.log('collections', collections);
+			this.processCollectionRecursiveTest(collections, 0, deferred);
+		}
+		return deferred.promise();
+	},
+	getTag:                         function () {
+		var deferred = $.Deferred();
+		$.ajax({
+			url:     "/cgi/tbl/Host",
+			type:    "GET",
+			success: function (response) {
+				console.log('response HOST', response);
+				return deferred.resolve(response.Port);
+			},
+			error:   function () {
+				return deferred.reject();
+			}
+		});
+		return deferred.promise();
+	},
+	setTag:                         function (tag) {
+		var deferred = $.Deferred();
+		var data     = {
+			Port: tag
+		};
+		$.ajax({
+			url:     "/cgi/tbl/Host",
+			type:    "POST",
+			data:    JSON.stringify(data),
+			headers: {
+				'X-HTTP-Method-Override': 'PATCH'
+			},
+			success: function () {
+				return deferred.resolve();
+			},
+			error:   function () {
+				return deferred.reject();
+			}
+		});
+		return deferred.promise();
+	},
+	/**
+	 * Find the row on the collection
+	 * @param row
+	 * @param models
+	 * @param idAttribute
+	 * @returns {*|{}}
+	 */
+	findRowInCollection:            function (row, models, idAttribute) {
+		var condition          = {};
+		condition[idAttribute] = row[idAttribute];
+		return _.find(models, function (model) {
+			return model.attributes[idAttribute] == row.attributes[idAttribute];
+		});
+	},
+	/**
+	 * Process collection data
+	 * @param collections
+	 * @param index
+	 * @param deferred
+	 */
+	processCollectionRecursiveTest: function (collections, index, deferred) {
+		var self       = this;
+		var collection = collections[index];
+		var result     = collection.syncSaveSynchronize();
+		if (_.isObject(result)) {
+			result.done(function () {
+				if (collections.length > index + 1) {
+					return self.processCollectionRecursive(collections, ++index, deferred);
+				}
+				else {
+					return deferred.resolve();
+				}
+			}).fail(function (response) {
+				if (!_.isEmpty(response.err)) {
+					console.log('error');
+					return deferred.resolve();
+				}
+			});
+		}
+	},
+	deleteCollectionTest:           function (collection) {
+		var deferred = $.Deferred();
+		if (!_.isEmpty(collection)) {
+			this.deleteCollectionRecursiveTest(collection, 0, deferred);
+		}
+		else {
+			deferred.resolve();
+		}
+		return deferred.promise();
+	},
+	deleteCollectionRecursiveTest:  function (collection, index, deferred) {
+		var self = this;
+		var data = collection[index];
+		$.ajax({
+			url:     "/cgi/tbl/PLU/" + data.Code,
+			type:    "POST",
+			headers: {
+				'X-HTTP-Method-Override': 'DELETE'
+			},
+			success: function () {
+				if (collection.length > index + 1) {
+					return self.processCollectionRecursive(collection, ++index, deferred);
+				}
+				else {
+					return deferred.resolve();
+				}
+			},
+			error:   function () {
+				console.log('error delete');
+				return deferred.resolve();
+			}
+		})
+	},
 	/**
 	 * On product synchronization button click
 	 * @param e
 	 */
-	onProductSyncClick:        function (e) {
+	onProductSyncClick:             function (e) {
 		var self   = this;
 		var button = $(e.target);
 
@@ -1422,7 +1686,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 					/**
 					 * Run synchronization
 					 */
-					Cloud.connectToApi(productData.data).done(function () {
+					Cloud.connectToApi([productData.data]).done(function () {
 						self.setProductSynchronization(1).always(function () {
 							self.showMessage(button, t("Synchronization successful!"), successType);
 						});
@@ -1442,7 +1706,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * Switch state
 	 * @param flag
 	 */
-	switchState: function (flag) {
+	switchState:                    function (flag) {
 		var block = this.$el.find('.state-cloud');
 		if (flag) {
 			$(block).addClass('active');
@@ -1455,7 +1719,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * Remove the synchronization with cloud
 	 * @param e
 	 */
-	onProductSyncRemoveClick: function (e) {
+	onProductSyncRemoveClick:       function (e) {
 		var self   = this;
 		var button = $(e.target);
 
@@ -1474,8 +1738,27 @@ var CloudSynchronizeView = CloudBlock.extend({
 		confirmModal.autoClose = true;
 		confirmModal.setCallback(function () {
 			$(button).button("loading");
-			self.setProductSynchronization(0).done(function () {
-				self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
+			/**
+			 * Refresh credentials data for cloud
+			 */
+			self.initCredentials().done(function () {
+				/**
+				 * Run disconnect operation to inform Cloud about it
+				 */
+				Cloud.disconnectFromApi({}).done(function () {
+					self.setProductSynchronization(0).done(function () {
+						self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
+						//self.setTag(0).done(function () {
+						//	self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
+						//}).fail(function () {
+						//	self.showMessage(button, errorMessage, errorType);
+						//});
+					}).fail(function () {
+						self.showMessage(button, errorMessage, errorType);
+					});
+				}).fail(function () {
+					self.showMessage(button, errorMessage, errorType);
+				});
 			}).fail(function () {
 				self.showMessage(button, errorMessage, errorType);
 			});
@@ -1487,7 +1770,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * Fetch product data for connection with cloud
 	 * @returns {*}
 	 */
-	getProductDataForConnect:  function () {
+	getProductDataForConnect:       function () {
 		var deferred = $.Deferred();
 		var self     = this;
 		var response = {
@@ -1519,12 +1802,12 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * Set the flag about product synchronization with Cloud
 	 * @param flag - 0 or 1
 	 */
-	setProductSynchronization: function (flag) {
+	setProductSynchronization:      function (flag) {
 		var deferred = $.Deferred();
 		var data     = {
 			NetPsw: flag
 		};
-		var self = this;
+		var self     = this;
 		$.ajax({
 			url:         "/cgi/tbl/Net",
 			contentType: "json",
@@ -1547,7 +1830,7 @@ var CloudSynchronizeView = CloudBlock.extend({
 		});
 		return deferred.promise();
 	},
-	onCashTapeClick:           function (e) {
+	onCashTapeClick:                function (e) {
 		var self   = this;
 		var button = $(e.target);
 		$(button).button("loading");

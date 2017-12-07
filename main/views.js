@@ -590,7 +590,7 @@ var PagesScreen = PageScreen.extend({
 //<editor-fold desc="----------------------Table Elements-----------------------------">
 var Toolbar = Backbone.View.extend({
 	tagName:    'div',
-	className:  'navbar-right',
+	className:  'col-md-5 table-toolbar',
 	tmpl:       _.template($('#form-bar-template').html()),
 	hideTbl:    false,
 	initialize: function (args) {
@@ -613,7 +613,7 @@ var Toolbar = Backbone.View.extend({
 		}
 	},
 	render:     function () {
-		this.$el.html(this.tmpl()).css('margin', '5px');
+		this.$el.html(this.tmpl());
 		if (this.hideTbl) this.$('.tblctrl').hide();
 		return this;
 	}
@@ -1646,8 +1646,8 @@ var TableContainer = Backbone.View.extend({
 	render:         function () {
 		this.delegateEvents();
 		this.$el.html('');
-		var header = $('<nav class="navbar navbar-default" id="' + this.model.get('id') + '" role="navigation">');
-		header.html('<div class="navbar-brand col-md-3">' + this.model.get('name') + '</div>');
+		var header = $('<nav class="navbar navbar-default navbar-container" id="' + this.model.get('id') + '" role="navigation">');
+		header.html('<div class="navbar-brand col-md-7">' + this.model.get('name') + '</div>');
 		$('.navbar-brand', header).css('cursor', 'pointer');
 		this.toolbar.delegateEvents();
 		header.append(this.toolbar.render().$el);
@@ -1655,7 +1655,7 @@ var TableContainer = Backbone.View.extend({
 			this.content.addToolbar.delegateEvents();
 			var $e = this.content.addToolbar.render().$el;
 			$e.addClass("navbar-right");
-			$e.css('margin', '5px');
+			$e.css('margin', '15px');
 			header.append($e);
 		}
 		this.$el.append(header);

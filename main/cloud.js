@@ -94,25 +94,25 @@ var Cloud = (function () {
 		 */
 		checkIfSupported: function () {
 			var deferred = $.Deferred();
-			var self = this;
+			var self     = this;
 			$.ajax({
-				url: "/cgi/tbl/Cloud",
+				url:      "/cgi/tbl/Cloud",
 				dataType: "json",
-				success: function () {
+				success:  function () {
 					self.isSupported = true;
 					$.ajax({
-						url: "/cgi/tbl/Net",
+						url:      "/cgi/tbl/Net",
 						dataType: "json",
-						success: function (response) {
+						success:  function (response) {
 							self.isProductSynchronizationOn = response['NetPsw'] != 0;
 							return deferred.resolve();
 						},
-						error: function () {
+						error:    function () {
 							return deferred.reject();
 						}
 					});
 				},
-				error: function () {
+				error:    function () {
 					return deferred.reject();
 				}
 			});
@@ -229,7 +229,37 @@ var Cloud = (function () {
 		 * @returns {*}
 		 */
 		connectToApi: function (connectData) {
-			return this.sendData("connectToDevice", connectData);
+			return this.sendData("connect_device", connectData);
+		},
+
+		/**
+		 * Connect device to Cloud API
+		 * @param connectData
+		 * @returns {*}
+		 */
+		disconnectFromApi: function (connectData) {
+			return this.sendData("disconnect_device", connectData);
+		},
+
+		/**
+		 * Get all changes what have to be applied to products
+		 * @returns {*}
+		 */
+		syncProducts: function (tag, limit) {
+			return this.sendData("get_operations", [{
+				tag:   tag,
+				limit: limit
+			}]);
+		},
+
+		/**
+		 * Get all changes what have to be applied to products
+		 * @returns {*}
+		 */
+		syncProductsCount: function (tag) {
+			return this.sendData("get_operations_count", [{
+				tag: tag
+			}]);
 		},
 
 		/**
@@ -284,19 +314,19 @@ var Cloud = (function () {
 			var deferred = $.Deferred();
 			self.getApiEndPoint().always(function (apiEndpoint) {
 				$.ajax({
-					url:      apiEndpoint,
-					type:     'post',
+					url:         apiEndpoint,
+					type:        'post',
 					processData: false,
 					contentType: false,
-					data:     formData,
-					error:    function (response) {
+					data:        formData,
+					error:       function (response) {
 						return deferred.reject({
 							response: response,
 							message:  response.statusText,
 							type:     "danger"
 						});
 					},
-					success:  function (response) {
+					success:     function (response) {
 
 						return deferred.resolve({
 							response: response,

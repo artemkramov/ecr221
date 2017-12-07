@@ -28,7 +28,7 @@ a img:active {
     transform: scale(1);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
     .affix {
         position: static;
         width: auto;
@@ -186,11 +186,11 @@ a img:active {
     width: 100%;
 }
 
-.state-cloud #btn-cloud-product-sync-remove, .state-cloud.active #btn-cloud-product-sync {
+.state-cloud #btn-cloud-product-sync-remove, .state-cloud.active #btn-cloud-product-sync, .state-cloud #btn-cloud-product-sync-test {
     display: none;
 }
 
-.state-cloud, .state-cloud.active #btn-cloud-product-sync-remove, .state-cloud #btn-cloud-product-sync {
+.state-cloud, .state-cloud.active #btn-cloud-product-sync-remove, .state-cloud #btn-cloud-product-sync, .state-cloud.active #btn-cloud-product-sync-test {
     display: inline-block;
 }
 
@@ -202,6 +202,17 @@ body.preloading .preloader, body.uploading .file-loader {
     font-size: 2em;
     color: #FFF;
 }
+
+.navbar.navbar-container .navbar-brand {
+    height: auto;
+    z-index: 12;
+}
+
+.table-toolbar {
+    margin-top: 7px;
+    text-align: right;
+}
+
 .spin {
     -webkit-animation: spin 2s infinite linear;
     -moz-animation: spin 2s infinite linear;
