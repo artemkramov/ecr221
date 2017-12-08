@@ -1364,6 +1364,10 @@ var CloudSynchronizeView = CloudBlock.extend({
 		"click #btn-cloud-product-sync-remove": "onProductSyncRemoveClick",
 		"click #btn-cloud-product-sync-test":   "onProductSyncTestClick"
 	},
+	/**
+	 * Init credentials for Cloud
+	 * @returns {*}
+	 */
 	initCredentials:                function () {
 		var deferred        = $.Deferred();
 		var cloudConnection = Cloud.getConnectModel();
@@ -1376,6 +1380,10 @@ var CloudSynchronizeView = CloudBlock.extend({
 		});
 		return deferred.promise();
 	},
+	/**
+	 * Test credentials correctness
+	 * @param e
+	 */
 	onTestConnectionClick:          function (e) {
 		var self   = this;
 		var button = $(e.target);
@@ -1388,6 +1396,10 @@ var CloudSynchronizeView = CloudBlock.extend({
 			self.showMessage(button, t("Network error"), "danger");
 		});
 	},
+	/**
+	 * Synchronize products with Cloud
+	 * @param e
+	 */
 	onProductSyncTestClick:         function (e) {
 		var self   = this;
 		var button = $(e.target);
@@ -1407,45 +1419,60 @@ var CloudSynchronizeView = CloudBlock.extend({
 		self.initCredentials().done(function () {
 			self.getTag().done(function (tag) {
 				var currentTag = tag;
-				console.log('Get tag', tag);
-				var tableName = "PLU";
+				var tableName  = "PLU";
+
 				/**
-				 * Fetch model data
-				 * @type {*[]}
+				 * Size of each request part
+				 * @type {number}
 				 */
-				var promises  = [
-					schema.tableFetchIgnoreCache(tableName)
-				];
+				var chunkSize = 2;
+
+				/**
+				 * Prepare model data for working with table
+				 */
 				var modelData = schema.get(tableName);
-				$.when.apply($, promises).done(function () {
-					var options   = {
-						schema: modelData,
-						urlAdd: schema.url + '/' + tableName
-					};
-					options.model = TableModel.extend(options);
-					var tableData = schema.tableIgnoreCache(tableName);
+				var options   = {
+					schema: modelData,
+					urlAdd: schema.url + '/' + tableName
+				};
+				options.model = TableModel.extend(options);
 
-					Cloud.syncProductsCount(tag).done(function (cloudResponseCount) {
-						var count      = cloudResponseCount.response.data[0].count;
-						var chunkSize  = 1;
-						function syncProductsRecursively(tag) {
-							Cloud.syncProducts(tag, chunkSize).done(function (cloudResponse) {
+				/**
+				 * Define recursive function
+				 * which updates the products due to the given tag
+				 * @param tag
+				 */
+				function syncProductsRecursively(tag) {
+					/**
+					 * Fetch model data
+					 * @type {*[]}
+					 */
+					var promises  = [
+						schema.tableFetchIgnoreCache(tableName)
+					];
 
-								var data = cloudResponse.response.data[0];
-								if (!_.isUndefined(data)) {
-									if (currentTag !== data.tag) {
-										/**
-										 * Create new items and update existing
-										 */
-										var items = data.create.concat(data.update);
+					$.when.apply($, promises).done(function () {
 
-										self.processDataTest(items, modelData, tableData, options).done(function () {
+						var tableData = schema.tableIgnoreCache(tableName);
+						Cloud.syncProducts(tag, chunkSize).done(function (cloudResponse) {
+
+							var data = cloudResponse.response.data[0];
+							if (!_.isUndefined(data)) {
+								if (currentTag !== data.tag) {
+									/**
+									 * Create new items and update existing
+									 */
+									self.processDataTest(data.create, modelData, tableData, options).done(function () {
+										self.processDataTest(data.update, modelData, tableData, options).done(function () {
 
 											/**
 											 * Delete necessary products by the given Code
 											 */
-											self.deleteCollectionTest(data.delete).done(function () {
+											self.deleteCollectionTest(data["delete"]).done(function () {
 												self.setTag(data.tag).done(function () {
+													/**
+													 * Check if some another operations are remaining
+													 */
 													if (data.waiting > 0) {
 														syncProductsRecursively(data.tag);
 													}
@@ -1455,22 +1482,20 @@ var CloudSynchronizeView = CloudBlock.extend({
 												}).fail(function () {
 													self.showMessage(button, errorMessage, errorType);
 												});
-
 											});
 										});
-									}
-									else {
-										self.showMessage(button, t("Synchronization successful!"), successType);
-									}
+									});
 								}
-							}).fail(function () {
-								self.showMessage(button, errorMessage, errorType);
-							});
-						}
-
-						syncProductsRecursively(tag);
+								else {
+									self.showMessage(button, t("Synchronization successful!"), successType);
+								}
+							}
+						}).fail(function () {
+							self.showMessage(button, errorMessage, errorType);
+						});
 					});
-				});
+				}
+				syncProductsRecursively(tag);
 			}).fail(function () {
 				self.showMessage(button, errorMessage, errorType);
 			});
@@ -1488,10 +1513,9 @@ var CloudSynchronizeView = CloudBlock.extend({
 	 * @returns {*}
 	 */
 	processDataTest:                function (parsedData, modelData, tableData, options) {
-		var self        = this;
-		var deferred    = $.Deferred();
+		var self     = this;
+		var deferred = $.Deferred();
 		if (_.isEmpty(parsedData)) {
-			console.log(parsedData);
 			deferred.resolve();
 		}
 		else {
@@ -1537,11 +1561,14 @@ var CloudSynchronizeView = CloudBlock.extend({
 				});
 				collections.push(collection);
 			});
-			console.log('collections', collections);
 			this.processCollectionRecursiveTest(collections, 0, deferred);
 		}
 		return deferred.promise();
 	},
+	/**
+	 * Get current sync tag
+	 * @returns {*}
+	 */
 	getTag:                         function () {
 		var deferred = $.Deferred();
 		$.ajax({
@@ -1557,6 +1584,11 @@ var CloudSynchronizeView = CloudBlock.extend({
 		});
 		return deferred.promise();
 	},
+	/**
+	 * Set sync tag
+	 * @param tag
+	 * @returns {*}
+	 */
 	setTag:                         function (tag) {
 		var deferred = $.Deferred();
 		var data     = {
@@ -1605,19 +1637,23 @@ var CloudSynchronizeView = CloudBlock.extend({
 		if (_.isObject(result)) {
 			result.done(function () {
 				if (collections.length > index + 1) {
-					return self.processCollectionRecursive(collections, ++index, deferred);
+					return self.processCollectionRecursiveTest(collections, ++index, deferred);
 				}
 				else {
 					return deferred.resolve();
 				}
 			}).fail(function (response) {
 				if (!_.isEmpty(response.err)) {
-					console.log('error');
 					return deferred.resolve();
 				}
 			});
 		}
 	},
+	/**
+	 * Delete given collection of the products
+	 * @param collection
+	 * @returns {*}
+	 */
 	deleteCollectionTest:           function (collection) {
 		var deferred = $.Deferred();
 		if (!_.isEmpty(collection)) {
@@ -1628,6 +1664,12 @@ var CloudSynchronizeView = CloudBlock.extend({
 		}
 		return deferred.promise();
 	},
+	/**
+	 * Delete collection recursively
+	 * @param collection
+	 * @param index
+	 * @param deferred
+	 */
 	deleteCollectionRecursiveTest:  function (collection, index, deferred) {
 		var self = this;
 		var data = collection[index];
@@ -1639,14 +1681,13 @@ var CloudSynchronizeView = CloudBlock.extend({
 			},
 			success: function () {
 				if (collection.length > index + 1) {
-					return self.processCollectionRecursive(collection, ++index, deferred);
+					return self.deleteCollectionRecursiveTest(collection, ++index, deferred);
 				}
 				else {
 					return deferred.resolve();
 				}
 			},
 			error:   function () {
-				console.log('error delete');
 				return deferred.resolve();
 			}
 		})
@@ -1748,11 +1789,6 @@ var CloudSynchronizeView = CloudBlock.extend({
 				Cloud.disconnectFromApi({}).done(function () {
 					self.setProductSynchronization(0).done(function () {
 						self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
-						//self.setTag(0).done(function () {
-						//	self.showMessage(button, t("Disconnected from cloud product sync!"), successType);
-						//}).fail(function () {
-						//	self.showMessage(button, errorMessage, errorType);
-						//});
 					}).fail(function () {
 						self.showMessage(button, errorMessage, errorType);
 					});
