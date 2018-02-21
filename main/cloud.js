@@ -104,7 +104,8 @@ var Cloud = (function () {
 						url:      "/cgi/tbl/Net",
 						dataType: "json",
 						success:  function (response) {
-							self.isProductSynchronizationOn = response['NetPsw'] != 0;
+							self.isProductSynchronizationOn = 0;
+							//self.isProductSynchronizationOn = response['NetPsw'] != 0;
 							return deferred.resolve();
 						},
 						error:    function () {
