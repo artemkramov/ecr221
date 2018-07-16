@@ -960,6 +960,7 @@ var TableDisplay = Backgrid.Grid.extend({
 		});
 		//this.listenTo(this.collection, "backgrid:selected", this.btnDel);
 		//this.listenTo(this.collection, "change", this.syncSave);
+		// some comment
 	},
 	syncSave:   function () {
 		return this.collection.syncSave();
